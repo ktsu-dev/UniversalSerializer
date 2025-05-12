@@ -10,6 +10,68 @@ namespace ktsu.UniversalSerializer.Serialization;
 public static class SerializerOptionKeys
 {
     /// <summary>
+    /// Common option keys that apply to all serializers.
+    /// </summary>
+    public static class Common
+    {
+        /// <summary>
+        /// Option to ignore null values during serialization.
+        /// </summary>
+        public const string IgnoreNullValues = "Common:IgnoreNullValues";
+
+        /// <summary>
+        /// Option to ignore read-only properties during serialization.
+        /// </summary>
+        public const string IgnoreReadOnlyProperties = "Common:IgnoreReadOnlyProperties";
+
+        /// <summary>
+        /// Option to preserve references during serialization.
+        /// </summary>
+        public const string PreserveReferences = "Common:PreserveReferences";
+
+        /// <summary>
+        /// Option to enable pretty printing of output.
+        /// </summary>
+        public const string PrettyPrint = "Common:PrettyPrint";
+
+        /// <summary>
+        /// Option to specify how enum values should be serialized.
+        /// </summary>
+        public const string EnumFormat = "Common:EnumFormat";
+
+        /// <summary>
+        /// Option to use string conversion for types not natively supported by the serializer.
+        /// </summary>
+        public const string UseStringConversionForUnsupportedTypes = "Common:UseStringConversionForUnsupportedTypes";
+    }
+
+    /// <summary>
+    /// Type registry option keys for polymorphic serialization.
+    /// </summary>
+    public static class TypeRegistry
+    {
+        /// <summary>
+        /// Option to enable type discriminator for polymorphic serialization.
+        /// </summary>
+        public const string EnableTypeDiscriminator = "TypeRegistry:EnableTypeDiscriminator";
+
+        /// <summary>
+        /// Option to specify type discriminator format.
+        /// </summary>
+        public const string TypeDiscriminatorFormat = "TypeRegistry:TypeDiscriminatorFormat";
+
+        /// <summary>
+        /// Option to specify the property name for type discriminator.
+        /// </summary>
+        public const string TypeDiscriminatorPropertyName = "TypeRegistry:TypeDiscriminatorPropertyName";
+
+        /// <summary>
+        /// Option to use fully qualified type names.
+        /// </summary>
+        public const string UseFullyQualifiedTypeNames = "TypeRegistry:UseFullyQualifiedTypeNames";
+    }
+
+    /// <summary>
     /// JSON-specific option keys.
     /// </summary>
     public static class Json

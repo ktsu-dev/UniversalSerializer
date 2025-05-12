@@ -12,8 +12,8 @@
   - [x] Create `ISerializer` interface
   - [x] Implement `SerializerOptions` base class
   - [x] Create `SerializerOptionKeys` constants class
-  - [ ] Implement `TypeConverter` system
-  - [ ] Implement `TypeRegistry` for polymorphic serialization
+  - [x] Implement `TypeConverter` system
+  - [x] Implement `TypeRegistry` for polymorphic serialization
 
 - [x] Implement serializer factory
   - [x] Create `SerializerFactory` class

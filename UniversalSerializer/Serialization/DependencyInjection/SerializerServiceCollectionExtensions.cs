@@ -3,6 +3,8 @@
 // Licensed under the MIT license.
 
 using ktsu.UniversalSerializer.Serialization.Json;
+using ktsu.UniversalSerializer.Serialization.TypeConverter;
+using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +38,16 @@ public static class SerializerServiceCollectionExtensions
         {
             var factory = sp.GetRequiredService<SerializerFactory>();
             return new SerializerRegistry(factory);
+        });
+
+        // Register TypeConverterRegistry
+        services.TryAddSingleton<TypeConverterRegistry>();
+
+        // Register TypeRegistry
+        services.TryAddSingleton<TypeRegistry.TypeRegistry>(sp =>
+        {
+            var factory = sp.GetRequiredService<SerializerFactory>();
+            return new TypeRegistry.TypeRegistry(factory.GetDefaultOptions());
         });
 
         return services;
