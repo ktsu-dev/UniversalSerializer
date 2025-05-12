@@ -9,18 +9,18 @@ namespace ktsu.UniversalSerializer.Serialization;
 /// </summary>
 public enum EnumSerializationFormat
 {
-    /// <summary>
-    /// Serialize enums as their name string.
-    /// </summary>
-    Name,
+	/// <summary>
+	/// Serialize enums as their name string.
+	/// </summary>
+	Name,
 
-    /// <summary>
-    /// Serialize enums as their underlying numeric value.
-    /// </summary>
-    Value,
+	/// <summary>
+	/// Serialize enums as their underlying numeric value.
+	/// </summary>
+	Value,
 
-    /// <summary>
-    /// Serialize enums as an object with both name and value properties.
-    /// </summary>
-    NameAndValue
+	/// <summary>
+	/// Serialize enums as an object with both name and value properties.
+	/// </summary>
+	NameAndValue
 }

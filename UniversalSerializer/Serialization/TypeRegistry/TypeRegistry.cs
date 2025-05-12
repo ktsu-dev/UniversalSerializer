@@ -2,122 +2,104 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Reflection;
-
 namespace ktsu.UniversalSerializer.Serialization.TypeRegistry;
+using System.Reflection;
 
 /// <summary>
 /// A registry for managing type mappings in polymorphic serialization.
 /// </summary>
-public class TypeRegistry
+/// <remarks>
+/// Initializes a new instance of the <see cref="TypeRegistry"/> class.
+/// </remarks>
+/// <param name="options">The serializer options.</param>
+public class TypeRegistry(SerializerOptions options)
 {
-    private readonly Dictionary<string, Type> _typeMap = new(StringComparer.Ordinal);
-    private readonly Dictionary<Type, string> _nameMap = new();
-    private readonly SerializerOptions _options;
+	private readonly Dictionary<string, Type> _typeMap = new(StringComparer.Ordinal);
+	private readonly Dictionary<Type, string> _nameMap = [];
+	private readonly SerializerOptions _options = options ?? throw new ArgumentNullException(nameof(options));
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TypeRegistry"/> class.
-    /// </summary>
-    /// <param name="options">The serializer options.</param>
-    public TypeRegistry(SerializerOptions options)
-    {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-    }
+	/// <summary>
+	/// Registers a type with the registry.
+	/// </summary>
+	/// <typeparam name="T">The type to register.</typeparam>
+	/// <param name="name">The optional name to use for the type. If null, the type name will be used.</param>
+	public void RegisterType<T>(string? name = null) => RegisterType(typeof(T), name);
 
-    /// <summary>
-    /// Registers a type with the registry.
-    /// </summary>
-    /// <typeparam name="T">The type to register.</typeparam>
-    /// <param name="name">The optional name to use for the type. If null, the type name will be used.</param>
-    public void RegisterType<T>(string? name = null)
-    {
-        RegisterType(typeof(T), name);
-    }
+	/// <summary>
+	/// Registers a type with the registry.
+	/// </summary>
+	/// <param name="type">The type to register.</param>
+	/// <param name="name">The optional name to use for the type. If null, the type name will be used.</param>
+	public void RegisterType(Type type, string? name = null)
+	{
+		ArgumentNullException.ThrowIfNull(type);
 
-    /// <summary>
-    /// Registers a type with the registry.
-    /// </summary>
-    /// <param name="type">The type to register.</param>
-    /// <param name="name">The optional name to use for the type. If null, the type name will be used.</param>
-    public void RegisterType(Type type, string? name = null)
-    {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+		name ??= GetTypeName(type);
+		_typeMap[name] = type;
+		_nameMap[type] = name;
+	}
 
-        name ??= GetTypeName(type);
-        _typeMap[name] = type;
-        _nameMap[type] = name;
-    }
+	/// <summary>
+	/// Resolves a type name to a type.
+	/// </summary>
+	/// <param name="typeName">The type name to resolve.</param>
+	/// <returns>The resolved type, or null if not found.</returns>
+	public Type? ResolveType(string typeName)
+	{
+		if (string.IsNullOrEmpty(typeName))
+		{
+			throw new ArgumentException("Type name cannot be null or empty.", nameof(typeName));
+		}
 
-    /// <summary>
-    /// Resolves a type name to a type.
-    /// </summary>
-    /// <param name="typeName">The type name to resolve.</param>
-    /// <returns>The resolved type, or null if not found.</returns>
-    public Type? ResolveType(string typeName)
-    {
-        if (string.IsNullOrEmpty(typeName))
-        {
-            throw new ArgumentException("Type name cannot be null or empty.", nameof(typeName));
-        }
+		if (_typeMap.TryGetValue(typeName, out var type))
+		{
+			return type;
+		}
 
-        if (_typeMap.TryGetValue(typeName, out var type))
-        {
-            return type;
-        }
+		// Try to resolve by reflection if not in map
+		return Type.GetType(typeName, false);
+	}
 
-        // Try to resolve by reflection if not in map
-        return Type.GetType(typeName, false);
-    }
+	/// <summary>
+	/// Gets the name for a type.
+	/// </summary>
+	/// <param name="type">The type to get the name for.</param>
+	/// <returns>The type name.</returns>
+	public string GetTypeName(Type type)
+	{
+		ArgumentNullException.ThrowIfNull(type);
 
-    /// <summary>
-    /// Gets the name for a type.
-    /// </summary>
-    /// <param name="type">The type to get the name for.</param>
-    /// <returns>The type name.</returns>
-    public string GetTypeName(Type type)
-    {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+		if (_nameMap.TryGetValue(type, out var name))
+		{
+			return name;
+		}
 
-        if (_nameMap.TryGetValue(type, out var name))
-        {
-            return name;
-        }
+		// Get type name based on options
+		var useFullyQualifiedName = _options.GetOption("TypeRegistry:UseFullyQualifiedTypeNames", false);
+		return useFullyQualifiedName
+			? type.AssemblyQualifiedName ?? type.FullName ?? type.Name
+			: type.FullName ?? type.Name;
+	}
 
-        // Get type name based on options
-        var useFullyQualifiedName = _options.GetOption<bool>("TypeRegistry:UseFullyQualifiedTypeNames", false);
-        return useFullyQualifiedName
-            ? type.AssemblyQualifiedName ?? type.FullName ?? type.Name
-            : type.FullName ?? type.Name;
-    }
+	/// <summary>
+	/// Registers all subtypes of a base type.
+	/// </summary>
+	/// <typeparam name="TBase">The base type.</typeparam>
+	/// <param name="assembly">The optional assembly to search. If null, the assembly containing the base type will be used.</param>
+	public void RegisterSubtypes<TBase>(Assembly? assembly = null)
+	{
+		assembly ??= Assembly.GetAssembly(typeof(TBase)) ?? throw new InvalidOperationException("Could not get assembly for type.");
 
-    /// <summary>
-    /// Registers all subtypes of a base type.
-    /// </summary>
-    /// <typeparam name="TBase">The base type.</typeparam>
-    /// <param name="assembly">The optional assembly to search. If null, the assembly containing the base type will be used.</param>
-    public void RegisterSubtypes<TBase>(Assembly? assembly = null)
-    {
-        assembly ??= Assembly.GetAssembly(typeof(TBase)) ?? throw new InvalidOperationException("Could not get assembly for type.");
+		foreach (var type in assembly.GetTypes()
+			.Where(t => typeof(TBase).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface))
+		{
+			RegisterType(type);
+		}
+	}
 
-        foreach (var type in assembly.GetTypes()
-            .Where(t => typeof(TBase).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface))
-        {
-            RegisterType(type);
-        }
-    }
-
-    /// <summary>
-    /// Gets all registered type mappings.
-    /// </summary>
-    /// <returns>An enumerable of type mappings.</returns>
-    public IEnumerable<(string Name, Type Type)> GetAllTypeMappings()
-    {
-        return _typeMap.Select(kvp => (kvp.Key, kvp.Value));
-    }
+	/// <summary>
+	/// Gets all registered type mappings.
+	/// </summary>
+	/// <returns>An enumerable of type mappings.</returns>
+	public IEnumerable<(string Name, Type Type)> GetAllTypeMappings() => _typeMap.Select(kvp => (kvp.Key, kvp.Value));
 }
