@@ -93,6 +93,34 @@ public static class SerializerOptionKeys
         public const string SectionNameCasing = "Ini:SectionNameCasing";
         public const string AllowDuplicateKeys = "Ini:AllowDuplicateKeys";
     }
+    
+    // MessagePack-specific option keys
+    public static class MessagePack
+    {
+        public const string UseCompression = "MessagePack:UseCompression";
+        public const string CompressionLevel = "MessagePack:CompressionLevel";
+        public const string EnableLz4Compression = "MessagePack:EnableLz4Compression";
+        public const string OmitAssemblyVersion = "MessagePack:OmitAssemblyVersion";
+        public const string AllowPrivateMembers = "MessagePack:AllowPrivateMembers";
+    }
+    
+    // Protobuf-specific option keys
+    public static class Protobuf
+    {
+        public const string UseImplicitFields = "Protobuf:UseImplicitFields";
+        public const string SkipDefaults = "Protobuf:SkipDefaults";
+        public const string PreserveReferencesHandling = "Protobuf:PreserveReferencesHandling";
+        public const string TypeFormat = "Protobuf:TypeFormat";
+    }
+    
+    // FlatBuffers-specific option keys
+    public static class FlatBuffers
+    {
+        public const string ForceDefaults = "FlatBuffers:ForceDefaults";
+        public const string ShareStrings = "FlatBuffers:ShareStrings";
+        public const string ShareKeys = "FlatBuffers:ShareKeys";
+        public const string IndirectStrings = "FlatBuffers:IndirectStrings";
+    }
 }
 
 public enum EnumSerializationFormat
@@ -155,6 +183,9 @@ public class SerializerOptions
     public SerializerOptions WithYamlOption(string key, object value) => WithOption(key, value);
     public SerializerOptions WithTomlOption(string key, object value) => WithOption(key, value);
     public SerializerOptions WithIniOption(string key, object value) => WithOption(key, value);
+    public SerializerOptions WithMessagePackOption(string key, object value) => WithOption(key, value);
+    public SerializerOptions WithProtobufOption(string key, object value) => WithOption(key, value);
+    public SerializerOptions WithFlatBuffersOption(string key, object value) => WithOption(key, value);
 }
 
 ### ISerializerFactory
@@ -171,7 +202,9 @@ public interface ISerializerFactory
     ISerializer GetYamlSerializer(SerializerOptions options = null);
     ISerializer GetTomlSerializer(SerializerOptions options = null);
     ISerializer GetIniSerializer(SerializerOptions options = null);
-    // Other formats
+    ISerializer GetMessagePackSerializer(SerializerOptions options = null);
+    ISerializer GetProtobufSerializer(SerializerOptions options = null);
+    ISerializer GetFlatBuffersSerializer(SerializerOptions options = null);
 }
 ```
 
@@ -574,6 +607,231 @@ public class IniSerializer : ISerializer
 }
 ```
 
+### MessagePack Serializer
+
+Using MessagePack-CSharp as the implementation:
+
+```csharp
+public class MessagePackSerializer : ISerializer
+{
+    private readonly global::MessagePack.MessagePackSerializerOptions _messagePackOptions;
+    private readonly SerializerOptions _options;
+    private readonly TypeRegistry _typeRegistry;
+    
+    public string ContentType => "application/x-msgpack";
+    public string FileExtension => ".msgpack";
+    
+    public MessagePackSerializer(SerializerOptions options, TypeRegistry typeRegistry)
+    {
+        _options = options;
+        _typeRegistry = typeRegistry;
+        
+        // Create MessagePack serializer options
+        var resolver = global::MessagePack.Resolvers.StandardResolver.Instance;
+        
+        // Add polymorphic serialization if needed
+        if (_options.EnableTypeDiscriminator)
+        {
+            resolver = global::MessagePack.Resolvers.CompositeResolver.Create(
+                new global::MessagePack.Formatters.IMessagePackFormatter[] 
+                {
+                    // Custom polymorphic formatter
+                },
+                new global::MessagePack.IFormatterResolver[] 
+                {
+                    resolver
+                });
+        }
+        
+        _messagePackOptions = global::MessagePack.MessagePackSerializerOptions.Standard
+            .WithResolver(resolver);
+            
+        // Apply format-specific options
+        ApplyFormatSpecificOptions();
+    }
+    
+    private void ApplyFormatSpecificOptions()
+    {
+        // Use LZ4 compression if specified
+        if (_options.GetOption<bool>(SerializerOptionKeys.MessagePack.EnableLz4Compression, false))
+        {
+            _messagePackOptions = _messagePackOptions.WithCompression(
+                global::MessagePack.MessagePackCompression.Lz4Block);
+        }
+        
+        // Other MessagePack-specific options...
+    }
+    
+    public string Serialize<T>(T obj)
+    {
+        var bytes = SerializeToBytes(obj);
+        return Convert.ToBase64String(bytes);
+    }
+    
+    public T Deserialize<T>(string serialized)
+    {
+        var bytes = Convert.FromBase64String(serialized);
+        return DeserializeFromBytes<T>(bytes);
+    }
+    
+    public byte[] SerializeToBytes<T>(T obj)
+    {
+        return global::MessagePack.MessagePackSerializer.Serialize(obj, _messagePackOptions);
+    }
+    
+    public T DeserializeFromBytes<T>(byte[] bytes)
+    {
+        return global::MessagePack.MessagePackSerializer.Deserialize<T>(bytes, _messagePackOptions);
+    }
+    
+    // Other ISerializer methods...
+}
+```
+
+### Protocol Buffers Serializer
+
+Using protobuf-net as the implementation:
+
+```csharp
+public class ProtobufSerializer : ISerializer
+{
+    private readonly SerializerOptions _options;
+    private readonly global::ProtoBuf.Meta.RuntimeTypeModel _model;
+    
+    public string ContentType => "application/x-protobuf";
+    public string FileExtension => ".proto";
+    
+    public ProtobufSerializer(SerializerOptions options, TypeRegistry typeRegistry)
+    {
+        _options = options;
+        
+        // Create and configure the model
+        _model = global::ProtoBuf.Meta.RuntimeTypeModel.Create();
+        _model.UseImplicitZeroDefaults = !_options.GetOption<bool>(
+            SerializerOptionKeys.Protobuf.SkipDefaults, false);
+            
+        // Configure type handling for inheritance
+        if (_options.EnableTypeDiscriminator)
+        {
+            // Register known types from the type registry
+            foreach (var typePair in typeRegistry.GetAllTypeMappings())
+            {
+                if (typePair.Type.IsClass && !typePair.Type.IsAbstract)
+                {
+                    RegisterSubType(typePair.Type);
+                }
+            }
+        }
+        
+        // Apply other format-specific options
+        ApplyFormatSpecificOptions();
+    }
+    
+    private void RegisterSubType(Type type)
+    {
+        // Find the base type
+        var baseType = type.BaseType;
+        if (baseType != null && baseType != typeof(object))
+        {
+            var metaType = _model[baseType];
+            if (metaType != null)
+            {
+                metaType.AddSubType(metaType.GetNextFieldNumber(), type);
+            }
+        }
+    }
+    
+    private void ApplyFormatSpecificOptions()
+    {
+        // Apply protobuf-specific options
+    }
+    
+    public string Serialize<T>(T obj)
+    {
+        var bytes = SerializeToBytes(obj);
+        return Convert.ToBase64String(bytes);
+    }
+    
+    public T Deserialize<T>(string serialized)
+    {
+        var bytes = Convert.FromBase64String(serialized);
+        return DeserializeFromBytes<T>(bytes);
+    }
+    
+    public byte[] SerializeToBytes<T>(T obj)
+    {
+        using (var stream = new MemoryStream())
+        {
+            _model.Serialize(stream, obj);
+            return stream.ToArray();
+        }
+    }
+    
+    public T DeserializeFromBytes<T>(byte[] bytes)
+    {
+        using (var stream = new MemoryStream(bytes))
+        {
+            return (T)_model.Deserialize(stream, null, typeof(T));
+        }
+    }
+    
+    // Other ISerializer methods...
+}
+```
+
+### FlatBuffers Serializer
+
+Using FlatBuffers for .NET:
+
+```csharp
+public class FlatBuffersSerializer : ISerializer
+{
+    private readonly SerializerOptions _options;
+    
+    public string ContentType => "application/x-flatbuffers";
+    public string FileExtension => ".fbs";
+    
+    public FlatBuffersSerializer(SerializerOptions options)
+    {
+        _options = options;
+        
+        // FlatBuffers typically requires pre-generated code
+        // This implementation would need to use runtime reflection or code generation
+    }
+    
+    // Note: FlatBuffers typically requires pre-generated serialization code
+    // A pure reflection-based approach may have limitations
+    
+    public string Serialize<T>(T obj)
+    {
+        var bytes = SerializeToBytes(obj);
+        return Convert.ToBase64String(bytes);
+    }
+    
+    public T Deserialize<T>(string serialized)
+    {
+        var bytes = Convert.FromBase64String(serialized);
+        return DeserializeFromBytes<T>(bytes);
+    }
+    
+    public byte[] SerializeToBytes<T>(T obj)
+    {
+        // Implementation would depend on whether we're using pre-generated code
+        // or a runtime reflection-based approach
+        throw new NotImplementedException("FlatBuffers serialization requires implementation");
+    }
+    
+    public T DeserializeFromBytes<T>(byte[] bytes)
+    {
+        // Implementation would depend on whether we're using pre-generated code
+        // or a runtime reflection-based approach
+        throw new NotImplementedException("FlatBuffers deserialization requires implementation");
+    }
+    
+    // Other ISerializer methods...
+}
+```
+
 ## Dependency Injection
 
 ### Registration Extensions
@@ -658,7 +916,25 @@ public class SerializerBuilder
         return this;
     }
     
-    // Similar methods for other serializer types without exposing their implementation details
+    public SerializerBuilder AddMessagePackSerializer()
+    {
+        _services.AddSingleton<ISerializer, MessagePackSerializer>();
+        return this;
+    }
+    
+    public SerializerBuilder AddProtobufSerializer()
+    {
+        _services.AddSingleton<ISerializer, ProtobufSerializer>();
+        return this;
+    }
+    
+    public SerializerBuilder AddFlatBuffersSerializer()
+    {
+        _services.AddSingleton<ISerializer, FlatBuffersSerializer>();
+        return this;
+    }
+    
+    // Other serializer methods...
 }
 ```
 
@@ -710,7 +986,10 @@ services.AddUniversalSerializer(builder => {
     
     // Add specific serializers
     builder.AddJsonSerializer()
-           .AddXmlSerializer();
+           .AddXmlSerializer()
+           .AddMessagePackSerializer()
+           .AddProtobufSerializer()
+           .AddFlatBuffersSerializer();
 });
 ```
 
@@ -925,84 +1204,71 @@ var deserializedAnimals = serializer.Deserialize<List<Animal>>(json);
 // Each item will be the correct concrete type (Dog or Cat)
 ```
 
-## Extension Points
-
-### Custom Serializers
-
-Developers can add their own serializer implementations:
+### Using Binary Serialization Formats
 
 ```csharp
-public class CustomSerializer : ISerializer
-{
-    public string ContentType => "application/custom";
-    public string FileExtension => ".custom";
-    
-    // Implementation
-}
-
-// Registration
+// Configure serializers
 services.AddUniversalSerializer(builder => {
-    builder.AddSerializer<CustomSerializer>();
-});
-```
-
-### Serializer Decorators
-
-Advanced scenarios might require decorating serializers:
-
-```csharp
-public class CachingSerializerDecorator : ISerializer
-{
-    private readonly ISerializer _inner;
-    private readonly IMemoryCache _cache;
-    
-    public CachingSerializerDecorator(ISerializer inner, IMemoryCache cache)
-    {
-        _inner = inner;
-        _cache = cache;
-    }
-    
-    // Implement methods with caching
-}
-```
-
-### Custom Type Converters
-
-Developers can add custom type converters for complex types:
-
-```csharp
-public class DateOnlyConverter : ITypeConverter
-{
-    public bool CanConvert(Type type)
-    {
-        return type == typeof(DateOnly);
-    }
-    
-    public string ConvertToString(object value)
-    {
-        return ((DateOnly)value).ToString("yyyy-MM-dd");
-    }
-    
-    public object ConvertFromString(string value, Type targetType)
-    {
-        return DateOnly.Parse(value);
-    }
-}
-
-// Registration
-services.AddUniversalSerializer(builder => {
-    builder.ConfigureTypeConverters(registry => {
-        registry.RegisterConverter(new DateOnlyConverter());
+    builder.ConfigureOptions(options => {
+        // Common options
+        options.PreserveReferences = true;
+        
+        // MessagePack-specific options
+        options.WithOption(SerializerOptionKeys.MessagePack.EnableLz4Compression, true);
+        
+        // Protobuf-specific options
+        options.WithOption(SerializerOptionKeys.Protobuf.SkipDefaults, true);
     });
+    
+    // Register binary serializers
+    builder.AddMessagePackSerializer()
+           .AddProtobufSerializer()
+           .AddFlatBuffersSerializer();
 });
+
+// In a service
+public class BinarySerializationExample
+{
+    private readonly ISerializerFactory _serializerFactory;
+    
+    public BinarySerializationExample(ISerializerFactory serializerFactory)
+    {
+        _serializerFactory = serializerFactory;
+    }
+    
+    public void Process()
+    {
+        var data = new MyData { Id = 123, Name = "Test" };
+        
+        // Using MessagePack for compact binary serialization
+        var messagePackSerializer = _serializerFactory.GetMessagePackSerializer();
+        byte[] msgpackBytes = messagePackSerializer.SerializeToBytes(data);
+        
+        // Using Protobuf for schema-based serialization
+        var protobufSerializer = _serializerFactory.GetProtobufSerializer();
+        byte[] protobufBytes = protobufSerializer.SerializeToBytes(data);
+        
+        // Compare sizes for performance analysis
+        Console.WriteLine($"MessagePack size: {msgpackBytes.Length} bytes");
+        Console.WriteLine($"Protobuf size: {protobufBytes.Length} bytes");
+        
+        // Deserialize back
+        var msgpackData = messagePackSerializer.DeserializeFromBytes<MyData>(msgpackBytes);
+        var protobufData = protobufSerializer.DeserializeFromBytes<MyData>(protobufBytes);
+    }
+}
+
+// Data class with appropriate attributes for Protobuf
+[global::ProtoBuf.ProtoContract]
+public class MyData
+{
+    [global::ProtoBuf.ProtoMember(1)]
+    public int Id { get; set; }
+    
+    [global::ProtoBuf.ProtoMember(2)]
+    public string Name { get; set; }
+}
 ```
-
-## Performance Considerations
-
-- Serializer instances should be singleton-scoped in DI
-- Consider caching expensive serializer settings/options
-- Use streaming APIs for large objects
-- Benchmark different implementations for specific scenarios
 
 ## Dependencies
 
@@ -1011,10 +1277,12 @@ services.AddUniversalSerializer(builder => {
 - YamlDotNet - YAML serialization
 - Tomlyn - TOML serialization
 - IniParser - INI file parsing
+- MessagePack-CSharp - MessagePack binary serialization
+- protobuf-net - Protocol Buffers implementation for .NET
+- FlatBuffers - FlatBuffers serialization library
 
 ## Future Enhancements
 
-- MessagePack/Protocol Buffers support
 - Streaming APIs for large file handling
 - Schema validation integration
 - Custom type converters registry
