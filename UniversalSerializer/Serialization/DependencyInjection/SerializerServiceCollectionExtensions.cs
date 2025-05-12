@@ -3,16 +3,8 @@
 // Licensed under the MIT license.
 
 namespace ktsu.UniversalSerializer.Serialization.DependencyInjection;
-
-using ktsu.UniversalSerializer.Serialization.Json;
-using ktsu.UniversalSerializer.Serialization.MessagePack;
-using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
-using ktsu.UniversalSerializer.Serialization.Xml;
-using ktsu.UniversalSerializer.Serialization.Yaml;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>
 /// Provides extension methods for <see cref="IServiceCollection"/> to register serializers.

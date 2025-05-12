@@ -95,7 +95,7 @@ public class TomlSerializer : SerializerBase
 		var model = Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
-		return (T)ConvertFromTomlModel(model, typeof(T))!;
+		return (T)TomlSerializer.ConvertFromTomlModel(model, typeof(T))!;
 	}
 
 	/// <inheritdoc/>
@@ -110,7 +110,7 @@ public class TomlSerializer : SerializerBase
 		var model = Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
-		return ConvertFromTomlModel(model, type)!;
+		return TomlSerializer.ConvertFromTomlModel(model, type)!;
 	}
 
 	/// <inheritdoc/>
@@ -149,7 +149,7 @@ public class TomlSerializer : SerializerBase
 						var wrapperTable = new TomlTable
 						{
 							["type"] = typeName,
-							["value"] = ConvertObjectToTomlValue(value, actualType)
+							["value"] = TomlSerializer.ConvertObjectToTomlValue(value, actualType)
 						};
 						return wrapperTable;
 
@@ -180,7 +180,7 @@ public class TomlSerializer : SerializerBase
 				}
 
 				// Convert the property value to a TOML-compatible value
-				var tomlValue = ConvertObjectToTomlValue(propertyValue, property.PropertyType);
+				var tomlValue = TomlSerializer.ConvertObjectToTomlValue(propertyValue, property.PropertyType);
 				tomlTable[property.Name] = tomlValue;
 			}
 		}
@@ -189,11 +189,11 @@ public class TomlSerializer : SerializerBase
 	}
 
 	// Add placeholder methods to make the file compile
-	private object ConvertObjectToTomlValue(object value, Type type) =>
+	private static object ConvertObjectToTomlValue(object value, Type type) =>
 		// Stub implementation - would need to be properly implemented
 		value?.ToString() ?? string.Empty;
 
-	private object ConvertFromTomlModel(TomlTable model, Type type) =>
+	private static object ConvertFromTomlModel(TomlTable model, Type type) =>
 		// Stub implementation - would need to be properly implemented
 		Activator.CreateInstance(type)!;
 }

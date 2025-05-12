@@ -14,19 +14,16 @@ using ktsu.UniversalSerializer.Serialization.Yaml;
 /// <summary>
 /// Registry for managing serializers by format.
 /// </summary>
-public class SerializerRegistry
+/// <remarks>
+/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
+/// </remarks>
+/// <param name="factory">The serializer factory to use.</param>
+public class SerializerRegistry(SerializerFactory factory)
 {
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByFormat = new(StringComparer.OrdinalIgnoreCase);
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByExtension = new(StringComparer.OrdinalIgnoreCase);
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
-	private readonly SerializerFactory _factory;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
-	/// </summary>
-	/// <param name="factory">The serializer factory to use.</param>
-	public SerializerRegistry(SerializerFactory factory) =>
-		_factory = factory ?? throw new ArgumentNullException(nameof(factory));
+	private readonly SerializerFactory _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
 	/// <summary>
 	/// Registers built-in serializers.
