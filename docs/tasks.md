@@ -5,7 +5,7 @@
 - [x] Set up project structure
   - [x] Create solution and project files
   - [x] Set up folder structure (Core, Implementations, Tests)
-  - [ ] Configure build pipeline
+  - [x] Configure build pipeline
   - [ ] Set up NuGet package configuration
 
 - [x] Implement core interfaces and classes
@@ -93,8 +93,6 @@
 
 - [ ] Package and publish
   - [ ] Configure NuGet package metadata
-  - [ ] Create CI/CD pipeline
-  - [ ] Publish to NuGet
 
 ## Future Enhancements
 
