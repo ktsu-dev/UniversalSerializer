@@ -8,6 +8,7 @@ using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
+using ktsu.UniversalSerializer.Serialization.Ini;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -216,6 +217,46 @@ public static class SerializerServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Adds the INI serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
+    /// <param name="registerAsDefault">Whether to register the INI serializer as the default ISerializer.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddIniSerializer(
+        this IServiceCollection services,
+        Action<SerializerOptions>? configureOptions = null,
+        bool registerAsDefault = false)
+    {
+        services.TryAddSingleton<IniSerializer>(sp =>
+        {
+            var factory = sp.GetRequiredService<SerializerFactory>();
+            var options = factory.GetDefaultOptions();
+            configureOptions?.Invoke(options);
+
+            // Get type registry from DI
+            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
+
+            factory.RegisterSerializer<IniSerializer>(opts => new IniSerializer(opts, typeRegistry));
+            var serializer = factory.Create<IniSerializer>(options);
+
+            // Register with the registry
+            var registry = sp.GetRequiredService<SerializerRegistry>();
+            registry.Register("ini", serializer);
+            registry.RegisterFileExtensions("ini", ".ini", ".conf", ".cfg");
+
+            return serializer;
+        });
+
+        if (registerAsDefault)
+        {
+            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<IniSerializer>());
+        }
+
+        return services;
+    }
+
+    /// <summary>
     /// Adds a specific serializer type to the service collection.
     /// </summary>
     /// <typeparam name="TSerializer">The type of serializer to add.</typeparam>
@@ -279,6 +320,7 @@ public static class SerializerServiceCollectionExtensions
         services.AddXmlSerializer();
         services.AddYamlSerializer();
         services.AddTomlSerializer();
+        services.AddIniSerializer();
         return services;
     }
 }

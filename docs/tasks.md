@@ -21,130 +21,88 @@
   - [x] Create registration extension methods for DI
 
 - [x] Set up dependency injection
-  - [x] Create extension methods for service registration
-  - [x] Implement serializer registration and configuration
+  - [x] Create extension methods for registering serializers
+  - [x] Add support for configuring serializers through DI
 
 ## Phase 2: Text-Based Serializers
 
-- [x] Implement JSON serializers
-  - [x] Create `JsonSerializer` implementation using System.Text.Json
-  - [x] Create custom converters for string conversion
-  - [x] Add polymorphic serialization support
-  - [x] Implement option mapping for JSON settings
+- [x] Implement JSON serializer
+  - [x] Create `JsonSerializer` implementation
+  - [x] Add support for polymorphic serialization
+  - [x] Add custom converters for complex types
+  - [x] Implement option mapping for JSON serializer settings
 
 - [x] Implement XML serializer
-  - [x] Create `XmlSerializer` implementation using System.Xml.Serialization
-  - [x] Add polymorphic serialization support
-  - [x] Implement option mapping for XML settings
+  - [x] Create `XmlSerializer` implementation
+  - [x] Add support for polymorphic serialization using xsi:type
+  - [x] Add custom converters for complex types
+  - [x] Implement option mapping for XML serializer settings
 
 - [x] Implement YAML serializer
-  - [x] Create `YamlSerializer` implementation using YamlDotNet
-  - [x] Add polymorphic serialization support
-  - [x] Implement option mapping for YAML settings
+  - [x] Add YamlDotNet dependency
+  - [x] Create `YamlSerializer` implementation
+  - [x] Add support for polymorphic serialization
+  - [x] Add custom converters for complex types
+  - [x] Implement option mapping for YamlDotNet settings
 
 - [x] Implement TOML serializer
   - [x] Add Tomlyn dependency
   - [x] Create `TomlSerializer` implementation
-  - [x] Add string conversion support
-  - [x] Add polymorphic serialization support
+  - [x] Add support for polymorphic serialization
   - [x] Implement option mapping for TOML settings
 
-- [ ] Implement INI serializer
-  - [ ] Add IniParser dependency
-  - [ ] Create `IniSerializer` implementation
-  - [ ] Add support for section-based serialization
-  - [ ] Add limited polymorphic serialization support 
-  - [ ] Implement option mapping for INI settings
+- [x] Implement INI serializer
+  - [x] Add IniParser dependency
+  - [x] Create `IniSerializer` implementation
+  - [x] Add support for section-based serialization
+  - [x] Add limited polymorphic serialization support 
+  - [x] Implement option mapping for INI settings
 
 ## Phase 3: Binary Serializers
 
 - [ ] Implement MessagePack serializer
-  - [ ] Add MessagePack-CSharp dependency
+  - [ ] Add MessagePack dependency
   - [ ] Create `MessagePackSerializer` implementation
+  - [ ] Add support for polymorphic serialization
   - [ ] Implement option mapping for MessagePack settings
-  - [ ] Add polymorphic serialization support
 
 - [ ] Implement Protocol Buffers serializer
   - [ ] Add protobuf-net dependency
   - [ ] Create `ProtobufSerializer` implementation
-  - [ ] Implement runtime type model configuration
-  - [ ] Add support for inheritance registration
+  - [ ] Add support for polymorphic serialization
+  - [ ] Implement option mapping for protobuf-net settings
 
 - [ ] Implement FlatBuffers serializer
   - [ ] Add FlatBuffers dependency
   - [ ] Create `FlatBuffersSerializer` implementation
-  - [ ] Research and implement runtime reflection approach
+  - [ ] Add support for polymorphic serialization (if possible)
+  - [ ] Implement option mapping for FlatBuffers settings
 
-## Phase 4: Advanced Features
+## Phase 4: Finalization
 
-- [ ] Enhance string-based type conversion
-  - [ ] Implement caching for reflection lookups
-  - [ ] Add support for custom type converters
-  - [ ] Implement converter registration system
+- [ ] Add comprehensive tests
+  - [ ] Unit tests for each serializer
+  - [ ] Performance benchmarks
+  - [ ] Interoperability tests
 
-- [ ] Implement polymorphic serialization enhancements
-  - [ ] Support for multiple discriminator formats
-  - [ ] Add automatic type discovery and registration
-  - [ ] Implement efficient type lookup
+- [ ] Add documentation
+  - [ ] Add XML documentation comments
+  - [ ] Create usage examples
+  - [ ] Create README and API documentation
 
-- [ ] Add serialization decorators
-  - [ ] Implement caching decorator for improved performance
-  - [ ] Create validation decorator for schema validation
-  - [ ] Add compression decorator for binary formats
-
-## Phase 5: Testing and Documentation
-
-- [x] Basic unit testing
-  - [x] Set up test project
-  - [x] Create basic serialization tests for JSON, XML, and YAML
-  - [ ] Test serialization with complex object graphs
-  - [ ] Test polymorphic serialization
-  - [ ] Test custom type conversion
-
-- [ ] Integration testing
-  - [ ] Test serializer factory with DI
-  - [ ] Test serializer registration and configuration
-  - [ ] Test complex scenarios with mixed serialization formats
-
-- [ ] Performance testing
-  - [ ] Benchmark different serializer implementations
-  - [ ] Compare serialization/deserialization speed
-  - [ ] Measure memory usage and allocation
-  - [ ] Analyze payload sizes
-
-- [ ] Documentation
-  - [x] Add XML comments to core interfaces and classes
-  - [ ] Write usage examples and tutorials
-  - [ ] Document serializer-specific options and configuration
-  - [ ] Create sample applications
-
-## Phase 6: Packaging and Deployment
-
-- [ ] Create NuGet packages
-  - [ ] Configure package metadata
-  - [ ] Set up package versioning
-  - [ ] Prepare for initial release
-
-- [ ] Set up CI/CD pipeline
-  - [ ] Automated builds on commit
-  - [ ] Run tests in CI
-  - [ ] Generate NuGet packages
-  - [ ] Publish packages to feed
-
-- [ ] Create release documentation
-  - [ ] Write release notes
-  - [ ] Document migration path for new versions
-  - [ ] Create changelog
+- [ ] Package for distribution
+  - [ ] Create NuGet package
+  - [ ] Set up versioning and release process
+  - [ ] Add package metadata and icons
 
 ## Future Enhancements
 
-- [ ] Add streaming API for large objects
-- [ ] Implement schema validation integration
-- [ ] Add custom type converters registry
-- [ ] Implement compression integration
-- [ ] Add encryption support
-- [ ] Add support for more serialization formats
+- [x] Add custom type converters registry
+- [ ] Add support for streaming serialization
+- [ ] Add support for compression
+- [ ] Add support for encryption
+- [ ] Add support for more serialization formats:
   - [ ] BSON
-  - [ ] CBOR
-  - [ ] JSON5
-  - [ ] Property lists (plist)
+  - [ ] CSV
+  - [ ] Apache Avro
+  - [ ] Apache Thrift

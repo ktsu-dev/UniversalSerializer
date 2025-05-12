@@ -5,6 +5,7 @@
 using System.Collections.Concurrent;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 using ktsu.UniversalSerializer.Serialization.Toml;
+using ktsu.UniversalSerializer.Serialization.Ini;
 
 namespace ktsu.UniversalSerializer.Serialization;
 
@@ -79,6 +80,15 @@ public class SerializerRegistry
         if (serializer is TomlSerializer tomlSerializer)
         {
             foreach (var ext in tomlSerializer.GetSupportedExtensions())
+            {
+                _serializersByExtension[ext] = serializer;
+            }
+        }
+
+        // Register additional file extensions for INI
+        if (serializer is IniSerializer iniSerializer)
+        {
+            foreach (var ext in iniSerializer.GetSupportedExtensions())
             {
                 _serializersByExtension[ext] = serializer;
             }

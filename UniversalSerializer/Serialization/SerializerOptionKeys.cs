@@ -184,6 +184,26 @@ public static class SerializerOptionKeys
         /// Option to allow duplicate keys.
         /// </summary>
         public const string AllowDuplicateKeys = "Ini:AllowDuplicateKeys";
+
+        /// <summary>
+        /// Option to specify the metadata section name.
+        /// </summary>
+        public const string MetadataSectionName = "Ini:MetadataSectionName";
+
+        /// <summary>
+        /// Option to specify the data section prefix.
+        /// </summary>
+        public const string DataSectionPrefix = "Ini:DataSectionPrefix";
+
+        /// <summary>
+        /// Option to specify the comment character.
+        /// </summary>
+        public const string CommentCharacter = "Ini:CommentCharacter";
+
+        /// <summary>
+        /// Option to preserve comments during serialization/deserialization.
+        /// </summary>
+        public const string PreserveComments = "Ini:PreserveComments";
     }
 
     /// <summary>
