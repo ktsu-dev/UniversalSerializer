@@ -3,114 +3,126 @@
 // Licensed under the MIT license.
 
 namespace ktsu.UniversalSerializer.Serialization.Yaml;
+
+using System.Text;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization.NodeDeserializers;
 
 /// <summary>
 /// Serializer for YAML format using YamlDotNet.
 /// </summary>
 public class YamlSerializer : SerializerBase
 {
-	private readonly ISerializer _serializer;
-	private readonly IDeserializer _deserializer;
-	private readonly string _fileExtension;
-	private readonly TypeRegistry.TypeRegistry? _typeRegistry;
+	private readonly SerializerBuilder _serializerBuilder;
+	private readonly DeserializerBuilder _deserializerBuilder;
+	private readonly TypeRegistry? _typeRegistry;
 	private readonly bool _enableTypeDiscriminator;
 	private readonly string _typeDiscriminatorPropertyName;
-	private readonly TypeDiscriminatorFormat _discriminatorFormat;
+	private readonly string _discriminatorFormat;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="YamlSerializer"/> class with default options.
+	/// Initializes a new instance of the <see cref="YamlSerializer"/> class.
 	/// </summary>
 	public YamlSerializer() : this(SerializerOptions.Default())
 	{
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="YamlSerializer"/> class with the specified options.
+	/// Initializes a new instance of the <see cref="YamlSerializer"/> class.
 	/// </summary>
 	/// <param name="options">The serializer options.</param>
 	/// <param name="typeRegistry">Optional registry for polymorphic types.</param>
-	public YamlSerializer(SerializerOptions options, TypeRegistry.TypeRegistry? typeRegistry = null) : base(options)
+	public YamlSerializer(SerializerOptions options, TypeRegistry? typeRegistry = null) : base(options)
 	{
 		_typeRegistry = typeRegistry;
 		_enableTypeDiscriminator = GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false);
-		_typeDiscriminatorPropertyName = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorPropertyName, "$type");
+		_typeDiscriminatorPropertyName = GetOption(SerializerOptionKeys.TypeRegistry.DiscriminatorPropertyName, SerializerDefaults.TypeDiscriminatorPropertyName);
+		_discriminatorFormat = GetOption(SerializerOptionKeys.TypeRegistry.DiscriminatorFormat, SerializerDefaults.TypeDiscriminatorFormat);
 
-		var formatValue = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorFormat,
-			TypeDiscriminatorFormat.Property.ToString());
+		// Configure serializer
+		_serializerBuilder = new SerializerBuilder()
+			.EmitDefaults()
+			.WithIndentedSequences();
 
-		// Try to parse the format from string if stored as string
-		_discriminatorFormat = formatValue is string formatString && Enum.TryParse(formatString, out TypeDiscriminatorFormat format)
-			? format
-			: formatValue is TypeDiscriminatorFormat typeDiscriminatorFormat ? typeDiscriminatorFormat : TypeDiscriminatorFormat.Property;
+		// Configure deserializer
+		_deserializerBuilder = new DeserializerBuilder()
+			.IgnoreUnmatchedProperties();
 
-		var serializerBuilder = new SerializerBuilder()
-			.WithNamingConvention(CamelCaseNamingConvention.Instance)
-			.DisableAliases();
-
-		var deserializerBuilder = new DeserializerBuilder()
-			.WithNamingConvention(CamelCaseNamingConvention.Instance);
-
-		// Configure indentation if specified
-		if (HasOption(SerializerOptionKeys.Yaml.IndentationWidth))
+		// Handle enum serialization format
+		var enumFormat = GetOption<object>(SerializerOptionKeys.Common.EnumFormat, EnumSerializationFormat.Name.ToString());
+		if (enumFormat is string enumFormatStr &&
+			Enum.TryParse<EnumSerializationFormat>(enumFormatStr, out var enumSerializationFormat) &&
+			enumSerializationFormat == EnumSerializationFormat.Name)
 		{
-			var indentationWidth = GetOption(SerializerOptionKeys.Yaml.IndentationWidth, 2);
-			serializerBuilder.WithIndentedSequences().WithMaximumIndentationDepth(indentationWidth);
+			_serializerBuilder.WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance);
+			_deserializerBuilder.WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance);
 		}
 
-		// Configure EmitDefaults
-		if (HasOption(SerializerOptionKeys.Yaml.EmitDefaults))
-		{
-			var emitDefaults = GetOption(SerializerOptionKeys.Yaml.EmitDefaults, false);
-			if (emitDefaults)
-			{
-				serializerBuilder.EmitDefaults();
-			}
-		}
-
-		// Add polymorphic serialization support if enabled
+		// Add polymorphic type handling if requested
 		if (_enableTypeDiscriminator && _typeRegistry != null)
 		{
-			// Register the polymorphic serialization/deserialization handlers
-			serializerBuilder.WithTypeConverter(new YamlPolymorphicTypeConverter((TypeRegistry.TypeRegistry)_typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat));
-			deserializerBuilder.WithNodeDeserializer(
-				inner => new YamlPolymorphicNodeDeserializer((TypeRegistry.TypeRegistry)_typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat, inner),
-				s => s.OnTop());
+			_serializerBuilder.WithTypeConverter(new YamlPolymorphicTypeConverter(_typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat));
+			_deserializerBuilder.WithNodeDeserializer(
+				inner => new YamlPolymorphicNodeDeserializer(_typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat, inner),
+				s => s.InsteadOf<ObjectNodeDeserializer>());
 		}
-
-		// Allow configuring preferred file extension (.yaml or .yml)
-		_fileExtension = GetOption(SerializerOptionKeys.Yaml.PreferredExtension, ".yaml");
-		if (_fileExtension is not ".yaml" and not ".yml")
-		{
-			_fileExtension = ".yaml";
-		}
-
-		_serializer = serializerBuilder.Build();
-		_deserializer = deserializerBuilder.Build();
 	}
 
 	/// <inheritdoc/>
-	public override string ContentType => "application/yaml";
+	public override string ContentType => "text/yaml";
 
 	/// <inheritdoc/>
-	public override string FileExtension => _fileExtension;
-
-	/// <summary>
-	/// Gets all supported file extensions for YAML format.
-	/// </summary>
-	/// <returns>An array of supported file extensions.</returns>
-	public static string[] GetSupportedExtensions() => [".yaml", ".yml"];
+	public override string FileExtension => ".yaml";
 
 	/// <inheritdoc/>
-	public override string Serialize<T>(T obj) => obj == null ? string.Empty : _serializer.Serialize(obj);
+	public override string Serialize<T>(T obj)
+	{
+		if (obj == null)
+		{
+			return string.Empty;
+		}
+
+		var serializer = _serializerBuilder.Build();
+		var stringBuilder = new StringBuilder();
+
+		using var writer = new StringWriter(stringBuilder);
+		serializer.Serialize(writer, obj);
+
+		return stringBuilder.ToString();
+	}
 
 	/// <inheritdoc/>
-	public override string Serialize(object obj, Type type) => obj == null ? string.Empty : _serializer.Serialize(obj);
+	public override string Serialize(object obj, Type type)
+	{
+		if (obj == null)
+		{
+			return string.Empty;
+		}
+
+		var serializer = _serializerBuilder.Build();
+		var stringBuilder = new StringBuilder();
+
+		using var writer = new StringWriter(stringBuilder);
+		serializer.Serialize(writer, obj);
+
+		return stringBuilder.ToString();
+	}
 
 	/// <inheritdoc/>
-	public override T Deserialize<T>(string serialized) => string.IsNullOrWhiteSpace(serialized) ? default! : _deserializer.Deserialize<T>(serialized);
+	public override T Deserialize<T>(string serialized)
+	{
+		if (string.IsNullOrWhiteSpace(serialized))
+		{
+			return default!;
+		}
+
+		var deserializer = _deserializerBuilder.Build();
+
+		using var reader = new StringReader(serialized);
+		return deserializer.Deserialize<T>(reader);
+	}
 
 	/// <inheritdoc/>
 	public override object Deserialize(string serialized, Type type)
@@ -120,20 +132,21 @@ public class YamlSerializer : SerializerBase
 			return null!;
 		}
 
-		// YamlDotNet doesn't have a direct method to deserialize to a specific type,
-		// so we need to use reflection to call the generic Deserialize<T> method
-		var method = _deserializer.GetType().GetMethod("Deserialize", [typeof(string)]);
-		var genericMethod = method!.MakeGenericMethod(type);
-		return genericMethod.Invoke(_deserializer, [serialized])!;
+		var deserializer = _deserializerBuilder.Build();
+
+		using var reader = new StringReader(serialized);
+		return deserializer.Deserialize(reader, type)!;
 	}
 
 	/// <inheritdoc/>
-	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default) =>
-		// YamlDotNet doesn't have async methods, so we need to use Task.Run for async operation
-		await Task.Run(() => Serialize(obj), cancellationToken).ConfigureAwait(false);
+	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default)
+	{
+		return await Task.Run(() => Serialize(obj), cancellationToken).ConfigureAwait(false);
+	}
 
 	/// <inheritdoc/>
-	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default) =>
-		// YamlDotNet doesn't have async methods, so we need to use Task.Run for async operation
-		await Task.Run(() => Deserialize<T>(serialized), cancellationToken).ConfigureAwait(false);
+	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default)
+	{
+		return await Task.Run(() => Deserialize<T>(serialized), cancellationToken).ConfigureAwait(false);
+	}
 }

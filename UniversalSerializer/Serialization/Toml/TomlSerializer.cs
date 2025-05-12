@@ -4,6 +4,7 @@
 
 namespace ktsu.UniversalSerializer.Serialization.Toml;
 
+using System.Reflection;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using Tomlyn;
 using Tomlyn.Model;
@@ -13,7 +14,7 @@ using Tomlyn.Model;
 /// </summary>
 public class TomlSerializer : SerializerBase
 {
-	private readonly TypeRegistry.TypeRegistry? _typeRegistry;
+	private readonly TypeRegistry? _typeRegistry;
 	private readonly bool _enableTypeDiscriminator;
 	private readonly string _typeDiscriminatorPropertyName;
 	private readonly TypeDiscriminatorFormat _discriminatorFormat;
@@ -30,7 +31,7 @@ public class TomlSerializer : SerializerBase
 	/// </summary>
 	/// <param name="options">The serializer options.</param>
 	/// <param name="typeRegistry">Optional registry for polymorphic types.</param>
-	public TomlSerializer(SerializerOptions options, TypeRegistry.TypeRegistry? typeRegistry = null) : base(options)
+	public TomlSerializer(SerializerOptions options, TypeRegistry? typeRegistry = null) : base(options)
 	{
 		_typeRegistry = typeRegistry;
 		_enableTypeDiscriminator = GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false);
@@ -65,9 +66,8 @@ public class TomlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		// Convert the object to a TomlTable using reflection
-		var tomlModel = ConvertToTomlModel(obj, typeof(T));
-		return Toml.FromModel(tomlModel);
+		var tomlTable = ConvertObjectToToml(obj);
+		return Toml.ToText(tomlTable);
 	}
 
 	/// <inheritdoc/>
@@ -78,9 +78,8 @@ public class TomlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		// Convert the object to a TomlTable using reflection
-		var tomlModel = ConvertToTomlModel(obj, type);
-		return Toml.FromModel(tomlModel);
+		var tomlTable = ConvertObjectToToml(obj);
+		return Toml.ToText(tomlTable);
 	}
 
 	/// <inheritdoc/>
@@ -91,7 +90,7 @@ public class TomlSerializer : SerializerBase
 			return default!;
 		}
 
-		// Parse the TOML string into a model
+		// Parse TOML
 		var model = Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
@@ -106,7 +105,7 @@ public class TomlSerializer : SerializerBase
 			return null!;
 		}
 
-		// Parse the TOML string into a model
+		// Parse TOML
 		var model = Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
@@ -123,66 +122,62 @@ public class TomlSerializer : SerializerBase
 		// Tomlyn doesn't have async methods, so we need to use Task.Run for async operation
 		await Task.Run(() => Deserialize<T>(serialized), cancellationToken).ConfigureAwait(false);
 
-	private TomlTable ConvertToTomlModel(object value, Type type)
+	private TomlTable ConvertObjectToToml(object obj)
 	{
 		var tomlTable = new TomlTable();
 
-		// If polymorphic serialization is enabled and the type registry is available
-		if (_enableTypeDiscriminator && _typeRegistry != null && value != null)
+		// Handle null objects
+		if (obj == null)
 		{
-			var actualType = value.GetType();
+			return tomlTable;
+		}
 
-			// Only add type information if the actual type differs from the expected type
-			if (actualType != type && (type.IsInterface || type.IsAbstract))
+		var type = obj.GetType();
+
+		// For polymorphic types, include type information if enabled
+		if (_enableTypeDiscriminator && _typeRegistry != null)
+		{
+			var baseType = type.BaseType;
+			if (baseType != null && baseType != typeof(object) || type.GetInterfaces().Length > 0)
 			{
-				// Get the type name from the registry
-				var typeName = _typeRegistry.GetTypeName(actualType);
-
-				// Add type discriminator based on format
-				switch (_discriminatorFormat)
+				var typeName = _typeRegistry.GetTypeName(type);
+				if (!string.IsNullOrEmpty(typeName))
 				{
-					case TypeDiscriminatorFormat.Property:
-						tomlTable[_typeDiscriminatorPropertyName] = typeName;
-						break;
-
-					case TypeDiscriminatorFormat.Wrapper:
-						var wrapperTable = new TomlTable
+					// Create a wrapper table with type information
+					var wrapperTable = new TomlTable
 						{
 							["type"] = typeName,
-							["value"] = TomlSerializer.ConvertObjectToTomlValue(value, actualType)
+							["value"] = TomlSerializer.ConvertObjectToTomlValue(obj, type)
 						};
-						return wrapperTable;
-
-					case TypeDiscriminatorFormat.TypeProperty:
-						// Not fully implemented for TOML yet
-						break;
-					default:
-						break;
+					return wrapperTable;
 				}
 			}
 		}
 
-		// Add all properties to the TOML table
-		if (value != null)
+		// Handle regular object conversion
+		foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
 		{
-			var properties = value.GetType().GetProperties();
-			foreach (var property in properties)
+			if (!property.CanRead)
 			{
-				if (!property.CanRead)
-				{
-					continue;
-				}
-
-				var propertyValue = property.GetValue(value);
-				if (propertyValue == null)
-				{
-					continue;
-				}
-
-				// Convert the property value to a TOML-compatible value
-				var tomlValue = TomlSerializer.ConvertObjectToTomlValue(propertyValue, property.PropertyType);
-				tomlTable[property.Name] = tomlValue;
+				continue;
 			}
+
+			// Skip properties with [JsonIgnore] or [XmlIgnore] attributes
+			if (property.GetCustomAttributes()
+				.Any(a => a.GetType().Name is "JsonIgnoreAttribute" or "XmlIgnoreAttribute" or "IgnoreDataMemberAttribute"))
+			{
+				continue;
+			}
+
+			var propertyValue = property.GetValue(obj);
+			if (propertyValue == null)
+			{
+				continue;
+			}
+
+			// Convert the property value to a TOML-compatible value
+			var tomlValue = TomlSerializer.ConvertObjectToTomlValue(propertyValue, property.PropertyType);
+			tomlTable[property.Name] = tomlValue;
 		}
 
 		return tomlTable;

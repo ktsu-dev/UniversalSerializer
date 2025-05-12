@@ -31,7 +31,7 @@ public class JsonSerializer : SerializerBase
 	public JsonSerializer(
 		SerializerOptions options,
 		TypeConverterRegistry? typeConverterRegistry = null,
-		TypeRegistry.TypeRegistry? typeRegistry = null)
+		TypeRegistry? typeRegistry = null)
 		: base(options)
 	{
 		_jsonOptions = new JsonSerializerOptions
@@ -92,7 +92,7 @@ public class JsonSerializer : SerializerBase
 		// Add polymorphic type handling if specified and registry provided
 		if (GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false) && typeRegistry != null)
 		{
-			_jsonOptions.Converters.Add(new JsonPolymorphicConverter((TypeRegistry.TypeRegistry)typeRegistry, Options));
+			_jsonOptions.Converters.Add(new JsonPolymorphicConverter(typeRegistry, Options));
 		}
 	}
 

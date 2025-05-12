@@ -6,6 +6,8 @@ namespace UniversalSerializer.Benchmarks;
 
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using ktsu.UniversalSerializer.Serialization;
+using ktsu.UniversalSerializer.Serialization.DependencyInjection;
 using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.MessagePack;
 using ktsu.UniversalSerializer.Serialization.Toml;
@@ -24,14 +26,18 @@ public class SerializerBenchmarks
 	public SerializerBenchmarks()
 	{
 		var services = new ServiceCollection();
-		services.AddUniversalSerializer(builder =>
+		services.AddUniversalSerializer(options =>
 		{
-			builder.AddJsonSerializer()
-				   .AddXmlSerializer()
-				   .AddYamlSerializer()
-				   .AddTomlSerializer()
-				   .AddMessagePackSerializer();
+			// Configure serialization options
 		});
+
+		// Add serializers to the container
+		services.AddJsonSerializer()
+			   .AddXmlSerializer()
+			   .AddYamlSerializer()
+			   .AddTomlSerializer()
+			   .AddMessagePackSerializer();
+
 		var serviceProvider = services.BuildServiceProvider();
 		_serializerFactory = serviceProvider.GetRequiredService<ISerializerFactory>();
 

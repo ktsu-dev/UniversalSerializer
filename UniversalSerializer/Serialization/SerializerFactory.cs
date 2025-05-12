@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 /// <summary>
 /// Factory for creating serializer instances.
 /// </summary>
-public class SerializerFactory
+public class SerializerFactory : ISerializerFactory
 {
 	private readonly ConcurrentDictionary<Type, Func<SerializerOptions, ISerializer>> _serializerCreators = new();
 	private readonly SerializerOptions _defaultOptions = SerializerOptions.Default();
@@ -96,4 +96,14 @@ public class SerializerFactory
 	/// </summary>
 	/// <returns>A copy of the default options.</returns>
 	public SerializerOptions GetDefaultOptions() => _defaultOptions.Clone();
+
+    /// <summary>
+    /// Gets a serializer of the specified type.
+    /// </summary>
+    /// <typeparam name="TSerializer">The type of serializer to get.</typeparam>
+    /// <returns>An instance of the specified serializer type.</returns>
+    public TSerializer GetSerializer<TSerializer>() where TSerializer : ISerializer
+    {
+        return Create<TSerializer>();
+    }
 }

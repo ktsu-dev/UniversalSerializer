@@ -3,8 +3,15 @@
 // Licensed under the MIT license.
 
 namespace ktsu.UniversalSerializer.Serialization.DependencyInjection;
+using ktsu.UniversalSerializer.Serialization.Json;
+using ktsu.UniversalSerializer.Serialization.MessagePack;
+using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
+using ktsu.UniversalSerializer.Serialization.Xml;
+using ktsu.UniversalSerializer.Serialization.Yaml;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>
 /// Provides extension methods for <see cref="IServiceCollection"/> to register serializers.
@@ -28,8 +35,9 @@ public static class SerializerServiceCollectionExtensions
 
 		// Register core services
 		services.TryAddSingleton<SerializerFactory>();
+		services.TryAddSingleton<ISerializerFactory>(sp => sp.GetRequiredService<SerializerFactory>());
 		services.TryAddSingleton<SerializerRegistry>();
-		services.TryAddSingleton<TypeRegistry.TypeRegistry>();
+		services.TryAddSingleton<TypeRegistry>();
 		services.TryAddSingleton<TypeConverterRegistry>();
 
 		// Register common helper services
@@ -39,10 +47,10 @@ public static class SerializerServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds all built-in serializers to the service collection.
+	/// Adds all supported serializers to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection.</param>
-	/// <returns>The service collection with all built-in serializers added.</returns>
+	/// <returns>The service collection with serializers added.</returns>
 	public static IServiceCollection AddAllSerializers(this IServiceCollection services)
 	{
 		return services
@@ -57,10 +65,11 @@ public static class SerializerServiceCollectionExtensions
 	/// Adds the JSON serializer to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection.</param>
-	/// <returns>The service collection with JSON serializer added.</returns>
+	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddJsonSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<Json.JsonSerializer>();
+		services.TryAddTransient<JsonSerializer>();
+		services.TryAddTransient<JsonPolymorphicConverter>();
 		return services;
 	}
 
@@ -68,10 +77,10 @@ public static class SerializerServiceCollectionExtensions
 	/// Adds the XML serializer to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection.</param>
-	/// <returns>The service collection with XML serializer added.</returns>
+	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddXmlSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<Xml.XmlSerializer>();
+		services.TryAddTransient<XmlSerializer>();
 		return services;
 	}
 
@@ -79,10 +88,12 @@ public static class SerializerServiceCollectionExtensions
 	/// Adds the YAML serializer to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection.</param>
-	/// <returns>The service collection with YAML serializer added.</returns>
+	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddYamlSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<Yaml.YamlSerializer>();
+		services.TryAddTransient<YamlSerializer>();
+		services.TryAddTransient<YamlPolymorphicTypeConverter>();
+		services.TryAddTransient<YamlPolymorphicNodeDeserializer>();
 		return services;
 	}
 
@@ -90,10 +101,10 @@ public static class SerializerServiceCollectionExtensions
 	/// Adds the TOML serializer to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection.</param>
-	/// <returns>The service collection with TOML serializer added.</returns>
+	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddTomlSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<Toml.TomlSerializer>();
+		services.TryAddTransient<TomlSerializer>();
 		return services;
 	}
 
@@ -101,10 +112,10 @@ public static class SerializerServiceCollectionExtensions
 	/// Adds the MessagePack serializer to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection.</param>
-	/// <returns>The service collection with MessagePack serializer added.</returns>
+	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddMessagePackSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<MessagePack.MessagePackSerializer>();
+		services.TryAddTransient<MessagePackSerializer>();
 		return services;
 	}
 }
