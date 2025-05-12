@@ -47,9 +47,54 @@ public interface ISerializer
 
 ### SerializerOptions
 
-Serializer options will be standardized through a base options class and specific options for each format:
+Serializer options will be standardized through a base options class that abstracts away format-specific details:
 
 ```csharp
+// Constants for option names to avoid string literals
+public static class SerializerOptionKeys
+{
+    // JSON-specific option keys
+    public static class Json
+    {
+        public const string AllowComments = "Json:AllowComments";
+        public const string CaseInsensitive = "Json:CaseInsensitive";
+        public const string DateTimeFormat = "Json:DateTimeFormat";
+        public const string PropertyNamingPolicy = "Json:PropertyNamingPolicy";
+        public const string MaxDepth = "Json:MaxDepth";
+    }
+    
+    // XML-specific option keys
+    public static class Xml
+    {
+        public const string Indent = "Xml:Indent";
+        public const string OmitXmlDeclaration = "Xml:OmitXmlDeclaration";
+        public const string Encoding = "Xml:Encoding";
+        public const string NamespaceHandling = "Xml:NamespaceHandling";
+    }
+    
+    // YAML-specific option keys
+    public static class Yaml
+    {
+        public const string EmitDefaults = "Yaml:EmitDefaults";
+        public const string IndentationWidth = "Yaml:IndentationWidth";
+        public const string Encoding = "Yaml:Encoding";
+    }
+    
+    // TOML-specific option keys
+    public static class Toml
+    {
+        public const string DateTimeFormat = "Toml:DateTimeFormat";
+        public const string InlineTablesAsObjects = "Toml:InlineTablesAsObjects";
+    }
+    
+    // INI-specific option keys
+    public static class Ini
+    {
+        public const string SectionNameCasing = "Ini:SectionNameCasing";
+        public const string AllowDuplicateKeys = "Ini:AllowDuplicateKeys";
+    }
+}
+
 public enum EnumSerializationFormat
 {
     Name,
@@ -64,8 +109,9 @@ public enum TypeDiscriminatorFormat
     TypeProperty  // Use a designated property for type information
 }
 
-public abstract class SerializerOptions
+public class SerializerOptions
 {
+    // Common options for all serialization formats
     public bool IgnoreNullValues { get; set; } = false;
     public bool IgnoreReadOnlyProperties { get; set; } = false;
     public bool PreserveReferences { get; set; } = false;
@@ -82,17 +128,34 @@ public abstract class SerializerOptions
     public TypeDiscriminatorFormat TypeDiscriminatorFormat { get; set; } = TypeDiscriminatorFormat.Property;
     public string TypeDiscriminatorPropertyName { get; set; } = "$type";
     public bool UseFullyQualifiedTypeNames { get; set; } = false;
-}
+    
+    // Format-specific settings dictionary for advanced customization
+    // These will be handled internally by each serializer implementation
+    internal Dictionary<string, object> FormatSpecificOptions { get; } = new Dictionary<string, object>();
 
-public class JsonSerializerOptions : SerializerOptions
-{
-    public bool CaseInsensitive { get; set; } = false;
-    public bool AllowComments { get; set; } = false;
-    // Other JSON-specific options
+    // Helper methods to set format-specific options without exposing their details
+    public SerializerOptions WithOption(string key, object value)
+    {
+        FormatSpecificOptions[key] = value;
+        return this;
+    }
+    
+    public T GetOption<T>(string key, T defaultValue = default)
+    {
+        if (FormatSpecificOptions.TryGetValue(key, out var value) && value is T typedValue)
+        {
+            return typedValue;
+        }
+        return defaultValue;
+    }
+    
+    // Extension methods for specific formats for better discoverability and type safety
+    public SerializerOptions WithJsonOption(string key, object value) => WithOption(key, value);
+    public SerializerOptions WithXmlOption(string key, object value) => WithOption(key, value);
+    public SerializerOptions WithYamlOption(string key, object value) => WithOption(key, value);
+    public SerializerOptions WithTomlOption(string key, object value) => WithOption(key, value);
+    public SerializerOptions WithIniOption(string key, object value) => WithOption(key, value);
 }
-
-// Similar classes for other formats
-```
 
 ### ISerializerFactory
 
@@ -102,12 +165,12 @@ A factory interface will allow retrieval of the appropriate serializer:
 public interface ISerializerFactory
 {
     ISerializer GetSerializer(string contentType);
-    ISerializer GetSerializer<TOptions>() where TOptions : SerializerOptions;
-    ISerializer GetJsonSerializer();
-    ISerializer GetXmlSerializer();
-    ISerializer GetYamlSerializer();
-    ISerializer GetTomlSerializer();
-    ISerializer GetIniSerializer();
+    ISerializer GetSerializer(SerializerOptions options = null);
+    ISerializer GetJsonSerializer(SerializerOptions options = null);
+    ISerializer GetXmlSerializer(SerializerOptions options = null);
+    ISerializer GetYamlSerializer(SerializerOptions options = null);
+    ISerializer GetTomlSerializer(SerializerOptions options = null);
+    ISerializer GetIniSerializer(SerializerOptions options = null);
     // Other formats
 }
 ```
@@ -322,189 +385,83 @@ Using System.Text.Json as the default implementation:
 ```csharp
 public class SystemTextJsonSerializer : ISerializer
 {
-    private readonly JsonSerializerOptions _options;
+    private readonly System.Text.Json.JsonSerializerOptions _jsonOptions;
+    private readonly SerializerOptions _options;
     private readonly TypeConverterRegistry _typeConverterRegistry;
     private readonly TypeRegistry _typeRegistry;
     
     public string ContentType => "application/json";
     public string FileExtension => ".json";
     
-    public SystemTextJsonSerializer(JsonSerializerOptions options, TypeConverterRegistry typeConverterRegistry, TypeRegistry typeRegistry)
+    public SystemTextJsonSerializer(SerializerOptions options, TypeConverterRegistry typeConverterRegistry, TypeRegistry typeRegistry)
     {
         _options = options;
         _typeConverterRegistry = typeConverterRegistry;
         _typeRegistry = typeRegistry;
         
-        // Configure System.Text.Json to use string enum conversion
-        if (options.EnumFormat == EnumSerializationFormat.Name)
+        // Map our abstract options to System.Text.Json specific options
+        _jsonOptions = new System.Text.Json.JsonSerializerOptions
         {
-            _options.Converters.Add(new JsonStringEnumConverter());
+            WriteIndented = _options.PrettyPrint,
+            IgnoreNullValues = _options.IgnoreNullValues,
+            // Other mappings...
+        };
+        
+        // Apply any format-specific options
+        ApplyFormatSpecificOptions();
+        
+        // Configure System.Text.Json to use string enum conversion
+        if (_options.EnumFormat == EnumSerializationFormat.Name)
+        {
+            _jsonOptions.Converters.Add(new JsonStringEnumConverter());
         }
         
         // Add converter for types with string conversion
-        if (options.UseStringConversionForUnsupportedTypes)
+        if (_options.UseStringConversionForUnsupportedTypes)
         {
-            _options.Converters.Add(new StringBasedTypeConverter(_typeConverterRegistry));
+            _jsonOptions.Converters.Add(new StringBasedTypeConverter(_typeConverterRegistry));
         }
         
         // Add polymorphic type handling if enabled
-        if (options.EnableTypeDiscriminator)
+        if (_options.EnableTypeDiscriminator)
         {
-            _options.Converters.Add(new PolymorphicJsonConverter(_typeRegistry, options));
+            _jsonOptions.Converters.Add(new PolymorphicJsonConverter(_typeRegistry, _options));
         }
     }
     
-    // Implementation of ISerializer methods
-    
-    // Example of a custom JsonConverter for System.Text.Json
-    private class StringBasedTypeConverter : JsonConverter<object>
+    private void ApplyFormatSpecificOptions()
     {
-        private readonly TypeConverterRegistry _registry;
-        
-        public StringBasedTypeConverter(TypeConverterRegistry registry)
+        // Handle format-specific options without exposing them in the public API
+        if (_options.GetOption<bool>(SerializerOptionKeys.Json.AllowComments, false))
         {
-            _registry = registry;
+            _jsonOptions.ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip;
         }
         
-        public override bool CanConvert(Type typeToConvert)
+        if (_options.GetOption<bool>(SerializerOptionKeys.Json.CaseInsensitive, false))
         {
-            return _registry.HasConverter(typeToConvert);
+            _jsonOptions.PropertyNameCaseInsensitive = true;
         }
         
-        public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        // Get datetime format if specified
+        var dateTimeFormat = _options.GetOption<string>(SerializerOptionKeys.Json.DateTimeFormat, null);
+        if (!string.IsNullOrEmpty(dateTimeFormat))
         {
-            if (reader.TokenType != JsonTokenType.String)
-            {
-                throw new JsonException($"Expected string value for {typeToConvert.Name}");
-            }
-            
-            var stringValue = reader.GetString();
-            var converter = _registry.GetConverter(typeToConvert);
-            return converter.ConvertFromString(stringValue, typeToConvert);
+            // Apply custom date time converter with the specified format
         }
         
-        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+        // Apply max depth if specified
+        var maxDepth = _options.GetOption<int>(SerializerOptionKeys.Json.MaxDepth, 0);
+        if (maxDepth > 0)
         {
-            var converter = _registry.GetConverter(value.GetType());
-            var stringValue = converter.ConvertToString(value);
-            writer.WriteStringValue(stringValue);
+            _jsonOptions.MaxDepth = maxDepth;
         }
+        
+        // Other format-specific options...
     }
     
-    // Polymorphic converter for handling inheritance
-    private class PolymorphicJsonConverter : JsonConverter<object>
-    {
-        private readonly TypeRegistry _typeRegistry;
-        private readonly SerializerOptions _options;
-        
-        public PolymorphicJsonConverter(TypeRegistry typeRegistry, SerializerOptions options)
-        {
-            _typeRegistry = typeRegistry;
-            _options = options;
-        }
-        
-        public override bool CanConvert(Type typeToConvert)
-        {
-            // Only convert types that might be part of an inheritance hierarchy
-            return typeToConvert.IsClass && !typeToConvert.IsSealed && typeToConvert != typeof(string);
-        }
-        
-        public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                throw new JsonException("Expected start of object");
-            }
-            
-            using (var jsonDoc = JsonDocument.ParseValue(ref reader))
-            {
-                var rootElement = jsonDoc.RootElement;
-                
-                // Extract the type information based on discriminator format
-                string typeDiscriminator = null;
-                JsonElement valueElement = rootElement;
-                
-                switch (_options.TypeDiscriminatorFormat)
-                {
-                    case TypeDiscriminatorFormat.Property:
-                        if (rootElement.TryGetProperty(_options.TypeDiscriminatorPropertyName, out var typeProperty))
-                        {
-                            typeDiscriminator = typeProperty.GetString();
-                        }
-                        break;
-                        
-                    case TypeDiscriminatorFormat.Wrapper:
-                        if (rootElement.TryGetProperty("type", out var typeProperty) && 
-                            rootElement.TryGetProperty("value", out var valueProperty))
-                        {
-                            typeDiscriminator = typeProperty.GetString();
-                            valueElement = valueProperty;
-                        }
-                        break;
-                        
-                    case TypeDiscriminatorFormat.TypeProperty:
-                        // Extract from a designated property in the model
-                        if (rootElement.TryGetProperty(_options.TypeDiscriminatorPropertyName, out var typeProperty))
-                        {
-                            typeDiscriminator = typeProperty.GetString();
-                        }
-                        break;
-                }
-                
-                // Resolve the actual type
-                Type actualType = typeDiscriminator != null 
-                    ? _typeRegistry.ResolveType(typeDiscriminator) 
-                    : typeToConvert;
-                
-                if (actualType == null)
-                {
-                    throw new JsonException($"Could not resolve type: {typeDiscriminator}");
-                }
-                
-                // Deserialize to the actual type
-                string json = valueElement.GetRawText();
-                return JsonSerializer.Deserialize(json, actualType, options);
-            }
-        }
-        
-        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
-        {
-            Type type = value.GetType();
-            string typeDiscriminator = _typeRegistry.GetTypeName(type);
-            
-            switch (_options.TypeDiscriminatorFormat)
-            {
-                case TypeDiscriminatorFormat.Property:
-                    // Write object with an extra type property
-                    var json = JsonSerializer.Serialize(value, type, options);
-                    var jsonDoc = JsonDocument.Parse(json);
-                    writer.WriteStartObject();
-                    writer.WriteString(_options.TypeDiscriminatorPropertyName, typeDiscriminator);
-                    
-                    // Copy all properties from the serialized object
-                    foreach (var property in jsonDoc.RootElement.EnumerateObject())
-                    {
-                        property.WriteTo(writer);
-                    }
-                    writer.WriteEndObject();
-                    break;
-                    
-                case TypeDiscriminatorFormat.Wrapper:
-                    // Wrap in a container with type and value properties
-                    writer.WriteStartObject();
-                    writer.WriteString("type", typeDiscriminator);
-                    writer.WritePropertyName("value");
-                    JsonSerializer.Serialize(writer, value, type, options);
-                    writer.WriteEndObject();
-                    break;
-                    
-                case TypeDiscriminatorFormat.TypeProperty:
-                    // Let the model handle it (assumes model has the property)
-                    JsonSerializer.Serialize(writer, value, type, options);
-                    break;
-            }
-        }
-    }
+    // Implementation of ISerializer methods using _jsonOptions
+    
+    // Private converter implementations...
 }
 ```
 
@@ -513,20 +470,40 @@ Alternative implementation using Newtonsoft.Json:
 ```csharp
 public class NewtonsoftJsonSerializer : ISerializer
 {
-    private readonly Newtonsoft.Json.JsonSerializerSettings _settings;
+    private readonly Newtonsoft.Json.JsonSerializerSettings _jsonSettings;
+    private readonly SerializerOptions _options;
     
     public string ContentType => "application/json";
     public string FileExtension => ".json";
     
-    public NewtonsoftJsonSerializer(JsonSerializerOptions options)
+    public NewtonsoftJsonSerializer(SerializerOptions options, TypeConverterRegistry typeConverterRegistry, TypeRegistry typeRegistry)
     {
-        _settings = new Newtonsoft.Json.JsonSerializerSettings();
+        _options = options;
+        
+        // Map our abstract options to Newtonsoft.Json specific settings
+        _jsonSettings = new Newtonsoft.Json.JsonSerializerSettings
+        {
+            Formatting = _options.PrettyPrint ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None,
+            NullValueHandling = _options.IgnoreNullValues ? Newtonsoft.Json.NullValueHandling.Ignore : Newtonsoft.Json.NullValueHandling.Include,
+            // Other mappings...
+        };
+        
+        // Apply any format-specific options
+        ApplyFormatSpecificOptions();
         
         // Configure Newtonsoft.Json to use string enum conversion
-        if (options.EnumFormat == EnumSerializationFormat.Name)
+        if (_options.EnumFormat == EnumSerializationFormat.Name)
         {
-            _settings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+            _jsonSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
         }
+        
+        // Other converters...
+    }
+    
+    private void ApplyFormatSpecificOptions()
+    {
+        // Handle format-specific options without exposing them in the public API
+        // ...
     }
     
     // Implementation
@@ -606,7 +583,11 @@ public static class SerializerExtensions
 {
     public static IServiceCollection AddUniversalSerializer(this IServiceCollection services)
     {
-        // Register default serializers
+        // Register default serializers with default options
+        services.AddSingleton<SerializerOptions>();
+        services.AddSingleton<TypeConverterRegistry>();
+        services.AddSingleton<TypeRegistry>();
+        
         services.AddSingleton<ISerializer, SystemTextJsonSerializer>();
         services.AddSingleton<ISerializer, XmlSerializer>();
         // Other default serializers
@@ -631,25 +612,53 @@ public static class SerializerExtensions
 public class SerializerBuilder
 {
     private readonly IServiceCollection _services;
+    private readonly SerializerOptions _options = new SerializerOptions();
+    private readonly TypeRegistry _typeRegistry;
+    private readonly TypeConverterRegistry _typeConverterRegistry;
     
     internal SerializerBuilder(IServiceCollection services)
     {
         _services = services;
+        _typeRegistry = new TypeRegistry(_options);
+        _typeConverterRegistry = new TypeConverterRegistry();
+        
+        // Register the core components
+        _services.AddSingleton(_options);
+        _services.AddSingleton(_typeRegistry);
+        _services.AddSingleton(_typeConverterRegistry);
     }
     
-    public SerializerBuilder AddJsonSerializer<TSerializer>(Action<JsonSerializerOptions> configure = null)
-        where TSerializer : class, ISerializer
+    public SerializerBuilder ConfigureOptions(Action<SerializerOptions> configure)
     {
-        var options = new JsonSerializerOptions();
-        configure?.Invoke(options);
-        
-        _services.AddSingleton<ISerializer, TSerializer>(sp => 
-            ActivatorUtilities.CreateInstance<TSerializer>(sp, options));
-            
+        configure?.Invoke(_options);
         return this;
     }
     
-    // Similar methods for other serializer types
+    public SerializerBuilder ConfigureTypeRegistry(Action<TypeRegistry> configure)
+    {
+        configure?.Invoke(_typeRegistry);
+        return this;
+    }
+    
+    public SerializerBuilder ConfigureTypeConverters(Action<TypeConverterRegistry> configure)
+    {
+        configure?.Invoke(_typeConverterRegistry);
+        return this;
+    }
+    
+    public SerializerBuilder AddJsonSerializer()
+    {
+        _services.AddSingleton<ISerializer, SystemTextJsonSerializer>();
+        return this;
+    }
+    
+    public SerializerBuilder AddXmlSerializer()
+    {
+        _services.AddSingleton<ISerializer, XmlSerializer>();
+        return this;
+    }
+    
+    // Similar methods for other serializer types without exposing their implementation details
 }
 ```
 
@@ -687,16 +696,57 @@ public class MyService
 
 ```csharp
 services.AddUniversalSerializer(builder => {
-    builder.AddJsonSerializer<NewtonsoftJsonSerializer>(options => {
+    builder.ConfigureOptions(options => {
         options.PrettyPrint = true;
         options.IgnoreNullValues = true;
         
-        // Optional override if needed, but defaults to Name
-        options.EnumFormat = EnumSerializationFormat.Name;
+        // Format-specific options using constants for type safety
+        options.WithOption(SerializerOptionKeys.Json.AllowComments, true)
+               .WithOption(SerializerOptionKeys.Json.CaseInsensitive, true)
+               .WithOption(SerializerOptionKeys.Json.DateTimeFormat, "yyyy-MM-dd")
+               .WithOption(SerializerOptionKeys.Xml.Indent, true)
+               .WithOption(SerializerOptionKeys.Xml.OmitXmlDeclaration, true);
     });
     
-    builder.AddXmlSerializer(options => {
-        options.PreserveReferences = true;
+    // Add specific serializers
+    builder.AddJsonSerializer()
+           .AddXmlSerializer();
+});
+```
+
+### Format-Specific Extensions
+
+The design could be extended with format-specific helper methods to make the API more discoverable:
+
+```csharp
+// Extension methods for SerializerOptions
+public static class SerializerOptionsExtensions
+{
+    public static SerializerOptions WithJsonAllowComments(this SerializerOptions options, bool value = true)
+    {
+        return options.WithOption(SerializerOptionKeys.Json.AllowComments, value);
+    }
+    
+    public static SerializerOptions WithJsonCaseInsensitive(this SerializerOptions options, bool value = true)
+    {
+        return options.WithOption(SerializerOptionKeys.Json.CaseInsensitive, value);
+    }
+    
+    public static SerializerOptions WithXmlIndent(this SerializerOptions options, bool value = true)
+    {
+        return options.WithOption(SerializerOptionKeys.Xml.Indent, value);
+    }
+    
+    // Other common options...
+}
+
+// Usage with extension methods
+services.AddUniversalSerializer(builder => {
+    builder.ConfigureOptions(options => {
+        options.PrettyPrint = true
+               .WithJsonAllowComments()
+               .WithJsonCaseInsensitive()
+               .WithXmlIndent();
     });
 });
 ```
