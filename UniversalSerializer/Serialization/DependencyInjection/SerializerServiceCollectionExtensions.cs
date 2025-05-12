@@ -71,7 +71,14 @@ public static class SerializerServiceCollectionExtensions
             var options = factory.GetDefaultOptions();
             configureOptions?.Invoke(options);
 
-            factory.RegisterSerializer<JsonSerializer>(opts => new JsonSerializer(opts));
+            // Get type converter registry and type registry from DI
+            var typeConverterRegistry = sp.GetService<TypeConverterRegistry>();
+            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
+
+            // Use the provider-configured factory to create and register the serializer
+            factory.RegisterSerializer<JsonSerializer>(opts =>
+                new JsonSerializer(opts, typeConverterRegistry, typeRegistry));
+
             var serializer = factory.Create<JsonSerializer>(options);
 
             // Register with the registry
@@ -107,7 +114,10 @@ public static class SerializerServiceCollectionExtensions
             var options = factory.GetDefaultOptions();
             configureOptions?.Invoke(options);
 
-            factory.RegisterSerializer<XmlSerializer>(opts => new XmlSerializer(opts));
+            // Get type registry from DI
+            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
+
+            factory.RegisterSerializer<XmlSerializer>(opts => new XmlSerializer(opts, typeRegistry));
             var serializer = factory.Create<XmlSerializer>(options);
 
             // Register with the registry
@@ -143,7 +153,10 @@ public static class SerializerServiceCollectionExtensions
             var options = factory.GetDefaultOptions();
             configureOptions?.Invoke(options);
 
-            factory.RegisterSerializer<YamlSerializer>(opts => new YamlSerializer(opts));
+            // Get type registry from DI
+            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
+
+            factory.RegisterSerializer<YamlSerializer>(opts => new YamlSerializer(opts, typeRegistry));
             var serializer = factory.Create<YamlSerializer>(options);
 
             // Register with the registry

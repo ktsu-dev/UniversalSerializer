@@ -4,6 +4,8 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ktsu.UniversalSerializer.Serialization.TypeConverter;
+using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 
 namespace ktsu.UniversalSerializer.Serialization.Json;
 
@@ -25,7 +27,13 @@ public class JsonSerializer : SerializerBase
     /// Initializes a new instance of the <see cref="JsonSerializer"/> class with the specified options.
     /// </summary>
     /// <param name="options">The serializer options.</param>
-    public JsonSerializer(SerializerOptions options) : base(options)
+    /// <param name="typeConverterRegistry">Optional registry for type converters.</param>
+    /// <param name="typeRegistry">Optional registry for polymorphic types.</param>
+    public JsonSerializer(
+        SerializerOptions options,
+        TypeConverterRegistry? typeConverterRegistry = null,
+        TypeRegistry.TypeRegistry? typeRegistry = null)
+        : base(options)
     {
         _jsonOptions = new JsonSerializerOptions
         {
@@ -61,6 +69,31 @@ public class JsonSerializer : SerializerBase
                     _ => null
                 };
             }
+        }
+
+        // Add enum converter if specified
+        var enumFormat = GetOption<object>(SerializerOptionKeys.Common.EnumFormat, EnumSerializationFormat.Name.ToString());
+        if (enumFormat is string enumFormatStr &&
+            Enum.TryParse<EnumSerializationFormat>(enumFormatStr, out var enumSerializationFormat) &&
+            enumSerializationFormat == EnumSerializationFormat.Name)
+        {
+            _jsonOptions.Converters.Add(new JsonStringEnumConverter());
+        }
+        else if (enumFormat is EnumSerializationFormat format && format == EnumSerializationFormat.Name)
+        {
+            _jsonOptions.Converters.Add(new JsonStringEnumConverter());
+        }
+
+        // Add string type converter if specified and registry provided
+        if (GetOption(SerializerOptionKeys.Common.UseStringConversionForUnsupportedTypes, true) && typeConverterRegistry != null)
+        {
+            _jsonOptions.Converters.Add(new JsonStringTypeConverter(typeConverterRegistry));
+        }
+
+        // Add polymorphic type handling if specified and registry provided
+        if (GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false) && typeRegistry != null)
+        {
+            _jsonOptions.Converters.Add(new JsonPolymorphicConverter(typeRegistry, Options));
         }
     }
 

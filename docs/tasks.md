@@ -28,21 +28,19 @@
 
 - [x] Implement JSON serializers
   - [x] Create `JsonSerializer` implementation using System.Text.Json
-  - [ ] Create custom converters for string conversion
-  - [ ] Add polymorphic serialization support
+  - [x] Create custom converters for string conversion
+  - [x] Add polymorphic serialization support
   - [x] Implement option mapping for JSON settings
 
 - [x] Implement XML serializer
-  - [x] Create `XmlSerializer` implementation
+  - [x] Create `XmlSerializer` implementation using System.Xml.Serialization
+  - [x] Add polymorphic serialization support
   - [x] Implement option mapping for XML settings
-  - [ ] Add support for polymorphic serialization
 
 - [x] Implement YAML serializer
-  - [x] Add YamlDotNet dependency
-  - [x] Create `YamlSerializer` implementation
+  - [x] Create `YamlSerializer` implementation using YamlDotNet
+  - [x] Add polymorphic serialization support
   - [x] Implement option mapping for YAML settings
-  - [x] Add support for multiple file extensions (.yaml and .yml)
-  - [ ] Add support for polymorphic serialization
 
 - [ ] Implement TOML serializer
   - [ ] Add Tomlyn dependency

@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using System.Text;
+using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -17,6 +18,10 @@ public class YamlSerializer : SerializerBase
     private readonly ISerializer _serializer;
     private readonly IDeserializer _deserializer;
     private readonly string _fileExtension;
+    private readonly TypeRegistry.TypeRegistry? _typeRegistry;
+    private readonly bool _enableTypeDiscriminator;
+    private readonly string _typeDiscriminatorPropertyName;
+    private readonly TypeDiscriminatorFormat _discriminatorFormat;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="YamlSerializer"/> class with default options.
@@ -29,8 +34,30 @@ public class YamlSerializer : SerializerBase
     /// Initializes a new instance of the <see cref="YamlSerializer"/> class with the specified options.
     /// </summary>
     /// <param name="options">The serializer options.</param>
-    public YamlSerializer(SerializerOptions options) : base(options)
+    /// <param name="typeRegistry">Optional registry for polymorphic types.</param>
+    public YamlSerializer(SerializerOptions options, TypeRegistry.TypeRegistry? typeRegistry = null) : base(options)
     {
+        _typeRegistry = typeRegistry;
+        _enableTypeDiscriminator = GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false);
+        _typeDiscriminatorPropertyName = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorPropertyName, "$type");
+
+        var formatValue = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorFormat,
+            TypeDiscriminatorFormat.Property.ToString());
+
+        // Try to parse the format from string if stored as string
+        if (formatValue is string formatString && Enum.TryParse(formatString, out TypeDiscriminatorFormat format))
+        {
+            _discriminatorFormat = format;
+        }
+        else if (formatValue is TypeDiscriminatorFormat typeDiscriminatorFormat)
+        {
+            _discriminatorFormat = typeDiscriminatorFormat;
+        }
+        else
+        {
+            _discriminatorFormat = TypeDiscriminatorFormat.Property;
+        }
+
         var serializerBuilder = new SerializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .DisableAliases();
@@ -53,6 +80,16 @@ public class YamlSerializer : SerializerBase
             {
                 serializerBuilder.EmitDefaults();
             }
+        }
+
+        // Add polymorphic serialization support if enabled
+        if (_enableTypeDiscriminator && _typeRegistry != null)
+        {
+            // Register the polymorphic serialization/deserialization handlers
+            serializerBuilder.WithTypeConverter(new YamlPolymorphicTypeConverter(_typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat));
+            deserializerBuilder.WithNodeDeserializer(
+                inner => new YamlPolymorphicNodeDeserializer(_typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat, inner),
+                s => s.OnTop());
         }
 
         // Allow configuring preferred file extension (.yaml or .yml)
