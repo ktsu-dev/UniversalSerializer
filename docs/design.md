@@ -66,6 +66,9 @@ public abstract class SerializerOptions
     
     // Enums are always serialized by name by default
     public EnumSerializationFormat EnumFormat { get; set; } = EnumSerializationFormat.Name;
+    
+    // Use string conversion for types not natively supported by the serializer
+    public bool UseStringConversionForUnsupportedTypes { get; set; } = true;
 }
 
 public class JsonSerializerOptions : SerializerOptions
@@ -96,6 +99,103 @@ public interface ISerializerFactory
 }
 ```
 
+### TypeConverter System
+
+To support types that aren't natively handled by serialization formats but have string conversion methods:
+
+```csharp
+public interface ITypeConverter
+{
+    bool CanConvert(Type type);
+    string ConvertToString(object value);
+    object ConvertFromString(string value, Type targetType);
+}
+
+public class StringConvertibleTypeConverter : ITypeConverter
+{
+    public bool CanConvert(Type type)
+    {
+        // Check if type has a ToString method override and a Parse/FromString method or constructor
+        return HasToStringOverride(type) && 
+               (HasParseMethod(type) || HasStringConstructor(type) || HasFromStringMethod(type));
+    }
+    
+    public string ConvertToString(object value)
+    {
+        return value.ToString();
+    }
+    
+    public object ConvertFromString(string value, Type targetType)
+    {
+        // Try Parse method first
+        if (HasParseMethod(targetType))
+        {
+            var parseMethod = targetType.GetMethod("Parse", 
+                BindingFlags.Public | BindingFlags.Static, 
+                null, 
+                new[] { typeof(string) }, 
+                null);
+            
+            return parseMethod.Invoke(null, new object[] { value });
+        }
+        
+        // Try FromString method
+        if (HasFromStringMethod(targetType))
+        {
+            var fromStringMethod = targetType.GetMethod("FromString", 
+                BindingFlags.Public | BindingFlags.Static, 
+                null, 
+                new[] { typeof(string) }, 
+                null);
+            
+            return fromStringMethod.Invoke(null, new object[] { value });
+        }
+        
+        // Try string constructor
+        if (HasStringConstructor(targetType))
+        {
+            var constructor = targetType.GetConstructor(new[] { typeof(string) });
+            return constructor.Invoke(new object[] { value });
+        }
+        
+        throw new InvalidOperationException($"Cannot convert string to {targetType.Name}");
+    }
+    
+    // Helper methods to check for ToString override, Parse method, etc.
+    private bool HasToStringOverride(Type type) { /* Implementation */ }
+    private bool HasParseMethod(Type type) { /* Implementation */ }
+    private bool HasStringConstructor(Type type) { /* Implementation */ }
+    private bool HasFromStringMethod(Type type) { /* Implementation */ }
+}
+
+public class TypeConverterRegistry
+{
+    private readonly List<ITypeConverter> _converters = new List<ITypeConverter>();
+    
+    public TypeConverterRegistry()
+    {
+        // Register default converters
+        _converters.Add(new StringConvertibleTypeConverter());
+        // Other built-in converters
+    }
+    
+    public void RegisterConverter(ITypeConverter converter)
+    {
+        _converters.Add(converter);
+    }
+    
+    public ITypeConverter GetConverter(Type type)
+    {
+        return _converters.FirstOrDefault(c => c.CanConvert(type));
+    }
+    
+    public bool HasConverter(Type type)
+    {
+        return _converters.Any(c => c.CanConvert(type));
+    }
+}
+```
+
 ## Serializer Implementations
 
 ### JSON Serializer
@@ -106,22 +206,65 @@ Using System.Text.Json as the default implementation:
 public class SystemTextJsonSerializer : ISerializer
 {
     private readonly JsonSerializerOptions _options;
+    private readonly TypeConverterRegistry _typeConverterRegistry;
     
     public string ContentType => "application/json";
     public string FileExtension => ".json";
     
-    public SystemTextJsonSerializer(JsonSerializerOptions options)
+    public SystemTextJsonSerializer(JsonSerializerOptions options, TypeConverterRegistry typeConverterRegistry)
     {
         _options = options;
+        _typeConverterRegistry = typeConverterRegistry;
         
         // Configure System.Text.Json to use string enum conversion
         if (options.EnumFormat == EnumSerializationFormat.Name)
         {
             _options.Converters.Add(new JsonStringEnumConverter());
         }
+        
+        // Add converter for types with string conversion
+        if (options.UseStringConversionForUnsupportedTypes)
+        {
+            _options.Converters.Add(new StringBasedTypeConverter(_typeConverterRegistry));
+        }
     }
     
     // Implementation of ISerializer methods
+    
+    // Example of a custom JsonConverter for System.Text.Json
+    private class StringBasedTypeConverter : JsonConverter<object>
+    {
+        private readonly TypeConverterRegistry _registry;
+        
+        public StringBasedTypeConverter(TypeConverterRegistry registry)
+        {
+            _registry = registry;
+        }
+        
+        public override bool CanConvert(Type typeToConvert)
+        {
+            return _registry.HasConverter(typeToConvert);
+        }
+        
+        public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.String)
+            {
+                throw new JsonException($"Expected string value for {typeToConvert.Name}");
+            }
+            
+            var stringValue = reader.GetString();
+            var converter = _registry.GetConverter(typeToConvert);
+            return converter.ConvertFromString(stringValue, typeToConvert);
+        }
+        
+        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+        {
+            var converter = _registry.GetConverter(value.GetType());
+            var stringValue = converter.ConvertToString(value);
+            writer.WriteStringValue(stringValue);
+        }
+    }
 }
 ```
 
@@ -318,6 +461,59 @@ services.AddUniversalSerializer(builder => {
 });
 ```
 
+### Handling Custom Types
+
+```csharp
+// A custom type with string conversion
+public class CustomId
+{
+    public Guid Value { get; }
+    
+    public CustomId(Guid value)
+    {
+        Value = value;
+    }
+    
+    // String constructor for deserialization
+    public CustomId(string value)
+    {
+        Value = Guid.Parse(value);
+    }
+    
+    // Override ToString for serialization
+    public override string ToString()
+    {
+        return Value.ToString("D");
+    }
+    
+    // Alternative: static Parse method
+    public static CustomId Parse(string value)
+    {
+        return new CustomId(Guid.Parse(value));
+    }
+}
+
+// Usage in a model
+public class Document
+{
+    public CustomId Id { get; set; }
+    public string Title { get; set; }
+}
+
+// Serializing/deserializing
+var doc = new Document
+{
+    Id = new CustomId(Guid.NewGuid()),
+    Title = "Sample Document"
+};
+
+// The CustomId will be automatically serialized as a string
+// because it has ToString() and a string constructor
+var serializer = _serializerFactory.GetJsonSerializer();
+var json = serializer.Serialize(doc);
+var deserializedDoc = serializer.Deserialize<Document>(json);
+```
+
 ## Extension Points
 
 ### Custom Serializers
@@ -357,6 +553,37 @@ public class CachingSerializerDecorator : ISerializer
     
     // Implement methods with caching
 }
+```
+
+### Custom Type Converters
+
+Developers can add custom type converters for complex types:
+
+```csharp
+public class DateOnlyConverter : ITypeConverter
+{
+    public bool CanConvert(Type type)
+    {
+        return type == typeof(DateOnly);
+    }
+    
+    public string ConvertToString(object value)
+    {
+        return ((DateOnly)value).ToString("yyyy-MM-dd");
+    }
+    
+    public object ConvertFromString(string value, Type targetType)
+    {
+        return DateOnly.Parse(value);
+    }
+}
+
+// Registration
+services.AddUniversalSerializer(builder => {
+    builder.ConfigureTypeConverters(registry => {
+        registry.RegisterConverter(new DateOnlyConverter());
+    });
+});
 ```
 
 ## Performance Considerations
