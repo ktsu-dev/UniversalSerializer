@@ -14,15 +14,12 @@ using ktsu.UniversalSerializer.Serialization.Protobuf;
 using ktsu.UniversalSerializer.Serialization.FlatBuffers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 >>>>>>> After
-using ktsu.UniversalSerializer.Serialization.FlatBuffers;
 using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.MessagePack;
-using ktsu.UniversalSerializer.Serialization.Protobuf;
 using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 <<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -144,37 +141,9 @@ public class SerializerTests
 			IsActive = true,
 			Tags = ["test", "serialization", "yaml"]
 
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
 
 <<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-        };
-
-        // Act
-        var serialized = yamlSerializer.Serialize(testObject);
-=======
-		};
-
-		// Act
-		var serialized = yamlSerializer.Serialize(testObject);
->>>>>>> After
-		};
-=======
-		};
->>>>>>> After
-
 <<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-		var deserialized = yamlSerializer.Deserialize<TestModel>(serialized);
-=======
-=======
-		};
-
-		// Act
-		var serialized = yamlSerializer.Serialize(testObject);
->>>>>>> After
-	};
-
-	private var deserialized = yamlSerializer.Deserialize<TestModel>(serialized);
->>>>>>> After
 		};
 
 		// Act
@@ -186,56 +155,46 @@ public class SerializerTests
 		var serialized = yamlSerializer.Serialize(testObject);
 >>>>>>> After
 	};
+=======
+=======
+		};
 
-	private var deserialized = yamlSerializer.Deserialize<TestModel>(serialized);
+		// Act
+		var serialized = yamlSerializer.Serialize(testObject);
+>>>>>>> After
+};
 
-	// Assert
-	Assert.IsNotNull(deserialized);
-		Assert.AreEqual(testObject.Id, deserialized.Id);
-		Assert.AreEqual(testObject.Name, deserialized.Name);
-		Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
-		Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
+private var deserialized = yamlSerializer.Deserialize<TestModel>(serialized);
+>>>>>>> After
+		};
+
+// Act
+var serialized = yamlSerializer.Serialize(testObject);
+=======
+		};
+
+		// Act
+		var serialized = yamlSerializer.Serialize(testObject);
+>>>>>>> After
+	};
+
+private var deserialized = yamlSerializer.Deserialize<TestModel>(serialized);
+
+// Assert
+Assert.IsNotNull(deserialized);
+Assert.AreEqual(testObject.Id, deserialized.Id);
+Assert.AreEqual(testObject.Name, deserialized.Name);
+Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
+Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
+CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
 	}
+;
 
-	/// <summary>
-	/// Test TOML serialization.
-	/// </summary>
-	[TestMethod]
-	public void TomlSerializer_SerializeAndDeserialize_ReturnsOriginalObject()
-	{
-		// Arrange
-		var tomlSerializer = _registry.GetSerializer("toml") as TomlSerializer;
-		Assert.IsNotNull(tomlSerializer, "TOML serializer should be available");
-
-		var testObject = new TestModel
-		{
-			Id = 1,
-			Name = "Test Object",
-			CreatedAt = new DateTime(2023, 1, 1, 12, 0, 0, DateTimeKind.Utc),
-			IsActive = true,
-			Tags = ["test", "serialization", "toml"]
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-        };
-
-        // Act
-        var serialized = tomlSerializer.Serialize(testObject);
-=======
-		};
-
-		// Act
-		var serialized = tomlSerializer.Serialize(testObject);
->>>>>>> After
-		};
 =======
 		};
 >>>>>>> After
-
 <<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-		var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
+var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
 =======
 =======
 		};
@@ -245,12 +204,12 @@ public class SerializerTests
 >>>>>>> After
 	};
 
-	private var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
+private var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
 >>>>>>> After
 		};
 
-		// Act
-		var serialized = tomlSerializer.Serialize(testObject);
+// Act
+var serialized = tomlSerializer.Serialize(testObject);
 =======
 		};
 
@@ -259,15 +218,15 @@ public class SerializerTests
 >>>>>>> After
 	};
 
-	private var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
+private var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
 
-		// Assert
-		Assert.IsNotNull(deserialized);
-		Assert.AreEqual(testObject.Id, deserialized.Id);
-		Assert.AreEqual(testObject.Name, deserialized.Name);
-		Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
-		Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
+// Assert
+Assert.IsNotNull(deserialized);
+Assert.AreEqual(testObject.Id, deserialized.Id);
+Assert.AreEqual(testObject.Name, deserialized.Name);
+Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
+Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
+CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
 	}
 ;
 
@@ -374,27 +333,26 @@ Assert.AreEqual(testObject.Description, result.Description);
 CollectionAssert.AreEqual(testObject.Tags, result.Tags);
 	}
 
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
+/// <summary>
+/// A standard test class for serialization.
+/// </summary>
+public class TestClass
+{
 	/// <summary>
-	/// Tests FlatBuffers serialization.
+	/// Gets or sets the ID.
 	/// </summary>
-	[TestMethod]
-	[Ignore("Requires FlatSharp schema generation from FBS files")]
-	public void FlatBuffersSerializerTest()
-	{
-		// Arrange
-		var serializer = _registry.GetSerializer("flatbuffers");
-		Assert.IsNotNull(serializer);
-
-		// FlatBuffers requires pre-generated serializers from FBS schema files
-		// For testing purposes, we would need a class with the appropriate attributes
-		// and generated serializers which is beyond the scope of this unit test
-
-		// For integration tests, a proper FBS schema should be created and
-		// the FlatSharp compiler should generate the required serialization code
-	}
-
+	public int Id { get; set; }
+=======
+/// <summary>
+/// A standard test class for serialization.
+/// </summary>
+public class TestClass
+{
+	/// <summary>
+	/// Gets or sets the ID.
+	/// </summary>
+	public int Id { get; set; }
+>>>>>>> After
 	/// <summary>
 	/// A standard test class for serialization.
 	/// </summary>
@@ -404,73 +362,17 @@ CollectionAssert.AreEqual(testObject.Tags, result.Tags);
 		/// Gets or sets the ID.
 		/// </summary>
 		public int Id { get; set; }
-=======
-/// <summary>
-/// A standard test class for serialization.
-/// </summary>
-public class TestClass
-{
-	/// <summary>
-	/// Gets or sets the ID.
-	/// </summary>
-	public int Id { get; set; }
->>>>>>> After
-/// <summary>
-/// A standard test class for serialization.
-/// </summary>
-public class TestClass
-{
-	/// <summary>
-	/// Gets or sets the ID.
-	/// </summary>
-	public int Id { get; set; }
 
-	/// <summary>
-	/// Gets or sets the name.
-	/// </summary>
-	public string? Name { get; set; }
-
-	/// <summary>
-	/// Gets or sets the description.
-	/// </summary>
-	public string? Description { get; set; }
-
-	/// <summary>
-	/// Gets or sets the tags.
-	/// </summary>
-	public List<string>? Tags { get; set; }
-}
-
-/// <summary>
-/// A test class with MessagePack attributes for serialization.
-/// </summary>
-[MessagePack.MessagePackObject]
-public class 
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
 		/// <summary>
 		/// Gets or sets the name.
 		/// </summary>
 		public string? Name { get; set; }
-=======
-	/// <summary>
-	/// Gets or sets the name.
-	/// </summary>
-	public string? Name { get; set; }
->>>>>>> After
 
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
 		/// <summary>
 		/// Gets or sets the description.
 		/// </summary>
 		public string? Description { get; set; }
-=======
-	/// <summary>
-	/// Gets or sets the description.
-	/// </summary>
-	public string? Description { get; set; }
->>>>>>> After
 
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
 		/// <summary>
 		/// Gets or sets the tags.
 		/// </summary>
@@ -481,12 +383,48 @@ public class
 	/// A test class with MessagePack attributes for serialization.
 	/// </summary>
 	[MessagePack.MessagePackObject]
-	public class MessagePackTestClass
-	{
-		/// <summary>
-		/// Gets or sets the ID.
-		/// </summary>
-		[MessagePack.Key(0)]
+	public class
+<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
+	/// <summary>
+	/// Gets or sets the name.
+	/// </summary>
+		public string? Name { get; set; }
+
+=======
+	/// <summary>
+	/// Gets or sets the name.
+	/// </summary>
+	public string? Name { get; set; }
+>>>>>>> After
+<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
+	/// <summary>
+	/// Gets or sets the description.
+	/// </summary>
+	public string? Description { get; set; }
+
+=======
+	/// <summary>
+	/// Gets or sets the description.
+	/// </summary>
+	public string? Description { get; set; }
+>>>>>>> After
+<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
+	/// <summary>
+	/// Gets or sets the tags.
+	/// </summary>
+	public List<string>? Tags { get; set; }
+}
+
+/// <summary>
+/// A test class with MessagePack attributes for serialization.
+/// </summary>
+[MessagePack.MessagePackObject]
+public class MessagePackTestClass
+{
+	/// <summary>
+	/// Gets or sets the ID.
+	/// </summary>
+	[MessagePack.Key(0)]
 =======
 	/// <summary>
 	/// Gets or sets the tags.
@@ -505,7 +443,7 @@ public class MessagePackTestClass
 	/// </summary>
 	[MessagePack.Key(0)]
 >>>>>>> After
-MessagePackTestClass
+	MessagePackTestClass
 {
 	/// <summary>
 	/// Gets or sets the ID.

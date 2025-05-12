@@ -4,108 +4,29 @@
 
 namespace ktsu.UniversalSerializer.Serialization;
 
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
+using System.Collections.Concurrent;
+using ktsu.UniversalSerializer.Serialization.Json;
+using ktsu.UniversalSerializer.Serialization.MessagePack;
+using ktsu.UniversalSerializer.Serialization.Toml;
+using ktsu.UniversalSerializer.Serialization.Xml;
+using ktsu.UniversalSerializer.Serialization.Yaml;
+
 /// <summary>
 /// Registry for managing serializers by format.
 /// </summary>
 public class SerializerRegistry
 {
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
-    private readonly ConcurrentDictionary<string, ISerializer> _serializersByFormat = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, ISerializer> _serializersByExtension = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
-    private readonly SerializerFactory _factory;
-=======
-	private readonly required SerializerFactory _factory;
->>>>>>> After
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
-    /// </summary>
-    /// <param name="factory">The serializer factory to use.</param>
-    public SerializerRegistry(SerializerFactory factory)
-    {
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-    }
-
-    /// <summary>
-    /// Registers built-in serializers.
-    /// </summary>
-    /// <param name="options">Optional serializer options.</param>
-    public void RegisterBuiltIn(SerializerOptions? options = null)
-=======
-	/// <summary>
-	/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
-	/// </summary>
-	/// <param name="factory">The serializer factory to use.</param>
-	public SerializerRegistry(SerializerFactory factory) => _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-
-	/// <summary>
-	/// Registers built-in serializers.
-	/// </summary>
-	/// <param name="options">Optional serializer options.</param>
-	public static void RegisterBuiltIn(SerializerOptions? options = null)
->>>>>>> After
-	private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
-	/// </summary>
-	/// <param name="factory">The serializer factory to use.</param>
-	public SerializerRegistry(SerializerFactory factory) => _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-
-	/// <summary>
-	/// Registers built-in serializers.
-	/// </summary>
-	/// <param name="options">Optional serializer options.</param>
-	public static void RegisterBuiltIn(SerializerOptions? options = null)
-=======
-using System.Collections.Concurrent;
-using ktsu.UniversalSerializer.Serialization.Yaml;
-using ktsu.UniversalSerializer.Serialization.Toml;
-using ktsu.UniversalSerializer.Serialization.MessagePack;
-using ktsu.UniversalSerializer.Serialization.Protobuf;
-using ktsu.UniversalSerializer.Serialization.FlatBuffers;
-
-/// <summary>
-/// Registry for managing serializers by format.
-/// </summary>
-/// <remarks>
-/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
-/// </remarks>
-/// <param name="factory">The serializer factory to use.</param>
-public class SerializerRegistry(SerializerFactory factory)
-{
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByFormat = new(StringComparer.OrdinalIgnoreCase);
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByExtension = new(StringComparer.OrdinalIgnoreCase);
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
-	private readonly SerializerFactory _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+	private readonly SerializerFactory _factory;
 
 	/// <summary>
-	/// Registers built-in serializers.
+	/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
 	/// </summary>
-	/// <param name="options">Optional serializer options.</param>
-	public void RegisterBuiltIn(SerializerOptions? options = null)
->>>>>>> After
-using System.Collections.Concurrent;
-using ktsu.UniversalSerializer.Serialization.FlatBuffers;
-using ktsu.UniversalSerializer.Serialization.MessagePack;
-using ktsu.UniversalSerializer.Serialization.Protobuf;
-using ktsu.UniversalSerializer.Serialization.Toml;
-using ktsu.UniversalSerializer.Serialization.Yaml;
-
-/// <summary>
-/// Registry for managing serializers by format.
-/// </summary>
-/// <remarks>
-/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
-/// </remarks>
-/// <param name="factory">The serializer factory to use.</param>
-public class SerializerRegistry(SerializerFactory factory)
-{
-	private readonly SerializerFactory _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+	/// <param name="factory">The serializer factory to use.</param>
+	public SerializerRegistry(SerializerFactory factory) =>
+		_factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
 	/// <summary>
 	/// Registers built-in serializers.
@@ -116,13 +37,13 @@ public class SerializerRegistry(SerializerFactory factory)
 		var serializerOptions = options ?? SerializerOptions.Default();
 
 		// Register JSON serializer
-		var jsonSerializer = _factory.Create<Json.JsonSerializer>(serializerOptions);
+		var jsonSerializer = _factory.Create<JsonSerializer>(serializerOptions);
 		Register("json", jsonSerializer);
 		RegisterFileExtensions("json", ".json");
 		RegisterContentTypes("json", "application/json", "text/json");
 
 		// Register XML serializer
-		var xmlSerializer = _factory.Create<Xml.XmlSerializer>(serializerOptions);
+		var xmlSerializer = _factory.Create<XmlSerializer>(serializerOptions);
 		Register("xml", xmlSerializer);
 		RegisterFileExtensions("xml", ".xml");
 		RegisterContentTypes("xml", "application/xml", "text/xml");
@@ -144,18 +65,6 @@ public class SerializerRegistry(SerializerFactory factory)
 		Register("messagepack", messagePackSerializer);
 		RegisterFileExtensions("messagepack", ".msgpack", ".mp");
 		RegisterContentTypes("messagepack", "application/x-msgpack");
-
-		// Register Protocol Buffers serializer
-		var protobufSerializer = _factory.Create<ProtobufSerializer>(serializerOptions);
-		Register("protobuf", protobufSerializer);
-		RegisterFileExtensions("protobuf", ".proto", ".pb", ".bin");
-		RegisterContentTypes("protobuf", "application/protobuf", "application/x-protobuf");
-
-		// Register FlatBuffers serializer
-		var flatBuffersSerializer = _factory.Create<FlatBuffersSerializer>(serializerOptions);
-		Register("flatbuffers", flatBuffersSerializer);
-		RegisterFileExtensions("flatbuffers", ".fbs", ".fb", ".flatbuffer");
-		RegisterContentTypes("flatbuffers", "application/flatbuffers", "application/x-flatbuffers");
 	}
 
 	/// <summary>
@@ -163,7 +72,7 @@ public class SerializerRegistry(SerializerFactory factory)
 	/// </summary>
 	/// <param name="format">The format name.</param>
 	/// <param name="serializer">The serializer to register.</param>
-	public static void Register(string format, ISerializer serializer)
+	public void Register(string format, ISerializer serializer)
 	{
 		if (string.IsNullOrWhiteSpace(format))
 		{
@@ -197,7 +106,7 @@ public class SerializerRegistry(SerializerFactory factory)
 
 		foreach (var extension in extensions)
 		{
-			var ext = extension.StartsWith(".") ? extension : $".{extension}";
+			var ext = extension.StartsWith('.') ? extension : $".{extension}";
 			_serializersByExtension[ext] = serializer;
 		}
 	}
@@ -258,7 +167,7 @@ public class SerializerRegistry(SerializerFactory factory)
 			throw new ArgumentException("Extension cannot be null or whitespace.", nameof(extension));
 		}
 
-		var ext = extension.StartsWith(".") ? extension : $".{extension}";
+		var ext = extension.StartsWith('.') ? extension : $".{extension}";
 		_serializersByExtension.TryGetValue(ext, out var serializer);
 		return serializer;
 	}
@@ -278,34 +187,4 @@ public class SerializerRegistry(SerializerFactory factory)
 		_serializersByContentType.TryGetValue(contentType, out var serializer);
 		return serializer;
 	}
-
-	/// <summary>
-	/// Determines whether a format is supported.
-	/// </summary>
-	/// <param name="format">The format name.</param>
-	/// <returns>True if the format is supported, false otherwise.</returns>
-	public bool IsFormatSupported(string format) => !string.IsNullOrWhiteSpace(format) && _serializersByFormat.ContainsKey(format);
-
-	/// <summary>
-	/// Determines whether a file extension is supported.
-	/// </summary>
-	/// <param name="extension">The file extension.</param>
-	/// <returns>True if the extension is supported, false otherwise.</returns>
-	public bool IsExtensionSupported(string extension)
-	{
-		if (string.IsNullOrWhiteSpace(extension))
-		{
-			return false;
-		}
-
-		var ext = extension.StartsWith(".") ? extension : $".{extension}";
-		return _serializersByExtension.ContainsKey(ext);
-	}
-
-	/// <summary>
-	/// Determines whether a content type is supported.
-	/// </summary>
-	/// <param name="contentType">The content type.</param>
-	/// <returns>True if the content type is supported, false otherwise.</returns>
-	public bool IsContentTypeSupported(string contentType) => !string.IsNullOrWhiteSpace(contentType) && _serializersByContentType.ContainsKey(contentType);
 }

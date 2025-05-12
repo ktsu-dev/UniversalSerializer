@@ -188,16 +188,12 @@ public class TomlSerializer : SerializerBase
 		return tomlTable;
 	}
 
-	// Add placeholder for required methods to make the file compile
-	private object ConvertObjectToTomlValue(object value, Type type)
-	{
+	// Add placeholder methods to make the file compile
+	private object ConvertObjectToTomlValue(object value, Type type) =>
 		// Stub implementation - would need to be properly implemented
-		return value?.ToString() ?? string.Empty;
-	}
+		value?.ToString() ?? string.Empty;
 
-	private object ConvertFromTomlModel(TomlTable model, Type type)
-	{
+	private object ConvertFromTomlModel(TomlTable model, Type type) =>
 		// Stub implementation - would need to be properly implemented
-		return Activator.CreateInstance(type)!;
-	}
+		Activator.CreateInstance(type)!;
 }
