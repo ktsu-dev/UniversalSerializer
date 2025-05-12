@@ -57,6 +57,13 @@ public enum EnumSerializationFormat
     NameAndValue
 }
 
+public enum TypeDiscriminatorFormat
+{
+    Property,     // Add a property with the type name
+    Wrapper,      // Wrap object in a container with type and value
+    TypeProperty  // Use a designated property for type information
+}
+
 public abstract class SerializerOptions
 {
     public bool IgnoreNullValues { get; set; } = false;
@@ -69,6 +76,12 @@ public abstract class SerializerOptions
     
     // Use string conversion for types not natively supported by the serializer
     public bool UseStringConversionForUnsupportedTypes { get; set; } = true;
+    
+    // Type discriminator settings for polymorphic serialization
+    public bool EnableTypeDiscriminator { get; set; } = false;
+    public TypeDiscriminatorFormat TypeDiscriminatorFormat { get; set; } = TypeDiscriminatorFormat.Property;
+    public string TypeDiscriminatorPropertyName { get; set; } = "$type";
+    public bool UseFullyQualifiedTypeNames { get; set; } = false;
 }
 
 public class JsonSerializerOptions : SerializerOptions
@@ -236,6 +249,70 @@ public class TypeConverterRegistry
 }
 ```
 
+### TypeRegistry System
+
+A registry system for managing types during polymorphic serialization:
+
+```csharp
+public class TypeRegistry
+{
+    private readonly Dictionary<string, Type> _typeMap = new Dictionary<string, Type>();
+    private readonly Dictionary<Type, string> _nameMap = new Dictionary<Type, string>();
+    private readonly SerializerOptions _options;
+    
+    public TypeRegistry(SerializerOptions options)
+    {
+        _options = options;
+    }
+    
+    public void RegisterType<T>(string name = null)
+    {
+        RegisterType(typeof(T), name);
+    }
+    
+    public void RegisterType(Type type, string name = null)
+    {
+        name ??= GetTypeName(type);
+        _typeMap[name] = type;
+        _nameMap[type] = name;
+    }
+    
+    public Type ResolveType(string typeName)
+    {
+        if (_typeMap.TryGetValue(typeName, out var type))
+        {
+            return type;
+        }
+        
+        // Try to resolve by reflection if not in map
+        return Type.GetType(typeName, false);
+    }
+    
+    public string GetTypeName(Type type)
+    {
+        if (_nameMap.TryGetValue(type, out var name))
+        {
+            return name;
+        }
+        
+        return _options.UseFullyQualifiedTypeNames 
+            ? type.AssemblyQualifiedName 
+            : type.FullName;
+    }
+    
+    public void RegisterSubtypes<TBase>(Assembly assembly = null)
+    {
+        assembly ??= Assembly.GetAssembly(typeof(TBase));
+        
+        foreach (var type in assembly.GetTypes()
+            .Where(t => typeof(TBase).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface))
+        {
+            RegisterType(type);
+        }
+    }
+}
+```
+
 ## Serializer Implementations
 
 ### JSON Serializer
@@ -247,14 +324,16 @@ public class SystemTextJsonSerializer : ISerializer
 {
     private readonly JsonSerializerOptions _options;
     private readonly TypeConverterRegistry _typeConverterRegistry;
+    private readonly TypeRegistry _typeRegistry;
     
     public string ContentType => "application/json";
     public string FileExtension => ".json";
     
-    public SystemTextJsonSerializer(JsonSerializerOptions options, TypeConverterRegistry typeConverterRegistry)
+    public SystemTextJsonSerializer(JsonSerializerOptions options, TypeConverterRegistry typeConverterRegistry, TypeRegistry typeRegistry)
     {
         _options = options;
         _typeConverterRegistry = typeConverterRegistry;
+        _typeRegistry = typeRegistry;
         
         // Configure System.Text.Json to use string enum conversion
         if (options.EnumFormat == EnumSerializationFormat.Name)
@@ -266,6 +345,12 @@ public class SystemTextJsonSerializer : ISerializer
         if (options.UseStringConversionForUnsupportedTypes)
         {
             _options.Converters.Add(new StringBasedTypeConverter(_typeConverterRegistry));
+        }
+        
+        // Add polymorphic type handling if enabled
+        if (options.EnableTypeDiscriminator)
+        {
+            _options.Converters.Add(new PolymorphicJsonConverter(_typeRegistry, options));
         }
     }
     
@@ -303,6 +388,121 @@ public class SystemTextJsonSerializer : ISerializer
             var converter = _registry.GetConverter(value.GetType());
             var stringValue = converter.ConvertToString(value);
             writer.WriteStringValue(stringValue);
+        }
+    }
+    
+    // Polymorphic converter for handling inheritance
+    private class PolymorphicJsonConverter : JsonConverter<object>
+    {
+        private readonly TypeRegistry _typeRegistry;
+        private readonly SerializerOptions _options;
+        
+        public PolymorphicJsonConverter(TypeRegistry typeRegistry, SerializerOptions options)
+        {
+            _typeRegistry = typeRegistry;
+            _options = options;
+        }
+        
+        public override bool CanConvert(Type typeToConvert)
+        {
+            // Only convert types that might be part of an inheritance hierarchy
+            return typeToConvert.IsClass && !typeToConvert.IsSealed && typeToConvert != typeof(string);
+        }
+        
+        public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException("Expected start of object");
+            }
+            
+            using (var jsonDoc = JsonDocument.ParseValue(ref reader))
+            {
+                var rootElement = jsonDoc.RootElement;
+                
+                // Extract the type information based on discriminator format
+                string typeDiscriminator = null;
+                JsonElement valueElement = rootElement;
+                
+                switch (_options.TypeDiscriminatorFormat)
+                {
+                    case TypeDiscriminatorFormat.Property:
+                        if (rootElement.TryGetProperty(_options.TypeDiscriminatorPropertyName, out var typeProperty))
+                        {
+                            typeDiscriminator = typeProperty.GetString();
+                        }
+                        break;
+                        
+                    case TypeDiscriminatorFormat.Wrapper:
+                        if (rootElement.TryGetProperty("type", out var typeProperty) && 
+                            rootElement.TryGetProperty("value", out var valueProperty))
+                        {
+                            typeDiscriminator = typeProperty.GetString();
+                            valueElement = valueProperty;
+                        }
+                        break;
+                        
+                    case TypeDiscriminatorFormat.TypeProperty:
+                        // Extract from a designated property in the model
+                        if (rootElement.TryGetProperty(_options.TypeDiscriminatorPropertyName, out var typeProperty))
+                        {
+                            typeDiscriminator = typeProperty.GetString();
+                        }
+                        break;
+                }
+                
+                // Resolve the actual type
+                Type actualType = typeDiscriminator != null 
+                    ? _typeRegistry.ResolveType(typeDiscriminator) 
+                    : typeToConvert;
+                
+                if (actualType == null)
+                {
+                    throw new JsonException($"Could not resolve type: {typeDiscriminator}");
+                }
+                
+                // Deserialize to the actual type
+                string json = valueElement.GetRawText();
+                return JsonSerializer.Deserialize(json, actualType, options);
+            }
+        }
+        
+        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+        {
+            Type type = value.GetType();
+            string typeDiscriminator = _typeRegistry.GetTypeName(type);
+            
+            switch (_options.TypeDiscriminatorFormat)
+            {
+                case TypeDiscriminatorFormat.Property:
+                    // Write object with an extra type property
+                    var json = JsonSerializer.Serialize(value, type, options);
+                    var jsonDoc = JsonDocument.Parse(json);
+                    writer.WriteStartObject();
+                    writer.WriteString(_options.TypeDiscriminatorPropertyName, typeDiscriminator);
+                    
+                    // Copy all properties from the serialized object
+                    foreach (var property in jsonDoc.RootElement.EnumerateObject())
+                    {
+                        property.WriteTo(writer);
+                    }
+                    writer.WriteEndObject();
+                    break;
+                    
+                case TypeDiscriminatorFormat.Wrapper:
+                    // Wrap in a container with type and value properties
+                    writer.WriteStartObject();
+                    writer.WriteString("type", typeDiscriminator);
+                    writer.WritePropertyName("value");
+                    JsonSerializer.Serialize(writer, value, type, options);
+                    writer.WriteEndObject();
+                    break;
+                    
+                case TypeDiscriminatorFormat.TypeProperty:
+                    // Let the model handle it (assumes model has the property)
+                    JsonSerializer.Serialize(writer, value, type, options);
+                    break;
+            }
         }
     }
 }
@@ -602,6 +802,77 @@ var doc = new Document
 
 var json = serializer.Serialize(doc);
 var deserializedDoc = serializer.Deserialize<Document>(json);
+```
+
+### Polymorphic Serialization
+
+```csharp
+// Register types
+services.AddUniversalSerializer(builder => {
+    builder.ConfigureTypeRegistry(registry => {
+        // Register base type and all its subtypes
+        registry.RegisterSubtypes<Animal>();
+        
+        // Or register specific types with custom names
+        registry.RegisterType<Dog>("dog");
+        registry.RegisterType<Cat>("cat");
+    });
+    
+    builder.ConfigureOptions(options => {
+        options.EnableTypeDiscriminator = true;
+        options.TypeDiscriminatorFormat = TypeDiscriminatorFormat.Property;
+        options.TypeDiscriminatorPropertyName = "$type";
+    });
+});
+
+// Define types
+public abstract class Animal
+{
+    public string Name { get; set; }
+}
+
+public class Dog : Animal
+{
+    public string Breed { get; set; }
+    public bool GoodBoy { get; set; }
+}
+
+public class Cat : Animal
+{
+    public int Lives { get; set; }
+    public bool LikesCatnip { get; set; }
+}
+
+// Create a mixed collection
+var animals = new List<Animal>
+{
+    new Dog { Name = "Rex", Breed = "German Shepherd", GoodBoy = true },
+    new Cat { Name = "Whiskers", Lives = 9, LikesCatnip = true }
+};
+
+// Serialize with type information
+var serializer = _serializerFactory.GetJsonSerializer();
+var json = serializer.Serialize(animals);
+
+// Will produce something like:
+// [
+//   {
+//     "$type": "dog",
+//     "name": "Rex",
+//     "breed": "German Shepherd",
+//     "goodBoy": true
+//   },
+//   {
+//     "$type": "cat",
+//     "name": "Whiskers",
+//     "lives": 9,
+//     "likesCatnip": true
+//   }
+// ]
+
+// Deserialize back to correct types
+var deserializedAnimals = serializer.Deserialize<List<Animal>>(json);
+// Each item will be the correct concrete type (Dog or Cat)
 ```
 
 ## Extension Points
