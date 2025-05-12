@@ -7,7 +7,6 @@ using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
-using ktsu.UniversalSerializer.Serialization.Ini;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ktsu.UniversalSerializer.Test;
@@ -37,14 +36,12 @@ public class SerializerTests
         _factory.RegisterSerializer<XmlSerializer>(options => new XmlSerializer(options));
         _factory.RegisterSerializer<YamlSerializer>(options => new YamlSerializer(options));
         _factory.RegisterSerializer<TomlSerializer>(options => new TomlSerializer(options));
-        _factory.RegisterSerializer<IniSerializer>(options => new IniSerializer(options));
 
         // Register serializers with the registry
         _registry.Register("json", _factory.Create<JsonSerializer>(_options));
         _registry.Register("xml", _factory.Create<XmlSerializer>(_options));
         _registry.Register("yaml", _factory.Create<YamlSerializer>(_options));
         _registry.Register("toml", _factory.Create<TomlSerializer>(_options));
-        _registry.Register("ini", _factory.Create<IniSerializer>(_options));
     }
 
     /// <summary>
@@ -176,38 +173,6 @@ public class SerializerTests
     }
 
     /// <summary>
-    /// Test INI serialization.
-    /// </summary>
-    [TestMethod]
-    public void IniSerializer_SerializeAndDeserialize_ReturnsOriginalObject()
-    {
-        // Arrange
-        var iniSerializer = _registry.GetSerializer("ini") as IniSerializer;
-        Assert.IsNotNull(iniSerializer, "INI serializer should be available");
-
-        var testObject = new TestModel
-        {
-            Id = 1,
-            Name = "Test Object",
-            CreatedAt = new DateTime(2023, 1, 1, 12, 0, 0, DateTimeKind.Utc),
-            IsActive = true,
-            Tags = ["test", "serialization", "ini"]
-        };
-
-        // Act
-        var serialized = iniSerializer.Serialize(testObject);
-        var deserialized = iniSerializer.Deserialize<TestModel>(serialized);
-
-        // Assert
-        Assert.IsNotNull(deserialized);
-        Assert.AreEqual(testObject.Id, deserialized.Id);
-        Assert.AreEqual(testObject.Name, deserialized.Name);
-        Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
-        Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-        CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
-    }
-
-    /// <summary>
     /// Test serializer registry by extension.
     /// </summary>
     [TestMethod]
@@ -220,9 +185,6 @@ public class SerializerTests
         var yamlAltSerializer = _registry.GetSerializerByExtension(".yml");
         var tomlSerializer = _registry.GetSerializerByExtension(".toml");
         var tomlAltSerializer = _registry.GetSerializerByExtension(".tml");
-        var iniSerializer = _registry.GetSerializerByExtension(".ini");
-        var iniConfSerializer = _registry.GetSerializerByExtension(".conf");
-        var iniCfgSerializer = _registry.GetSerializerByExtension(".cfg");
         var unknownSerializer = _registry.GetSerializerByExtension(".unknown");
 
         // Assert
@@ -232,9 +194,6 @@ public class SerializerTests
         Assert.IsNotNull(yamlAltSerializer, "YAML serializer should be available for .yml");
         Assert.IsNotNull(tomlSerializer, "TOML serializer should be available");
         Assert.IsNotNull(tomlAltSerializer, "TOML serializer should be available for .tml");
-        Assert.IsNotNull(iniSerializer, "INI serializer should be available");
-        Assert.IsNotNull(iniConfSerializer, "INI serializer should be available for .conf");
-        Assert.IsNotNull(iniCfgSerializer, "INI serializer should be available for .cfg");
         Assert.IsNull(unknownSerializer, "Unknown serializer should not be available");
 
         Assert.AreEqual("application/json", jsonSerializer.ContentType);
@@ -243,9 +202,6 @@ public class SerializerTests
         Assert.AreEqual("application/yaml", yamlAltSerializer.ContentType);
         Assert.AreEqual("application/toml", tomlSerializer.ContentType);
         Assert.AreEqual("application/toml", tomlAltSerializer.ContentType);
-        Assert.AreEqual("application/ini", iniSerializer.ContentType);
-        Assert.AreEqual("application/ini", iniConfSerializer.ContentType);
-        Assert.AreEqual("application/ini", iniCfgSerializer.ContentType);
     }
 
     /// <summary>
@@ -261,9 +217,6 @@ public class SerializerTests
         var yamlAltSerializer = _registry.DetectSerializer("test.yml");
         var tomlSerializer = _registry.DetectSerializer("test.toml");
         var tomlAltSerializer = _registry.DetectSerializer("test.tml");
-        var iniSerializer = _registry.DetectSerializer("test.ini");
-        var iniConfSerializer = _registry.DetectSerializer("test.conf");
-        var iniCfgSerializer = _registry.DetectSerializer("test.cfg");
         var unknownSerializer = _registry.DetectSerializer("test.unknown");
 
         // Assert
@@ -273,9 +226,6 @@ public class SerializerTests
         Assert.IsNotNull(yamlAltSerializer, "YAML serializer should be detected for .yml");
         Assert.IsNotNull(tomlSerializer, "TOML serializer should be detected");
         Assert.IsNotNull(tomlAltSerializer, "TOML serializer should be detected for .tml");
-        Assert.IsNotNull(iniSerializer, "INI serializer should be detected");
-        Assert.IsNotNull(iniConfSerializer, "INI serializer should be detected for .conf");
-        Assert.IsNotNull(iniCfgSerializer, "INI serializer should be detected for .cfg");
         Assert.IsNull(unknownSerializer, "Unknown serializer should not be detected");
 
         Assert.AreEqual("application/json", jsonSerializer.ContentType);
@@ -284,9 +234,6 @@ public class SerializerTests
         Assert.AreEqual("application/yaml", yamlAltSerializer.ContentType);
         Assert.AreEqual("application/toml", tomlSerializer.ContentType);
         Assert.AreEqual("application/toml", tomlAltSerializer.ContentType);
-        Assert.AreEqual("application/ini", iniSerializer.ContentType);
-        Assert.AreEqual("application/ini", iniConfSerializer.ContentType);
-        Assert.AreEqual("application/ini", iniCfgSerializer.ContentType);
     }
 
     /// <summary>

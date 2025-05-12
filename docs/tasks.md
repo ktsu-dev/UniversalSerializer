@@ -51,13 +51,6 @@
   - [x] Add support for polymorphic serialization
   - [x] Implement option mapping for TOML settings
 
-- [x] Implement INI serializer
-  - [x] Add IniParser dependency
-  - [x] Create `IniSerializer` implementation
-  - [x] Add support for section-based serialization
-  - [x] Add limited polymorphic serialization support 
-  - [x] Implement option mapping for INI settings
-
 ## Phase 3: Binary Serializers
 
 - [ ] Implement MessagePack serializer
