@@ -5,6 +5,12 @@
 namespace UniversalSerializer.Benchmarks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using ktsu.UniversalSerializer.Serialization;
+using ktsu.UniversalSerializer.Serialization.Json;
+using ktsu.UniversalSerializer.Serialization.Xml;
+using ktsu.UniversalSerializer.Serialization.Yaml;
+using ktsu.UniversalSerializer.Serialization.Toml;
+using ktsu.UniversalSerializer.Serialization.MessagePack;
 using Microsoft.Extensions.DependencyInjection;
 
 [MemoryDiagnoser]
@@ -21,10 +27,10 @@ public class SerializerBenchmarks
 		services.AddUniversalSerializer(builder =>
 		{
 			builder.AddJsonSerializer()
-				   .AddXmlSerializer()
-				   .AddYamlSerializer()
-				   .AddTomlSerializer()
-				   .AddMessagePackSerializer();
+			       .AddXmlSerializer()
+			       .AddYamlSerializer()
+			       .AddTomlSerializer()
+			       .AddMessagePackSerializer();
 		});
 		var serviceProvider = services.BuildServiceProvider();
 		_serializerFactory = serviceProvider.GetRequiredService<ISerializerFactory>();
@@ -32,127 +38,139 @@ public class SerializerBenchmarks
 		// Create test data
 		_testData = new TestData
 		{
-			Id = 12345,
+			Id = 1,
 			Name = "Test Object",
 			Description = "This is a test object for benchmarking serializers",
 			CreatedAt = DateTime.UtcNow,
 			IsActive = true,
-			Price = 99.99m,
-			Tags = ["test", "benchmark", "serialization", "performance"],
+			Price = 123.45M,
+			Tags = ["serialization", "benchmark", "performance", "testing"],
 			Properties = new Dictionary<string, string>
 			{
-				{ "Property1", "Value1" },
-				{ "Property2", "Value2" },
-				{ "Property3", "Value3" },
-				{ "Property4", "Value4" },
-				{ "Property5", "Value5" }
+				["key1"] = "value1",
+				["key2"] = "value2",
+				["key3"] = "value3"
 			}
 		};
 
-		// Create array of test data for collection serialization tests
-		_testDataArray = [.. Enumerable.Range(1, 100).Select(i => new TestData
+		// Create array data for collection tests
+		_testDataArray = new TestData[10];
+		for (var i = 0; i < 10; i++)
 		{
-			Id = i,
-			Name = $"Test Object {i}",
-			Description = $"This is test object {i} for benchmarking serializers",
-			CreatedAt = DateTime.UtcNow.AddDays(-i),
-			IsActive = i % 2 == 0,
-			Price = 99.99m + i,
-			Tags = ["test", "benchmark", $"tag-{i}"],
-			Properties = new Dictionary<string, string>
+			_testDataArray[i] = new TestData
 			{
-				{ $"Property-{i}-1", $"Value-{i}-1" },
-				{ $"Property-{i}-2", $"Value-{i}-2" }
-			}
-		})];
+				Id = i + 1,
+				Name = $"Test Object {i + 1}",
+				Description = $"This is test object {i + 1} for benchmarking serializers",
+				CreatedAt = DateTime.UtcNow.AddDays(-i),
+				IsActive = i % 2 == 0,
+				Price = 100 + (i * 10.5M),
+				Tags = [$"tag{i}_1", $"tag{i}_2", $"tag{i}_3"],
+				Properties = new Dictionary<string, string>
+				{
+					[$"key{i}_1"] = $"value{i}_1",
+					[$"key{i}_2"] = $"value{i}_2"
+				}
+			};
+		}
 	}
 
-	[Benchmark]
-	public string SerializeJson()
+	[Benchmark(Baseline = true)]
+	public string Json_Serialize()
 	{
-		var serializer = _serializerFactory.GetJsonSerializer();
+		var serializer = _serializerFactory.GetSerializer<JsonSerializer>();
 		return serializer.Serialize(_testData);
 	}
 
 	[Benchmark]
-	public TestData DeserializeJson()
+	public TestData Json_Deserialize()
 	{
-		var serializer = _serializerFactory.GetJsonSerializer();
-		string json = serializer.Serialize(_testData);
+		var serializer = _serializerFactory.GetSerializer<JsonSerializer>();
+		var json = serializer.Serialize(_testData);
 		return serializer.Deserialize<TestData>(json);
 	}
 
 	[Benchmark]
-	public string SerializeXml()
+	public string Xml_Serialize()
 	{
-		var serializer = _serializerFactory.GetXmlSerializer();
+		var serializer = _serializerFactory.GetSerializer<XmlSerializer>();
 		return serializer.Serialize(_testData);
 	}
 
 	[Benchmark]
-	public TestData DeserializeXml()
+	public TestData Xml_Deserialize()
 	{
-		var serializer = _serializerFactory.GetXmlSerializer();
-		string xml = serializer.Serialize(_testData);
+		var serializer = _serializerFactory.GetSerializer<XmlSerializer>();
+		var xml = serializer.Serialize(_testData);
 		return serializer.Deserialize<TestData>(xml);
 	}
 
 	[Benchmark]
-	public string SerializeYaml()
+	public string Yaml_Serialize()
 	{
-		var serializer = _serializerFactory.GetYamlSerializer();
+		var serializer = _serializerFactory.GetSerializer<YamlSerializer>();
 		return serializer.Serialize(_testData);
 	}
 
 	[Benchmark]
-	public TestData DeserializeYaml()
+	public TestData Yaml_Deserialize()
 	{
-		var serializer = _serializerFactory.GetYamlSerializer();
-		string yaml = serializer.Serialize(_testData);
+		var serializer = _serializerFactory.GetSerializer<YamlSerializer>();
+		var yaml = serializer.Serialize(_testData);
 		return serializer.Deserialize<TestData>(yaml);
 	}
 
 	[Benchmark]
-	public string SerializeToml()
+	public string Toml_Serialize()
 	{
-		var serializer = _serializerFactory.GetTomlSerializer();
+		var serializer = _serializerFactory.GetSerializer<TomlSerializer>();
 		return serializer.Serialize(_testData);
 	}
 
 	[Benchmark]
-	public TestData DeserializeToml()
+	public TestData Toml_Deserialize()
 	{
-		var serializer = _serializerFactory.GetTomlSerializer();
-		string toml = serializer.Serialize(_testData);
+		var serializer = _serializerFactory.GetSerializer<TomlSerializer>();
+		var toml = serializer.Serialize(_testData);
 		return serializer.Deserialize<TestData>(toml);
 	}
 
 	[Benchmark]
-	public byte[] SerializeMessagePack()
+	public string MessagePack_Serialize()
 	{
-		var serializer = _serializerFactory.GetMessagePackSerializer();
-		return serializer.SerializeToBytes(_testData);
+		var serializer = _serializerFactory.GetSerializer<MessagePackSerializer>();
+		return serializer.Serialize(_testData);
 	}
 
 	[Benchmark]
-	public TestData DeserializeMessagePack()
+	public TestData MessagePack_Deserialize()
 	{
-		var serializer = _serializerFactory.GetMessagePackSerializer();
-		byte[] data = serializer.SerializeToBytes(_testData);
-		return serializer.DeserializeFromBytes<TestData>(data);
+		var serializer = _serializerFactory.GetSerializer<MessagePackSerializer>();
+		var msgpack = serializer.Serialize(_testData);
+		return serializer.Deserialize<TestData>(msgpack);
 	}
 
 	[Benchmark]
-	public string[] SerializeJsonArray()
+	public string[] Json_SerializeArray()
 	{
-		var serializer = _serializerFactory.GetJsonSerializer();
-		return _testDataArray.Select(data => serializer.Serialize(data)).ToArray();
+		var serializer = _serializerFactory.GetSerializer<JsonSerializer>();
+		var results = new string[_testDataArray.Length];
+		for (var i = 0; i < _testDataArray.Length; i++)
+		{
+			results[i] = serializer.Serialize(_testDataArray[i]);
+		}
+		return results;
 	}
 
 	[Benchmark]
-	public byte[][] SerializeMessagePackArray()
+	public string[] MessagePack_SerializeArray()
 	{
-		var serializer = _serializerFactory.GetMessagePackSerializer();
-		return _testDataArray.Select(data => serializer.SerializeToBytes(data)).ToArray();
+		var serializer = _serializerFactory.GetSerializer<MessagePackSerializer>();
+		var results = new string[_testDataArray.Length];
+		for (var i = 0; i < _testDataArray.Length; i++)
+		{
+			results[i] = serializer.Serialize(_testDataArray[i]);
+		}
+		return results;
 	}
 }

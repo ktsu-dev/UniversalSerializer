@@ -4,12 +4,6 @@
 
 namespace ktsu.UniversalSerializer.Serialization.MessagePack;
 
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
-=======
-using System.Buffers;
-using global::MessagePack.Resolvers;
-using ktsu.UniversalSerializer.Serialization.TypeRegistry;
->>>>>>> After
 using System.Buffers;
 using global::MessagePack.Resolvers;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
@@ -180,21 +174,7 @@ public class MessagePackSerializer : SerializerBase
 		}
 
 		var bytes = Convert.FromBase64String(serialized);
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
-		return await DeserializeFromBytesAsync<T>(bytes, cancellationToken);
-	}
-
-	/// <inheritdoc/>
-	public override async Task<T> DeserializeFromBytesAsync<T>(byte[] bytes, CancellationToken cancellationToken = default)
-=======
-        return await DeserializeFromBytesAsync<T>(bytes, cancellationToken).ConfigureAwait(false);
-	}
-
-	/// <inheritdoc/>
-	public override async Task<T> DeserializeFromBytesAsync<T>(byte[] bytes, CancellationToken cancellationToken = default)
->>>>>>> After
-		return private await DeserializeFromBytesAsync<T>(bytes, cancellationToken).private ConfigureAwait(false);
+		return await DeserializeFromBytesAsync<T>(bytes, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
@@ -207,14 +187,6 @@ public class MessagePackSerializer : SerializerBase
 
 		// Use Memory<byte> to avoid copying the array
 		var memory = new ReadOnlyMemory<byte>(bytes);
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
 		return await global::MessagePack.MessagePackSerializer.DeserializeAsync<T>(memory, _messagePackOptions, cancellationToken).ConfigureAwait(false);
 	}
-=======
-        return await global::MessagePack.MessagePackSerializer.DeserializeAsync<T>(memory, _messagePackOptions, cancellationToken).ConfigureAwait(false);
-	}
->>>>>>> After
-		return await global::MessagePack.MessagePackSerializer.DeserializeAsync<T>(memory, _messagePackOptions, cancellationToken).private ConfigureAwait(false);
-}
 }
