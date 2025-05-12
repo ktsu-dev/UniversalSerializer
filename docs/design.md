@@ -50,12 +50,22 @@ public interface ISerializer
 Serializer options will be standardized through a base options class and specific options for each format:
 
 ```csharp
+public enum EnumSerializationFormat
+{
+    Name,
+    Value,
+    NameAndValue
+}
+
 public abstract class SerializerOptions
 {
     public bool IgnoreNullValues { get; set; } = false;
     public bool IgnoreReadOnlyProperties { get; set; } = false;
     public bool PreserveReferences { get; set; } = false;
     public bool PrettyPrint { get; set; } = false;
+    
+    // Enums are always serialized by name by default
+    public EnumSerializationFormat EnumFormat { get; set; } = EnumSerializationFormat.Name;
 }
 
 public class JsonSerializerOptions : SerializerOptions
@@ -103,6 +113,12 @@ public class SystemTextJsonSerializer : ISerializer
     public SystemTextJsonSerializer(JsonSerializerOptions options)
     {
         _options = options;
+        
+        // Configure System.Text.Json to use string enum conversion
+        if (options.EnumFormat == EnumSerializationFormat.Name)
+        {
+            _options.Converters.Add(new JsonStringEnumConverter());
+        }
     }
     
     // Implementation of ISerializer methods
@@ -118,6 +134,17 @@ public class NewtonsoftJsonSerializer : ISerializer
     
     public string ContentType => "application/json";
     public string FileExtension => ".json";
+    
+    public NewtonsoftJsonSerializer(JsonSerializerOptions options)
+    {
+        _settings = new Newtonsoft.Json.JsonSerializerSettings();
+        
+        // Configure Newtonsoft.Json to use string enum conversion
+        if (options.EnumFormat == EnumSerializationFormat.Name)
+        {
+            _settings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+        }
+    }
     
     // Implementation
 }
@@ -280,6 +307,9 @@ services.AddUniversalSerializer(builder => {
     builder.AddJsonSerializer<NewtonsoftJsonSerializer>(options => {
         options.PrettyPrint = true;
         options.IgnoreNullValues = true;
+        
+        // Optional override if needed, but defaults to Name
+        options.EnumFormat = EnumSerializationFormat.Name;
     });
     
     builder.AddXmlSerializer(options => {
