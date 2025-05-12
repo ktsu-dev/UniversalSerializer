@@ -115,9 +115,9 @@ public class StringConvertibleTypeConverter : ITypeConverter
 {
     public bool CanConvert(Type type)
     {
-        // Check if type has a ToString method override and a Parse/FromString method or constructor
+        // Check if type has a ToString method override and any of the supported deserialization methods
         return HasToStringOverride(type) && 
-               (HasParseMethod(type) || HasStringConstructor(type) || HasFromStringMethod(type));
+               (HasParseMethod(type) || HasFromStringMethod(type) || HasStringConstructor(type));
     }
     
     public string ConvertToString(object value)
@@ -127,7 +127,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
     
     public object ConvertFromString(string value, Type targetType)
     {
-        // Try Parse method first
+        // Try Parse method first (instance.ToString / static.Parse pattern)
         if (HasParseMethod(targetType))
         {
             var parseMethod = targetType.GetMethod("Parse", 
@@ -139,7 +139,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
             return parseMethod.Invoke(null, new object[] { value });
         }
         
-        // Try FromString method
+        // Try FromString method next (instance.ToString / static.FromString pattern)
         if (HasFromStringMethod(targetType))
         {
             var fromStringMethod = targetType.GetMethod("FromString", 
@@ -151,7 +151,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
             return fromStringMethod.Invoke(null, new object[] { value });
         }
         
-        // Try string constructor
+        // Try string constructor as last resort
         if (HasStringConstructor(targetType))
         {
             var constructor = targetType.GetConstructor(new[] { typeof(string) });
@@ -161,11 +161,51 @@ public class StringConvertibleTypeConverter : ITypeConverter
         throw new InvalidOperationException($"Cannot convert string to {targetType.Name}");
     }
     
-    // Helper methods to check for ToString override, Parse method, etc.
-    private bool HasToStringOverride(Type type) { /* Implementation */ }
-    private bool HasParseMethod(Type type) { /* Implementation */ }
-    private bool HasStringConstructor(Type type) { /* Implementation */ }
-    private bool HasFromStringMethod(Type type) { /* Implementation */ }
+    // Helper methods to check for conversion methods
+    private bool HasToStringOverride(Type type) 
+    {
+        // Check if the type overrides ToString
+        var toStringMethod = type.GetMethod("ToString", 
+            BindingFlags.Public | BindingFlags.Instance, 
+            null, 
+            Type.EmptyTypes, 
+            null);
+            
+        return toStringMethod != null && 
+               toStringMethod.DeclaringType != typeof(object) && 
+               toStringMethod.DeclaringType != typeof(ValueType);
+    }
+    
+    private bool HasParseMethod(Type type) 
+    {
+        // Check for static Parse(string) method
+        var parseMethod = type.GetMethod("Parse", 
+            BindingFlags.Public | BindingFlags.Static, 
+            null, 
+            new[] { typeof(string) }, 
+            null);
+            
+        return parseMethod != null && parseMethod.ReturnType == type;
+    }
+    
+    private bool HasFromStringMethod(Type type) 
+    {
+        // Check for static FromString(string) method
+        var fromStringMethod = type.GetMethod("FromString", 
+            BindingFlags.Public | BindingFlags.Static, 
+            null, 
+            new[] { typeof(string) }, 
+            null);
+            
+        return fromStringMethod != null && fromStringMethod.ReturnType == type;
+    }
+    
+    private bool HasStringConstructor(Type type) 
+    {
+        // Check for constructor that takes a single string parameter
+        var constructor = type.GetConstructor(new[] { typeof(string) });
+        return constructor != null;
+    }
 }
 
 public class TypeConverterRegistry
@@ -464,7 +504,7 @@ services.AddUniversalSerializer(builder => {
 ### Handling Custom Types
 
 ```csharp
-// A custom type with string conversion
+// Example 1: ToString/Parse pattern
 public class CustomId
 {
     public Guid Value { get; }
@@ -474,22 +514,70 @@ public class CustomId
         Value = value;
     }
     
-    // String constructor for deserialization
-    public CustomId(string value)
-    {
-        Value = Guid.Parse(value);
-    }
-    
-    // Override ToString for serialization
+    // ToString for serialization
     public override string ToString()
     {
         return Value.ToString("D");
     }
     
-    // Alternative: static Parse method
+    // Static Parse method for deserialization
     public static CustomId Parse(string value)
     {
         return new CustomId(Guid.Parse(value));
+    }
+}
+
+// Example 2: ToString/FromString pattern
+public class ColorValue
+{
+    public byte R { get; }
+    public byte G { get; }
+    public byte B { get; }
+    
+    public ColorValue(byte r, byte g, byte b)
+    {
+        R = r;
+        G = g;
+        B = b;
+    }
+    
+    // ToString for serialization
+    public override string ToString()
+    {
+        return $"#{R:X2}{G:X2}{B:X2}";
+    }
+    
+    // Static FromString method for deserialization
+    public static ColorValue FromString(string value)
+    {
+        if (value.StartsWith("#") && value.Length == 7)
+        {
+            byte r = Convert.ToByte(value.Substring(1, 2), 16);
+            byte g = Convert.ToByte(value.Substring(3, 2), 16);
+            byte b = Convert.ToByte(value.Substring(5, 2), 16);
+            return new ColorValue(r, g, b);
+        }
+        throw new FormatException("Invalid color format");
+    }
+}
+
+// Example 3: ToString/Constructor pattern
+public class EmailAddress
+{
+    public string Value { get; }
+    
+    // String constructor for deserialization
+    public EmailAddress(string value)
+    {
+        if (!value.Contains("@"))
+            throw new ArgumentException("Invalid email format");
+        Value = value;
+    }
+    
+    // ToString for serialization
+    public override string ToString()
+    {
+        return Value;
     }
 }
 
@@ -497,19 +585,21 @@ public class CustomId
 public class Document
 {
     public CustomId Id { get; set; }
+    public ColorValue Color { get; set; }
+    public EmailAddress ContactEmail { get; set; }
     public string Title { get; set; }
 }
 
-// Serializing/deserializing
+// All types will be serialized as strings using the appropriate conversion methods
+var serializer = _serializerFactory.GetJsonSerializer();
 var doc = new Document
 {
     Id = new CustomId(Guid.NewGuid()),
+    Color = new ColorValue(255, 0, 0),
+    ContactEmail = new EmailAddress("user@example.com"),
     Title = "Sample Document"
 };
 
-// The CustomId will be automatically serialized as a string
-// because it has ToString() and a string constructor
-var serializer = _serializerFactory.GetJsonSerializer();
 var json = serializer.Serialize(doc);
 var deserializedDoc = serializer.Deserialize<Document>(json);
 ```
