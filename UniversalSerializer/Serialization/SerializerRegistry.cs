@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using System.Collections.Concurrent;
+using ktsu.UniversalSerializer.Serialization.Yaml;
 
 namespace ktsu.UniversalSerializer.Serialization;
 
@@ -64,9 +65,50 @@ public class SerializerRegistry
             _serializersByExtension[extension] = serializer;
         }
 
+        // Register additional file extensions for YAML
+        if (serializer is YamlSerializer yamlSerializer)
+        {
+            foreach (var ext in yamlSerializer.GetSupportedExtensions())
+            {
+                _serializersByExtension[ext] = serializer;
+            }
+        }
+
         if (!string.IsNullOrWhiteSpace(serializer.ContentType))
         {
             _serializersByContentType[serializer.ContentType] = serializer;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers additional file extensions for a registered serializer.
+    /// </summary>
+    /// <param name="format">The format name of the registered serializer.</param>
+    /// <param name="fileExtensions">The additional file extensions to register.</param>
+    /// <returns>The current registry instance for method chaining.</returns>
+    public SerializerRegistry RegisterFileExtensions(string format, params string[] fileExtensions)
+    {
+        if (string.IsNullOrWhiteSpace(format))
+        {
+            throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
+        }
+
+        if (!_serializersByFormat.TryGetValue(format, out var serializer))
+        {
+            throw new ArgumentException($"No serializer registered for format '{format}'.", nameof(format));
+        }
+
+        foreach (var ext in fileExtensions)
+        {
+            if (string.IsNullOrWhiteSpace(ext))
+            {
+                continue;
+            }
+
+            var extension = ext.StartsWith('.') ? ext : "." + ext;
+            _serializersByExtension[extension] = serializer;
         }
 
         return this;

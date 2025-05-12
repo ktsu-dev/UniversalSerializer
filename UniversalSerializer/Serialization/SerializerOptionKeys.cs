@@ -85,6 +85,11 @@ public static class SerializerOptionKeys
         /// Option to specify encoding.
         /// </summary>
         public const string Encoding = "Yaml:Encoding";
+
+        /// <summary>
+        /// Option to specify preferred file extension (.yaml or .yml).
+        /// </summary>
+        public const string PreferredExtension = "Yaml:PreferredExtension";
     }
 
     /// <summary>

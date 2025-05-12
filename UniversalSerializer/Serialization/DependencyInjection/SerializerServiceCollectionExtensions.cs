@@ -4,6 +4,7 @@
 
 using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.Xml;
+using ktsu.UniversalSerializer.Serialization.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -113,6 +114,42 @@ public static class SerializerServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Adds the YAML serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
+    /// <param name="registerAsDefault">Whether to register the YAML serializer as the default ISerializer.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddYamlSerializer(
+        this IServiceCollection services,
+        Action<SerializerOptions>? configureOptions = null,
+        bool registerAsDefault = false)
+    {
+        services.TryAddSingleton<YamlSerializer>(sp =>
+        {
+            var factory = sp.GetRequiredService<SerializerFactory>();
+            var options = factory.GetDefaultOptions();
+            configureOptions?.Invoke(options);
+
+            factory.RegisterSerializer<YamlSerializer>(opts => new YamlSerializer(opts));
+            var serializer = factory.Create<YamlSerializer>(options);
+
+            // Register with the registry
+            var registry = sp.GetRequiredService<SerializerRegistry>();
+            registry.Register("yaml", serializer);
+
+            return serializer;
+        });
+
+        if (registerAsDefault)
+        {
+            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<YamlSerializer>());
+        }
+
+        return services;
+    }
+
+    /// <summary>
     /// Adds a specific serializer type to the service collection.
     /// </summary>
     /// <typeparam name="TSerializer">The type of serializer to add.</typeparam>
@@ -174,6 +211,7 @@ public static class SerializerServiceCollectionExtensions
         services.AddUniversalSerializer(configureOptions);
         services.AddJsonSerializer();
         services.AddXmlSerializer();
+        services.AddYamlSerializer();
 
         // Add additional serializers here as they are implemented
 
