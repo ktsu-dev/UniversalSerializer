@@ -65,18 +65,20 @@
   - [x] Add MessagePack-specific options
   - [x] Create tests
 
-- [x] Implement Protocol Buffers serializer
-  - [x] Add `protobuf-net` package
-  - [x] Create serializer implementation
-  - [x] Add Protobuf-specific options
-  - [x] Handle type registration
-  - [x] Create tests
+- [x] ~~Implement Protocol Buffers serializer~~
+  - [x] ~~Add `protobuf-net` package~~
+  - [x] ~~Create serializer implementation~~
+  - [x] ~~Add Protobuf-specific options~~
+  - [x] ~~Handle type registration~~
+  - [x] ~~Create tests~~
+  - ~~Note: Protobuf serializer was removed because schemas cannot be inferred at runtime~~
 
-- [x] Implement FlatBuffers serializer
-  - [x] Add `FlatSharp` package
-  - [x] Create serializer implementation
-  - [x] Add FlatBuffers-specific options
-  - [x] Create tests
+- [x] ~~Implement FlatBuffers serializer~~
+  - [x] ~~Add `FlatSharp` package~~
+  - [x] ~~Create serializer implementation~~
+  - [x] ~~Add FlatBuffers-specific options~~
+  - [x] ~~Create tests~~
+  - ~~Note: FlatBuffers serializer was removed because schemas cannot be inferred at runtime~~
 
 ## Phase 4: Finalization
 

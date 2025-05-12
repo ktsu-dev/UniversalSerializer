@@ -1,11 +1,11 @@
 # UniversalSerializer
 
-A unified serialization library for .NET that provides a consistent API for various serialization formats including JSON, XML, YAML, TOML, MessagePack, Protobuf, and FlatBuffers.
+A unified serialization library for .NET that provides a consistent API for various serialization formats including JSON, XML, YAML, TOML, and MessagePack.
 
 ## Features
 
 - **Unified API**: Serialize and deserialize objects with a consistent interface regardless of the format
-- **Multiple Formats**: Support for common text formats (JSON, XML, YAML, TOML) and binary formats (MessagePack, Protobuf, FlatBuffers)
+- **Multiple Formats**: Support for common text formats (JSON, XML, YAML, TOML) and binary formats (MessagePack)
 - **Type Conversion**: Built-in type conversion for non-natively supported types
 - **Polymorphic Serialization**: Support for inheritance and polymorphic types
 - **Dependency Injection**: First-class support for Microsoft DI with fluent configuration
@@ -181,9 +181,7 @@ var deserializedAnimals = serializer.Deserialize<List<Animal>>(json);
 ```csharp
 // Configure and use binary serializers
 services.AddUniversalSerializer(builder => {
-    builder.AddMessagePackSerializer()
-           .AddProtobufSerializer()
-           .AddFlatBuffersSerializer();
+    builder.AddMessagePackSerializer();
 });
 
 // In your code
@@ -201,8 +199,6 @@ var result = messagePackSerializer.DeserializeFromBytes<MyData>(binary);
 | YAML | application/yaml | .yaml | YamlDotNet |
 | TOML | application/toml | .toml | Tomlyn |
 | MessagePack | application/x-msgpack | .msgpack | MessagePack |
-| Protobuf | application/x-protobuf | .proto | protobuf-net |
-| FlatBuffers | application/x-flatbuffers | .fbs | FlatSharp |
 
 ## License
 

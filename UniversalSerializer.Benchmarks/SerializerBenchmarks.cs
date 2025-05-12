@@ -24,9 +24,7 @@ public class SerializerBenchmarks
 				   .AddXmlSerializer()
 				   .AddYamlSerializer()
 				   .AddTomlSerializer()
-				   .AddMessagePackSerializer()
-				   .AddProtobufSerializer()
-				   .AddFlatBuffersSerializer();
+				   .AddMessagePackSerializer();
 		});
 		var serviceProvider = services.BuildServiceProvider();
 		_serializerFactory = serviceProvider.GetRequiredService<ISerializerFactory>();
@@ -140,36 +138,6 @@ public class SerializerBenchmarks
 	public TestData DeserializeMessagePack()
 	{
 		var serializer = _serializerFactory.GetMessagePackSerializer();
-		byte[] data = serializer.SerializeToBytes(_testData);
-		return serializer.DeserializeFromBytes<TestData>(data);
-	}
-
-	[Benchmark]
-	public byte[] SerializeProtobuf()
-	{
-		var serializer = _serializerFactory.GetProtobufSerializer();
-		return serializer.SerializeToBytes(_testData);
-	}
-
-	[Benchmark]
-	public TestData DeserializeProtobuf()
-	{
-		var serializer = _serializerFactory.GetProtobufSerializer();
-		byte[] data = serializer.SerializeToBytes(_testData);
-		return serializer.DeserializeFromBytes<TestData>(data);
-	}
-
-	[Benchmark]
-	public byte[] SerializeFlatBuffers()
-	{
-		var serializer = _serializerFactory.GetFlatBuffersSerializer();
-		return serializer.SerializeToBytes(_testData);
-	}
-
-	[Benchmark]
-	public TestData DeserializeFlatBuffers()
-	{
-		var serializer = _serializerFactory.GetFlatBuffersSerializer();
 		byte[] data = serializer.SerializeToBytes(_testData);
 		return serializer.DeserializeFromBytes<TestData>(data);
 	}
