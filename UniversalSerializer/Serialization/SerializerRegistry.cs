@@ -4,6 +4,7 @@
 
 using System.Collections.Concurrent;
 using ktsu.UniversalSerializer.Serialization.Yaml;
+using ktsu.UniversalSerializer.Serialization.Toml;
 
 namespace ktsu.UniversalSerializer.Serialization;
 
@@ -69,6 +70,15 @@ public class SerializerRegistry
         if (serializer is YamlSerializer yamlSerializer)
         {
             foreach (var ext in yamlSerializer.GetSupportedExtensions())
+            {
+                _serializersByExtension[ext] = serializer;
+            }
+        }
+
+        // Register additional file extensions for TOML
+        if (serializer is TomlSerializer tomlSerializer)
+        {
+            foreach (var ext in tomlSerializer.GetSupportedExtensions())
             {
                 _serializersByExtension[ext] = serializer;
             }

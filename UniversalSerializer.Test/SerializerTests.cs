@@ -4,6 +4,7 @@
 
 using ktsu.UniversalSerializer.Serialization;
 using ktsu.UniversalSerializer.Serialization.Json;
+using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -34,11 +35,13 @@ public class SerializerTests
         _factory.RegisterSerializer<JsonSerializer>(options => new JsonSerializer(options));
         _factory.RegisterSerializer<XmlSerializer>(options => new XmlSerializer(options));
         _factory.RegisterSerializer<YamlSerializer>(options => new YamlSerializer(options));
+        _factory.RegisterSerializer<TomlSerializer>(options => new TomlSerializer(options));
 
         // Register serializers with the registry
         _registry.Register("json", _factory.Create<JsonSerializer>(_options));
         _registry.Register("xml", _factory.Create<XmlSerializer>(_options));
         _registry.Register("yaml", _factory.Create<YamlSerializer>(_options));
+        _registry.Register("toml", _factory.Create<TomlSerializer>(_options));
     }
 
     /// <summary>
@@ -138,6 +141,38 @@ public class SerializerTests
     }
 
     /// <summary>
+    /// Test TOML serialization.
+    /// </summary>
+    [TestMethod]
+    public void TomlSerializer_SerializeAndDeserialize_ReturnsOriginalObject()
+    {
+        // Arrange
+        var tomlSerializer = _registry.GetSerializer("toml") as TomlSerializer;
+        Assert.IsNotNull(tomlSerializer, "TOML serializer should be available");
+
+        var testObject = new TestModel
+        {
+            Id = 1,
+            Name = "Test Object",
+            CreatedAt = new DateTime(2023, 1, 1, 12, 0, 0, DateTimeKind.Utc),
+            IsActive = true,
+            Tags = ["test", "serialization", "toml"]
+        };
+
+        // Act
+        var serialized = tomlSerializer.Serialize(testObject);
+        var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
+
+        // Assert
+        Assert.IsNotNull(deserialized);
+        Assert.AreEqual(testObject.Id, deserialized.Id);
+        Assert.AreEqual(testObject.Name, deserialized.Name);
+        Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
+        Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
+        CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
+    }
+
+    /// <summary>
     /// Test serializer registry by extension.
     /// </summary>
     [TestMethod]
@@ -148,6 +183,8 @@ public class SerializerTests
         var xmlSerializer = _registry.GetSerializerByExtension(".xml");
         var yamlSerializer = _registry.GetSerializerByExtension(".yaml");
         var yamlAltSerializer = _registry.GetSerializerByExtension(".yml");
+        var tomlSerializer = _registry.GetSerializerByExtension(".toml");
+        var tomlAltSerializer = _registry.GetSerializerByExtension(".tml");
         var unknownSerializer = _registry.GetSerializerByExtension(".unknown");
 
         // Assert
@@ -155,12 +192,16 @@ public class SerializerTests
         Assert.IsNotNull(xmlSerializer, "XML serializer should be available");
         Assert.IsNotNull(yamlSerializer, "YAML serializer should be available");
         Assert.IsNotNull(yamlAltSerializer, "YAML serializer should be available for .yml");
+        Assert.IsNotNull(tomlSerializer, "TOML serializer should be available");
+        Assert.IsNotNull(tomlAltSerializer, "TOML serializer should be available for .tml");
         Assert.IsNull(unknownSerializer, "Unknown serializer should not be available");
 
         Assert.AreEqual("application/json", jsonSerializer.ContentType);
         Assert.AreEqual("application/xml", xmlSerializer.ContentType);
         Assert.AreEqual("application/yaml", yamlSerializer.ContentType);
         Assert.AreEqual("application/yaml", yamlAltSerializer.ContentType);
+        Assert.AreEqual("application/toml", tomlSerializer.ContentType);
+        Assert.AreEqual("application/toml", tomlAltSerializer.ContentType);
     }
 
     /// <summary>
@@ -174,6 +215,8 @@ public class SerializerTests
         var xmlSerializer = _registry.DetectSerializer("test.xml");
         var yamlSerializer = _registry.DetectSerializer("test.yaml");
         var yamlAltSerializer = _registry.DetectSerializer("test.yml");
+        var tomlSerializer = _registry.DetectSerializer("test.toml");
+        var tomlAltSerializer = _registry.DetectSerializer("test.tml");
         var unknownSerializer = _registry.DetectSerializer("test.unknown");
 
         // Assert
@@ -181,12 +224,16 @@ public class SerializerTests
         Assert.IsNotNull(xmlSerializer, "XML serializer should be detected");
         Assert.IsNotNull(yamlSerializer, "YAML serializer should be detected");
         Assert.IsNotNull(yamlAltSerializer, "YAML serializer should be detected for .yml");
+        Assert.IsNotNull(tomlSerializer, "TOML serializer should be detected");
+        Assert.IsNotNull(tomlAltSerializer, "TOML serializer should be detected for .tml");
         Assert.IsNull(unknownSerializer, "Unknown serializer should not be detected");
 
         Assert.AreEqual("application/json", jsonSerializer.ContentType);
         Assert.AreEqual("application/xml", xmlSerializer.ContentType);
         Assert.AreEqual("application/yaml", yamlSerializer.ContentType);
         Assert.AreEqual("application/yaml", yamlAltSerializer.ContentType);
+        Assert.AreEqual("application/toml", tomlSerializer.ContentType);
+        Assert.AreEqual("application/toml", tomlAltSerializer.ContentType);
     }
 
     /// <summary>

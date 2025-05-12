@@ -42,14 +42,18 @@
   - [x] Add polymorphic serialization support
   - [x] Implement option mapping for YAML settings
 
-- [ ] Implement TOML serializer
-  - [ ] Add Tomlyn dependency
-  - [ ] Create `TomlSerializer` implementation
-  - [ ] Implement option mapping for TOML settings
+- [x] Implement TOML serializer
+  - [x] Add Tomlyn dependency
+  - [x] Create `TomlSerializer` implementation
+  - [x] Add string conversion support
+  - [x] Add polymorphic serialization support
+  - [x] Implement option mapping for TOML settings
 
 - [ ] Implement INI serializer
   - [ ] Add IniParser dependency
   - [ ] Create `IniSerializer` implementation
+  - [ ] Add support for section-based serialization
+  - [ ] Add limited polymorphic serialization support 
   - [ ] Implement option mapping for INI settings
 
 ## Phase 3: Binary Serializers

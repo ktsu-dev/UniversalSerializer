@@ -1,5 +1,6 @@
 <Project Sdk="ktsu.Sdk.Lib/1.8.0">
   <ItemGroup>
     <PackageReference Include="YamlDotNet" Version="13.7.1" />
+    <PackageReference Include="Tomlyn" Version="0.16.2" />
   </ItemGroup>
 </Project>

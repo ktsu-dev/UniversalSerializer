@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using ktsu.UniversalSerializer.Serialization.Json;
+using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using ktsu.UniversalSerializer.Serialization.Xml;
@@ -175,6 +176,46 @@ public static class SerializerServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Adds the TOML serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
+    /// <param name="registerAsDefault">Whether to register the TOML serializer as the default ISerializer.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddTomlSerializer(
+        this IServiceCollection services,
+        Action<SerializerOptions>? configureOptions = null,
+        bool registerAsDefault = false)
+    {
+        services.TryAddSingleton<TomlSerializer>(sp =>
+        {
+            var factory = sp.GetRequiredService<SerializerFactory>();
+            var options = factory.GetDefaultOptions();
+            configureOptions?.Invoke(options);
+
+            // Get type registry from DI
+            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
+
+            factory.RegisterSerializer<TomlSerializer>(opts => new TomlSerializer(opts, typeRegistry));
+            var serializer = factory.Create<TomlSerializer>(options);
+
+            // Register with the registry
+            var registry = sp.GetRequiredService<SerializerRegistry>();
+            registry.Register("toml", serializer);
+            registry.RegisterFileExtensions("toml", ".toml", ".tml");
+
+            return serializer;
+        });
+
+        if (registerAsDefault)
+        {
+            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<TomlSerializer>());
+        }
+
+        return services;
+    }
+
+    /// <summary>
     /// Adds a specific serializer type to the service collection.
     /// </summary>
     /// <typeparam name="TSerializer">The type of serializer to add.</typeparam>
@@ -224,7 +265,7 @@ public static class SerializerServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds all default serializers to the service collection.
+    /// Adds all built-in serializers to the service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configureOptions">Optional action to configure options for all serializers.</param>
@@ -237,9 +278,7 @@ public static class SerializerServiceCollectionExtensions
         services.AddJsonSerializer();
         services.AddXmlSerializer();
         services.AddYamlSerializer();
-
-        // Add additional serializers here as they are implemented
-
+        services.AddTomlSerializer();
         return services;
     }
 }
