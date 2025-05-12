@@ -10,11 +10,17 @@ namespace ktsu.UniversalSerializer.Serialization;
 /// </summary>
 public class SerializerRegistry
 {
+
+<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
     private readonly ConcurrentDictionary<string, ISerializer> _serializersByFormat = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ISerializer> _serializersByExtension = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
     private readonly SerializerFactory _factory;
+=======
+	private readonly required SerializerFactory _factory;
+>>>>>>> After
 
+<<<<<<< TODO: Unmerged change from project 'UniversalSerializer(net9.0)', Before:
     /// <summary>
     /// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
     /// </summary>
@@ -29,6 +35,32 @@ public class SerializerRegistry
     /// </summary>
     /// <param name="options">Optional serializer options.</param>
     public void RegisterBuiltIn(SerializerOptions? options = null)
+=======
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
+	/// </summary>
+	/// <param name="factory">The serializer factory to use.</param>
+	public SerializerRegistry(SerializerFactory factory) => _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+
+	/// <summary>
+	/// Registers built-in serializers.
+	/// </summary>
+	/// <param name="options">Optional serializer options.</param>
+	public static void RegisterBuiltIn(SerializerOptions? options = null)
+>>>>>>> After
+	private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
+	/// </summary>
+	/// <param name="factory">The serializer factory to use.</param>
+	public SerializerRegistry(SerializerFactory factory) => _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+
+	/// <summary>
+	/// Registers built-in serializers.
+	/// </summary>
+	/// <param name="options">Optional serializer options.</param>
+	public static void RegisterBuiltIn(SerializerOptions? options = null)
 =======
 using System.Collections.Concurrent;
 using ktsu.UniversalSerializer.Serialization.Yaml;
@@ -73,9 +105,6 @@ using ktsu.UniversalSerializer.Serialization.Yaml;
 /// <param name="factory">The serializer factory to use.</param>
 public class SerializerRegistry(SerializerFactory factory)
 {
-	private readonly ConcurrentDictionary<string, ISerializer> _serializersByFormat = new(StringComparer.OrdinalIgnoreCase);
-	private readonly ConcurrentDictionary<string, ISerializer> _serializersByExtension = new(StringComparer.OrdinalIgnoreCase);
-	private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
 	private readonly SerializerFactory _factory = factory ?? throw new ArgumentNullException(nameof(factory));
 
 	/// <summary>
@@ -134,7 +163,7 @@ public class SerializerRegistry(SerializerFactory factory)
 	/// </summary>
 	/// <param name="format">The format name.</param>
 	/// <param name="serializer">The serializer to register.</param>
-	public void Register(string format, ISerializer serializer)
+	public static void Register(string format, ISerializer serializer)
 	{
 		if (string.IsNullOrWhiteSpace(format))
 		{

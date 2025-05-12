@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 [TestClass]
 public class TypeConverterTests
 {
-	private TypeConverterRegistry _registry;
+	private required TypeConverterRegistry _registry;
 
 	/// <summary>
 	/// Initializes the test environment.
