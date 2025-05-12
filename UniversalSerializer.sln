@@ -1,11 +1,12 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepClone", "DeepClone\DeepClone.csproj", "{7A5C6073-4A36-48F5-9E54-18BD4F10BFCA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalSerializer", "UniversalSerializer\UniversalSerializer.csproj", "{7A5C6073-4A36-48F5-9E54-18BD4F10BFCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeepClone.Test", "DeepClone.Test\DeepClone.Test.csproj", "{A84F044C-43C5-4C61-9B64-E07A2BA601D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalSerializer.Test", "UniversalSerializer.Test\UniversalSerializer.Test.csproj", "{A84F044C-43C5-4C61-9B64-E07A2BA601D8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalSerializer.Benchmarks", "UniversalSerializer.Benchmarks\UniversalSerializer.Benchmarks.csproj", "{B95C8DE5-3D12-4D60-A8D3-9E1F39C5BB51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +22,10 @@ Global
 		{A84F044C-43C5-4C61-9B64-E07A2BA601D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A84F044C-43C5-4C61-9B64-E07A2BA601D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A84F044C-43C5-4C61-9B64-E07A2BA601D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B95C8DE5-3D12-4D60-A8D3-9E1F39C5BB51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B95C8DE5-3D12-4D60-A8D3-9E1F39C5BB51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B95C8DE5-3D12-4D60-A8D3-9E1F39C5BB51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B95C8DE5-3D12-4D60-A8D3-9E1F39C5BB51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

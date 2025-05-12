@@ -1,1 +1,1 @@
-Universal Serializer
+A unified serialization library for .NET that provides a consistent API for various serialization formats including JSON, XML, YAML, TOML, MessagePack, Protobuf, and FlatBuffers.
