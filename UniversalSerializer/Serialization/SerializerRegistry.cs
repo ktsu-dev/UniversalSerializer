@@ -5,6 +5,9 @@
 using System.Collections.Concurrent;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 using ktsu.UniversalSerializer.Serialization.Toml;
+using ktsu.UniversalSerializer.Serialization.MessagePack;
+using ktsu.UniversalSerializer.Serialization.Protobuf;
+using ktsu.UniversalSerializer.Serialization.FlatBuffers;
 
 namespace ktsu.UniversalSerializer.Serialization;
 
@@ -19,137 +22,147 @@ public class SerializerRegistry
     private readonly SerializerFactory _factory;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SerializerRegistry"/> class.
+    /// Initializes a new instance of the <see cref="SerializerRegistry"/> class with the specified factory.
     /// </summary>
-    /// <param name="factory">The serializer factory to use for creating serializers.</param>
+    /// <param name="factory">The serializer factory to use.</param>
     public SerializerRegistry(SerializerFactory factory)
     {
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
     }
 
     /// <summary>
-    /// Gets a collection of all registered serializer formats.
+    /// Registers built-in serializers.
     /// </summary>
-    public IEnumerable<string> Formats => _serializersByFormat.Keys;
+    /// <param name="options">Optional serializer options.</param>
+    public void RegisterBuiltIn(SerializerOptions? options = null)
+    {
+        var serializerOptions = options ?? SerializerOptions.Default();
 
-    /// <summary>
-    /// Gets a collection of all registered serializers.
-    /// </summary>
-    public IEnumerable<ISerializer> Serializers => _serializersByFormat.Values;
+        // Register JSON serializer
+        var jsonSerializer = _factory.Create<Json.JsonSerializer>(serializerOptions);
+        Register("json", jsonSerializer);
+        RegisterFileExtensions("json", ".json");
+        RegisterContentTypes("json", "application/json", "text/json");
+
+        // Register XML serializer
+        var xmlSerializer = _factory.Create<Xml.XmlSerializer>(serializerOptions);
+        Register("xml", xmlSerializer);
+        RegisterFileExtensions("xml", ".xml");
+        RegisterContentTypes("xml", "application/xml", "text/xml");
+
+        // Register YAML serializer
+        var yamlSerializer = _factory.Create<YamlSerializer>(serializerOptions);
+        Register("yaml", yamlSerializer);
+        RegisterFileExtensions("yaml", ".yaml", ".yml");
+        RegisterContentTypes("yaml", "application/x-yaml", "text/yaml");
+
+        // Register TOML serializer
+        var tomlSerializer = _factory.Create<TomlSerializer>(serializerOptions);
+        Register("toml", tomlSerializer);
+        RegisterFileExtensions("toml", ".toml", ".tml");
+        RegisterContentTypes("toml", "application/toml");
+
+        // Register MessagePack serializer
+        var messagePackSerializer = _factory.Create<MessagePackSerializer>(serializerOptions);
+        Register("messagepack", messagePackSerializer);
+        RegisterFileExtensions("messagepack", ".msgpack", ".mp");
+        RegisterContentTypes("messagepack", "application/x-msgpack");
+
+        // Register Protocol Buffers serializer
+        var protobufSerializer = _factory.Create<ProtobufSerializer>(serializerOptions);
+        Register("protobuf", protobufSerializer);
+        RegisterFileExtensions("protobuf", ".proto", ".pb", ".bin");
+        RegisterContentTypes("protobuf", "application/protobuf", "application/x-protobuf");
+
+        // Register FlatBuffers serializer
+        var flatBuffersSerializer = _factory.Create<FlatBuffersSerializer>(serializerOptions);
+        Register("flatbuffers", flatBuffersSerializer);
+        RegisterFileExtensions("flatbuffers", ".fbs", ".fb", ".flatbuffer");
+        RegisterContentTypes("flatbuffers", "application/flatbuffers", "application/x-flatbuffers");
+    }
 
     /// <summary>
     /// Registers a serializer with the registry.
     /// </summary>
-    /// <param name="format">The format name for the serializer.</param>
+    /// <param name="format">The format name.</param>
     /// <param name="serializer">The serializer to register.</param>
-    /// <returns>The current registry instance for method chaining.</returns>
-    public SerializerRegistry Register(string format, ISerializer serializer)
+    public void Register(string format, ISerializer serializer)
     {
         if (string.IsNullOrWhiteSpace(format))
         {
             throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
         }
 
-        if (serializer == null)
-        {
-            throw new ArgumentNullException(nameof(serializer));
-        }
-
-        _serializersByFormat[format] = serializer;
-
-        if (!string.IsNullOrWhiteSpace(serializer.FileExtension))
-        {
-            var extension = serializer.FileExtension.StartsWith('.')
-                ? serializer.FileExtension
-                : "." + serializer.FileExtension;
-
-            _serializersByExtension[extension] = serializer;
-        }
-
-        // Register additional file extensions for YAML
-        if (serializer is YamlSerializer yamlSerializer)
-        {
-            foreach (var ext in yamlSerializer.GetSupportedExtensions())
-            {
-                _serializersByExtension[ext] = serializer;
-            }
-        }
-
-        // Register additional file extensions for TOML
-        if (serializer is TomlSerializer tomlSerializer)
-        {
-            foreach (var ext in tomlSerializer.GetSupportedExtensions())
-            {
-                _serializersByExtension[ext] = serializer;
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(serializer.ContentType))
-        {
-            _serializersByContentType[serializer.ContentType] = serializer;
-        }
-
-        return this;
+        _serializersByFormat[format] = serializer ?? throw new ArgumentNullException(nameof(serializer));
     }
 
     /// <summary>
-    /// Registers additional file extensions for a registered serializer.
+    /// Registers file extensions for a serializer format.
     /// </summary>
-    /// <param name="format">The format name of the registered serializer.</param>
-    /// <param name="fileExtensions">The additional file extensions to register.</param>
-    /// <returns>The current registry instance for method chaining.</returns>
-    public SerializerRegistry RegisterFileExtensions(string format, params string[] fileExtensions)
+    /// <param name="format">The format name.</param>
+    /// <param name="extensions">The file extensions to register.</param>
+    public void RegisterFileExtensions(string format, params string[] extensions)
     {
         if (string.IsNullOrWhiteSpace(format))
         {
             throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
+        }
+
+        if (extensions == null || extensions.Length == 0)
+        {
+            throw new ArgumentException("At least one extension must be provided.", nameof(extensions));
         }
 
         if (!_serializersByFormat.TryGetValue(format, out var serializer))
         {
-            throw new ArgumentException($"No serializer registered for format '{format}'.", nameof(format));
+            throw new ArgumentException($"Format '{format}' is not registered.", nameof(format));
         }
 
-        foreach (var ext in fileExtensions)
+        foreach (var extension in extensions)
         {
-            if (string.IsNullOrWhiteSpace(ext))
-            {
-                continue;
-            }
-
-            var extension = ext.StartsWith('.') ? ext : "." + ext;
-            _serializersByExtension[extension] = serializer;
+            var ext = extension.StartsWith(".") ? extension : $".{extension}";
+            _serializersByExtension[ext] = serializer;
         }
-
-        return this;
     }
 
     /// <summary>
-    /// Creates and registers a serializer using the factory.
-    /// </summary>
-    /// <typeparam name="TSerializer">The type of serializer to create and register.</typeparam>
-    /// <param name="format">The format name for the serializer.</param>
-    /// <param name="options">Optional serializer options to use when creating the serializer.</param>
-    /// <returns>The current registry instance for method chaining.</returns>
-    public SerializerRegistry Register<TSerializer>(string format, SerializerOptions? options = null) where TSerializer : ISerializer
-    {
-        var serializer = options != null
-            ? _factory.Create<TSerializer>(options)
-            : _factory.Create<TSerializer>();
-
-        return Register(format, serializer);
-    }
-
-    /// <summary>
-    /// Gets a serializer for the specified format.
+    /// Registers content types for a serializer format.
     /// </summary>
     /// <param name="format">The format name.</param>
-    /// <returns>The serializer for the specified format, or null if not found.</returns>
+    /// <param name="contentTypes">The content types to register.</param>
+    public void RegisterContentTypes(string format, params string[] contentTypes)
+    {
+        if (string.IsNullOrWhiteSpace(format))
+        {
+            throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
+        }
+
+        if (contentTypes == null || contentTypes.Length == 0)
+        {
+            throw new ArgumentException("At least one content type must be provided.", nameof(contentTypes));
+        }
+
+        if (!_serializersByFormat.TryGetValue(format, out var serializer))
+        {
+            throw new ArgumentException($"Format '{format}' is not registered.", nameof(format));
+        }
+
+        foreach (var contentType in contentTypes)
+        {
+            _serializersByContentType[contentType] = serializer;
+        }
+    }
+
+    /// <summary>
+    /// Gets a serializer by format name.
+    /// </summary>
+    /// <param name="format">The format name.</param>
+    /// <returns>The serializer, or null if not found.</returns>
     public ISerializer? GetSerializer(string format)
     {
         if (string.IsNullOrWhiteSpace(format))
         {
-            return null;
+            throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
         }
 
         _serializersByFormat.TryGetValue(format, out var serializer);
@@ -157,44 +170,32 @@ public class SerializerRegistry
     }
 
     /// <summary>
-    /// Gets a typed serializer for the specified format.
+    /// Gets a serializer by file extension.
     /// </summary>
-    /// <typeparam name="TSerializer">The type of serializer to return.</typeparam>
-    /// <param name="format">The format name.</param>
-    /// <returns>The serializer for the specified format, or null if not found or not of the specified type.</returns>
-    public TSerializer? GetSerializer<TSerializer>(string format) where TSerializer : class, ISerializer
+    /// <param name="extension">The file extension.</param>
+    /// <returns>The serializer, or null if not found.</returns>
+    public ISerializer? GetSerializerByExtension(string extension)
     {
-        var serializer = GetSerializer(format);
-        return serializer as TSerializer;
-    }
-
-    /// <summary>
-    /// Gets a serializer for the specified file extension.
-    /// </summary>
-    /// <param name="fileExtension">The file extension (e.g., ".json").</param>
-    /// <returns>The serializer for the specified file extension, or null if not found.</returns>
-    public ISerializer? GetSerializerByExtension(string fileExtension)
-    {
-        if (string.IsNullOrWhiteSpace(fileExtension))
+        if (string.IsNullOrWhiteSpace(extension))
         {
-            return null;
+            throw new ArgumentException("Extension cannot be null or whitespace.", nameof(extension));
         }
 
-        var extension = fileExtension.StartsWith('.') ? fileExtension : "." + fileExtension;
-        _serializersByExtension.TryGetValue(extension, out var serializer);
+        var ext = extension.StartsWith(".") ? extension : $".{extension}";
+        _serializersByExtension.TryGetValue(ext, out var serializer);
         return serializer;
     }
 
     /// <summary>
-    /// Gets a serializer for the specified content type.
+    /// Gets a serializer by content type.
     /// </summary>
-    /// <param name="contentType">The content type (e.g., "application/json").</param>
-    /// <returns>The serializer for the specified content type, or null if not found.</returns>
+    /// <param name="contentType">The content type.</param>
+    /// <returns>The serializer, or null if not found.</returns>
     public ISerializer? GetSerializerByContentType(string contentType)
     {
         if (string.IsNullOrWhiteSpace(contentType))
         {
-            return null;
+            throw new ArgumentException("Content type cannot be null or whitespace.", nameof(contentType));
         }
 
         _serializersByContentType.TryGetValue(contentType, out var serializer);
@@ -202,54 +203,48 @@ public class SerializerRegistry
     }
 
     /// <summary>
-    /// Attempts to detect the serializer based on the file path.
-    /// </summary>
-    /// <param name="filePath">The file path.</param>
-    /// <returns>The serializer for the detected format, or null if not detected.</returns>
-    public ISerializer? DetectSerializer(string filePath)
-    {
-        if (string.IsNullOrWhiteSpace(filePath))
-        {
-            return null;
-        }
-
-        var extension = Path.GetExtension(filePath);
-        return GetSerializerByExtension(extension);
-    }
-
-    /// <summary>
-    /// Determines whether a serializer is registered for the specified format.
+    /// Determines whether a format is supported.
     /// </summary>
     /// <param name="format">The format name.</param>
-    /// <returns>true if a serializer is registered for the specified format; otherwise, false.</returns>
+    /// <returns>True if the format is supported, false otherwise.</returns>
     public bool IsFormatSupported(string format)
     {
-        return !string.IsNullOrWhiteSpace(format) && _serializersByFormat.ContainsKey(format);
-    }
-
-    /// <summary>
-    /// Determines whether a serializer is registered for the specified file extension.
-    /// </summary>
-    /// <param name="fileExtension">The file extension.</param>
-    /// <returns>true if a serializer is registered for the specified file extension; otherwise, false.</returns>
-    public bool IsExtensionSupported(string fileExtension)
-    {
-        if (string.IsNullOrWhiteSpace(fileExtension))
+        if (string.IsNullOrWhiteSpace(format))
         {
             return false;
         }
 
-        var extension = fileExtension.StartsWith('.') ? fileExtension : "." + fileExtension;
-        return _serializersByExtension.ContainsKey(extension);
+        return _serializersByFormat.ContainsKey(format);
     }
 
     /// <summary>
-    /// Determines whether a serializer is registered for the specified content type.
+    /// Determines whether a file extension is supported.
+    /// </summary>
+    /// <param name="extension">The file extension.</param>
+    /// <returns>True if the extension is supported, false otherwise.</returns>
+    public bool IsExtensionSupported(string extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            return false;
+        }
+
+        var ext = extension.StartsWith(".") ? extension : $".{extension}";
+        return _serializersByExtension.ContainsKey(ext);
+    }
+
+    /// <summary>
+    /// Determines whether a content type is supported.
     /// </summary>
     /// <param name="contentType">The content type.</param>
-    /// <returns>true if a serializer is registered for the specified content type; otherwise, false.</returns>
+    /// <returns>True if the content type is supported, false otherwise.</returns>
     public bool IsContentTypeSupported(string contentType)
     {
-        return !string.IsNullOrWhiteSpace(contentType) && _serializersByContentType.ContainsKey(contentType);
+        if (string.IsNullOrWhiteSpace(contentType))
+        {
+            return false;
+        }
+
+        return _serializersByContentType.ContainsKey(contentType);
     }
 }

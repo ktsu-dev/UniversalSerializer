@@ -21,81 +21,97 @@
   - [x] Create registration extension methods for DI
 
 - [x] Set up dependency injection
-  - [x] Create extension methods for registering serializers
-  - [x] Add support for configuring serializers through DI
+  - [x] Create extension methods for registering services
+  - [x] Add configuration options for serializers
+  - [x] Implement builder pattern for fluent registration
 
 ## Phase 2: Text-Based Serializers
 
 - [x] Implement JSON serializer
-  - [x] Create `JsonSerializer` implementation
-  - [x] Add support for polymorphic serialization
-  - [x] Add custom converters for complex types
-  - [x] Implement option mapping for JSON serializer settings
+  - [x] Create serializer implementation using `System.Text.Json`
+  - [x] Add JSON-specific options
+  - [x] Create tests
 
 - [x] Implement XML serializer
-  - [x] Create `XmlSerializer` implementation
-  - [x] Add support for polymorphic serialization using xsi:type
-  - [x] Add custom converters for complex types
-  - [x] Implement option mapping for XML serializer settings
+  - [x] Create serializer implementation using `System.Xml.Serialization`
+  - [x] Add XML-specific options
+  - [x] Create tests
 
 - [x] Implement YAML serializer
-  - [x] Add YamlDotNet dependency
-  - [x] Create `YamlSerializer` implementation
-  - [x] Add support for polymorphic serialization
-  - [x] Add custom converters for complex types
-  - [x] Implement option mapping for YamlDotNet settings
+  - [x] Add `YamlDotNet` package
+  - [x] Create serializer implementation
+  - [x] Add YAML-specific options
+  - [x] Create tests
 
 - [x] Implement TOML serializer
-  - [x] Add Tomlyn dependency
-  - [x] Create `TomlSerializer` implementation
-  - [x] Add support for polymorphic serialization
-  - [x] Implement option mapping for TOML settings
+  - [x] Add `Tomlyn` package
+  - [x] Create serializer implementation
+  - [x] Add TOML-specific options
+  - [x] Create tests
+
+- [x] ~~Implement INI serializer~~
+  - [x] ~~Add `INIFileParser` package~~
+  - [x] ~~Create serializer implementation~~
+  - [x] ~~Add INI-specific options~~
+  - [x] ~~Handle section-based formatting~~
+  - [x] ~~Create tests~~
+  - ~~Note: INI serializer was removed due to limited polymorphism support~~
 
 ## Phase 3: Binary Serializers
 
-- [ ] Implement MessagePack serializer
-  - [ ] Add MessagePack dependency
-  - [ ] Create `MessagePackSerializer` implementation
-  - [ ] Add support for polymorphic serialization
-  - [ ] Implement option mapping for MessagePack settings
+- [x] Implement MessagePack serializer
+  - [x] Add `MessagePack` package
+  - [x] Create serializer implementation
+  - [x] Add MessagePack-specific options
+  - [x] Create tests
 
-- [ ] Implement Protocol Buffers serializer
-  - [ ] Add protobuf-net dependency
-  - [ ] Create `ProtobufSerializer` implementation
-  - [ ] Add support for polymorphic serialization
-  - [ ] Implement option mapping for protobuf-net settings
+- [x] Implement Protocol Buffers serializer
+  - [x] Add `protobuf-net` package
+  - [x] Create serializer implementation
+  - [x] Add Protobuf-specific options
+  - [x] Handle type registration
+  - [x] Create tests
 
-- [ ] Implement FlatBuffers serializer
-  - [ ] Add FlatBuffers dependency
-  - [ ] Create `FlatBuffersSerializer` implementation
-  - [ ] Add support for polymorphic serialization (if possible)
-  - [ ] Implement option mapping for FlatBuffers settings
+- [x] Implement FlatBuffers serializer
+  - [x] Add `FlatSharp` package
+  - [x] Create serializer implementation
+  - [x] Add FlatBuffers-specific options
+  - [x] Create tests
 
 ## Phase 4: Finalization
 
-- [ ] Add comprehensive tests
-  - [ ] Unit tests for each serializer
+- [ ] Complete test coverage
+  - [ ] Unit tests for all serializers
+  - [ ] Integration tests for complex scenarios
   - [ ] Performance benchmarks
-  - [ ] Interoperability tests
 
-- [ ] Add documentation
-  - [ ] Add XML documentation comments
-  - [ ] Create usage examples
-  - [ ] Create README and API documentation
+- [ ] Create comprehensive documentation
+  - [ ] XML documentation comments
+  - [ ] README.md with examples
+  - [ ] API documentation
+  - [ ] Setup and configuration guide
 
-- [ ] Package for distribution
-  - [ ] Create NuGet package
-  - [ ] Set up versioning and release process
-  - [ ] Add package metadata and icons
+- [ ] Package and publish
+  - [ ] Configure NuGet package metadata
+  - [ ] Create CI/CD pipeline
+  - [ ] Publish to NuGet
 
 ## Future Enhancements
 
-- [x] Add custom type converters registry
-- [ ] Add support for streaming serialization
-- [ ] Add support for compression
-- [ ] Add support for encryption
-- [ ] Add support for more serialization formats:
-  - [ ] BSON
-  - [ ] CSV
-  - [ ] Apache Avro
-  - [ ] Apache Thrift
+- [ ] Add streaming serialization support
+  - [ ] Stream-based APIs for all serializers
+  - [ ] Large file handling
+
+- [ ] Add compression support
+  - [ ] GZip compression
+  - [ ] Deflate compression
+  - [ ] LZ4 compression
+
+- [ ] Add encryption support
+  - [ ] AES encryption
+  - [ ] Authenticated encryption
+
+- [ ] Add signing support
+  - [ ] HMAC signing
+  - [ ] RSA signing
+  - [ ] ECDSA signing

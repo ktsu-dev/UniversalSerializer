@@ -8,6 +8,9 @@ using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
+using ktsu.UniversalSerializer.Serialization.MessagePack;
+using ktsu.UniversalSerializer.Serialization.Protobuf;
+using ktsu.UniversalSerializer.Serialization.FlatBuffers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -19,247 +22,28 @@ namespace ktsu.UniversalSerializer.Serialization.DependencyInjection;
 public static class SerializerServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds the Universal Serializer factory and core services to the service collection.
+    /// Adds the Universal Serializer core services to the service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="configureOptions">Optional action to configure default options for all serializers.</param>
-    /// <returns>The service collection.</returns>
+    /// <param name="optionsAction">Optional action to configure options.</param>
+    /// <returns>The service collection with core services added.</returns>
     public static IServiceCollection AddUniversalSerializer(
         this IServiceCollection services,
-        Action<SerializerOptions>? configureOptions = null)
+        Action<SerializerOptions>? optionsAction = null)
     {
-        services.TryAddSingleton<SerializerFactory>(sp =>
-        {
-            var factory = new SerializerFactory();
-            configureOptions?.Invoke(factory.GetDefaultOptions());
-            return factory;
-        });
+        // Register options
+        var options = SerializerOptions.Default();
+        optionsAction?.Invoke(options);
+        services.TryAddSingleton(options);
 
-        services.TryAddSingleton<SerializerRegistry>(sp =>
-        {
-            var factory = sp.GetRequiredService<SerializerFactory>();
-            return new SerializerRegistry(factory);
-        });
-
-        // Register TypeConverterRegistry
+        // Register core services
+        services.TryAddSingleton<SerializerFactory>();
+        services.TryAddSingleton<SerializerRegistry>();
+        services.TryAddSingleton<TypeRegistry.TypeRegistry>();
         services.TryAddSingleton<TypeConverterRegistry>();
 
-        // Register TypeRegistry
-        services.TryAddSingleton<TypeRegistry.TypeRegistry>(sp =>
-        {
-            var factory = sp.GetRequiredService<SerializerFactory>();
-            return new TypeRegistry.TypeRegistry(factory.GetDefaultOptions());
-        });
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds the JSON serializer to the service collection.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
-    /// <param name="registerAsDefault">Whether to register the JSON serializer as the default ISerializer.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddJsonSerializer(
-        this IServiceCollection services,
-        Action<SerializerOptions>? configureOptions = null,
-        bool registerAsDefault = true)
-    {
-        services.TryAddSingleton<JsonSerializer>(sp =>
-        {
-            var factory = sp.GetRequiredService<SerializerFactory>();
-            var options = factory.GetDefaultOptions();
-            configureOptions?.Invoke(options);
-
-            // Get type converter registry and type registry from DI
-            var typeConverterRegistry = sp.GetService<TypeConverterRegistry>();
-            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
-
-            // Use the provider-configured factory to create and register the serializer
-            factory.RegisterSerializer<JsonSerializer>(opts =>
-                new JsonSerializer(opts, typeConverterRegistry, typeRegistry));
-
-            var serializer = factory.Create<JsonSerializer>(options);
-
-            // Register with the registry
-            var registry = sp.GetRequiredService<SerializerRegistry>();
-            registry.Register("json", serializer);
-
-            return serializer;
-        });
-
-        if (registerAsDefault)
-        {
-            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<JsonSerializer>());
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds the XML serializer to the service collection.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
-    /// <param name="registerAsDefault">Whether to register the XML serializer as the default ISerializer.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddXmlSerializer(
-        this IServiceCollection services,
-        Action<SerializerOptions>? configureOptions = null,
-        bool registerAsDefault = false)
-    {
-        services.TryAddSingleton<XmlSerializer>(sp =>
-        {
-            var factory = sp.GetRequiredService<SerializerFactory>();
-            var options = factory.GetDefaultOptions();
-            configureOptions?.Invoke(options);
-
-            // Get type registry from DI
-            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
-
-            factory.RegisterSerializer<XmlSerializer>(opts => new XmlSerializer(opts, typeRegistry));
-            var serializer = factory.Create<XmlSerializer>(options);
-
-            // Register with the registry
-            var registry = sp.GetRequiredService<SerializerRegistry>();
-            registry.Register("xml", serializer);
-
-            return serializer;
-        });
-
-        if (registerAsDefault)
-        {
-            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<XmlSerializer>());
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds the YAML serializer to the service collection.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
-    /// <param name="registerAsDefault">Whether to register the YAML serializer as the default ISerializer.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddYamlSerializer(
-        this IServiceCollection services,
-        Action<SerializerOptions>? configureOptions = null,
-        bool registerAsDefault = false)
-    {
-        services.TryAddSingleton<YamlSerializer>(sp =>
-        {
-            var factory = sp.GetRequiredService<SerializerFactory>();
-            var options = factory.GetDefaultOptions();
-            configureOptions?.Invoke(options);
-
-            // Get type registry from DI
-            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
-
-            factory.RegisterSerializer<YamlSerializer>(opts => new YamlSerializer(opts, typeRegistry));
-            var serializer = factory.Create<YamlSerializer>(options);
-
-            // Register with the registry
-            var registry = sp.GetRequiredService<SerializerRegistry>();
-            registry.Register("yaml", serializer);
-
-            return serializer;
-        });
-
-        if (registerAsDefault)
-        {
-            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<YamlSerializer>());
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds the TOML serializer to the service collection.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
-    /// <param name="registerAsDefault">Whether to register the TOML serializer as the default ISerializer.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddTomlSerializer(
-        this IServiceCollection services,
-        Action<SerializerOptions>? configureOptions = null,
-        bool registerAsDefault = false)
-    {
-        services.TryAddSingleton<TomlSerializer>(sp =>
-        {
-            var factory = sp.GetRequiredService<SerializerFactory>();
-            var options = factory.GetDefaultOptions();
-            configureOptions?.Invoke(options);
-
-            // Get type registry from DI
-            var typeRegistry = sp.GetService<TypeRegistry.TypeRegistry>();
-
-            factory.RegisterSerializer<TomlSerializer>(opts => new TomlSerializer(opts, typeRegistry));
-            var serializer = factory.Create<TomlSerializer>(options);
-
-            // Register with the registry
-            var registry = sp.GetRequiredService<SerializerRegistry>();
-            registry.Register("toml", serializer);
-            registry.RegisterFileExtensions("toml", ".toml", ".tml");
-
-            return serializer;
-        });
-
-        if (registerAsDefault)
-        {
-            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<TomlSerializer>());
-        }
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds a specific serializer type to the service collection.
-    /// </summary>
-    /// <typeparam name="TSerializer">The type of serializer to add.</typeparam>
-    /// <param name="services">The service collection.</param>
-    /// <param name="format">The format name to register the serializer under.</param>
-    /// <param name="factory">The factory function to create the serializer.</param>
-    /// <param name="configureOptions">Optional action to configure options specific to this serializer.</param>
-    /// <param name="registerAsDefault">Whether to register this serializer as the default ISerializer.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddSerializer<TSerializer>(
-        this IServiceCollection services,
-        string format,
-        Func<SerializerOptions, TSerializer> factory,
-        Action<SerializerOptions>? configureOptions = null,
-        bool registerAsDefault = false) where TSerializer : class, ISerializer
-    {
-        if (string.IsNullOrWhiteSpace(format))
-        {
-            throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
-        }
-
-        services.TryAddSingleton<TSerializer>(sp =>
-        {
-            var serializerFactory = sp.GetRequiredService<SerializerFactory>();
-            var options = serializerFactory.GetDefaultOptions();
-            configureOptions?.Invoke(options);
-
-            serializerFactory.RegisterSerializer(factory);
-            var serializer = serializerFactory.Create<TSerializer>(options);
-
-            // Register with the registry
-            var registry = sp.GetRequiredService<SerializerRegistry>();
-            registry.Register(format, serializer);
-
-            return serializer;
-        });
-
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ISerializer, TSerializer>(
-            sp => sp.GetRequiredService<TSerializer>()));
-
-        if (registerAsDefault)
-        {
-            services.TryAddSingleton<ISerializer>(sp => sp.GetRequiredService<TSerializer>());
-        }
+        // Register common helper services
+        services.TryAddTransient<ISerializerResolver, SerializerResolver>();
 
         return services;
     }
@@ -268,17 +52,93 @@ public static class SerializerServiceCollectionExtensions
     /// Adds all built-in serializers to the service collection.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="configureOptions">Optional action to configure options for all serializers.</param>
-    /// <returns>The service collection.</returns>
-    public static IServiceCollection AddAllSerializers(
-        this IServiceCollection services,
-        Action<SerializerOptions>? configureOptions = null)
+    /// <returns>The service collection with all built-in serializers added.</returns>
+    public static IServiceCollection AddAllSerializers(this IServiceCollection services)
     {
-        services.AddUniversalSerializer(configureOptions);
-        services.AddJsonSerializer();
-        services.AddXmlSerializer();
-        services.AddYamlSerializer();
-        services.AddTomlSerializer();
+        return services
+            .AddJsonSerializer()
+            .AddXmlSerializer()
+            .AddYamlSerializer()
+            .AddTomlSerializer()
+            .AddMessagePackSerializer()
+            .AddProtobufSerializer()
+            .AddFlatBuffersSerializer();
+    }
+
+    /// <summary>
+    /// Adds the JSON serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection with JSON serializer added.</returns>
+    public static IServiceCollection AddJsonSerializer(this IServiceCollection services)
+    {
+        services.TryAddTransient<JsonSerializer>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the XML serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection with XML serializer added.</returns>
+    public static IServiceCollection AddXmlSerializer(this IServiceCollection services)
+    {
+        services.TryAddTransient<XmlSerializer>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the YAML serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection with YAML serializer added.</returns>
+    public static IServiceCollection AddYamlSerializer(this IServiceCollection services)
+    {
+        services.TryAddTransient<YamlSerializer>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the TOML serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection with TOML serializer added.</returns>
+    public static IServiceCollection AddTomlSerializer(this IServiceCollection services)
+    {
+        services.TryAddTransient<TomlSerializer>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the MessagePack serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection with MessagePack serializer added.</returns>
+    public static IServiceCollection AddMessagePackSerializer(this IServiceCollection services)
+    {
+        services.TryAddTransient<MessagePackSerializer>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the Protocol Buffers serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection with Protocol Buffers serializer added.</returns>
+    public static IServiceCollection AddProtobufSerializer(this IServiceCollection services)
+    {
+        services.TryAddTransient<ProtobufSerializer>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the FlatBuffers serializer to the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection with FlatBuffers serializer added.</returns>
+    public static IServiceCollection AddFlatBuffersSerializer(this IServiceCollection services)
+    {
+        services.TryAddTransient<FlatBuffersSerializer>();
         return services;
     }
 }
