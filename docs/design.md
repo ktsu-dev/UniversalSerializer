@@ -187,7 +187,7 @@ public class SerializerOptions
     public SerializerOptions WithProtobufOption(string key, object value) => WithOption(key, value);
     public SerializerOptions WithFlatBuffersOption(string key, object value) => WithOption(key, value);
 }
-
+```
 ### ISerializerFactory
 
 A factory interface will allow retrieval of the appropriate serializer:
