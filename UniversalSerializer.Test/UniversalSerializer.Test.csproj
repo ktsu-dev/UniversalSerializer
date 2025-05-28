@@ -1,4 +1,4 @@
-<Project Sdk="ktsu.Sdk.Test/1.8.0">
+﻿<Project Sdk="ktsu.Sdk.Test">
   <ItemGroup>
     <PackageReference Update="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
     <PackageReference Update="Microsoft.Testing.Extensions.Fakes" Version="17.14.1" />
