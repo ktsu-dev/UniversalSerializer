@@ -2,6 +2,17 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+using MessagePack;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Xml.Serialization;
+using System.Xml;
+using System;
+
 namespace ktsu.UniversalSerializer.Serialization.DependencyInjection;
 using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.MessagePack;

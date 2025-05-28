@@ -2,6 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+using Tomlyn.Model;
+using Tomlyn;
+
 namespace ktsu.UniversalSerializer.Serialization.Toml;
 
 using System.Reflection;

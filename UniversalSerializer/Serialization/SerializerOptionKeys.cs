@@ -2,6 +2,12 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+using MessagePack;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+
 namespace ktsu.UniversalSerializer.Serialization;
 
 /// <summary>
