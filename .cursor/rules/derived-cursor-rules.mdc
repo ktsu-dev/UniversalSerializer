@@ -63,6 +63,24 @@ globs: *
 
 8.  Avoid using the Service Locator Pattern.
 
+9.  Ensure all necessary "using" statements are included at the top of each C# file, including but not limited to:
+    *   `using System;`
+    *   `using System.Collections.Generic;`
+    *   `using System.Threading;`
+    *   `using System.Threading.Tasks;`
+    *   `using System.Text.Json;` (when using `JsonConverter` or `JsonSerializer`)
+    *   `using System.Text.Json.Serialization;` (when using `JsonConverter` or `JsonSerializer`)
+    *   `using System.Xml;` (when using `XmlSerializer` or `XmlDocument`)
+    *   `using System.Xml.Serialization;` (when using `XmlSerializer` or `XmlDocument`)
+    *   `using YamlDotNet.Core;` (when using `YamlDotNet`)
+    *   `using YamlDotNet.Serialization;` (when using `YamlDotNet`)
+    *   `using MessagePack;` (when using `MessagePack`)
+    *   `using Tomlyn;` (when using `Tomlyn`)
+    *   `using Tomlyn.Model;` (when using `Tomlyn`)
+    *   `using Microsoft.Extensions.DependencyInjection;` (when using `IServiceCollection` or `ServiceCollectionExtensions`)
+    *   `using System.Linq;` (when using LINQ)
+    *   `using System.IO;`
+
 ## DEBUGGING
 
 ## TESTING

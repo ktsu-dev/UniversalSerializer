@@ -2,16 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ktsu.UniversalSerializer.Serialization.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 
 /// <summary>
@@ -25,30 +23,30 @@ using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptions options) : JsonConverterFactory
 {
 	private readonly TypeRegistry _typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
-	private readonly string _typeDiscriminatorPropertyName = options.GetValueOrDefault(SerializerOptionKeys.TypeRegistry.DiscriminatorPropertyName, SerializerDefaults.TypeDiscriminatorPropertyName);
-	private readonly string _discriminatorFormat = options.GetValueOrDefault(SerializerOptionKeys.TypeRegistry.DiscriminatorFormat, SerializerDefaults.TypeDiscriminatorFormat);
+	private readonly string _typeDiscriminatorPropertyName = options.GetOption(SerializerOptionKeys.TypeRegistry.DiscriminatorPropertyName, SerializerDefaults.TypeDiscriminatorPropertyName);
+	private readonly TypeDiscriminatorFormat _discriminatorFormat = Enum.TryParse<TypeDiscriminatorFormat>(options.GetOption(SerializerOptionKeys.TypeRegistry.DiscriminatorFormat, SerializerDefaults.TypeDiscriminatorFormat), out var format) ? format : TypeDiscriminatorFormat.Property;
 
 	/// <inheritdoc/>
-	public override bool CanConvert(Type typeToConvert) => _typeRegistry.HasPolymorphicTypes(typeToConvert);
+	public override bool CanConvert(Type typeToConvert) => _typeRegistry.HasPolymorphicTypes();
 
 	/// <inheritdoc/>
-	public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions jsonOptions)
+	public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
 	{
 		var converterType = typeof(JsonPolymorphicConverterInner<>).MakeGenericType(typeToConvert);
-		return (JsonConverter?)Activator.CreateInstance(converterType, _typeRegistry, options);
+		return (JsonConverter?)Activator.CreateInstance(converterType, _typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat);
 	}
 
-	private class JsonPolymorphicConverterInner<T> : JsonConverter<T>
+	private sealed class JsonPolymorphicConverterInner<T> : JsonConverter<T>
 	{
 		private readonly TypeRegistry _typeRegistry;
 		private readonly string _typeDiscriminatorPropertyName;
-		private readonly string _discriminatorFormat;
+		private readonly TypeDiscriminatorFormat _discriminatorFormat;
 
-		public JsonPolymorphicConverterInner(TypeRegistry typeRegistry, SerializerOptions options)
+		public JsonPolymorphicConverterInner(TypeRegistry typeRegistry, string typeDiscriminatorPropertyName, TypeDiscriminatorFormat discriminatorFormat)
 		{
 			_typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
-			_typeDiscriminatorPropertyName = options.GetValueOrDefault(SerializerOptionKeys.TypeRegistry.DiscriminatorPropertyName, SerializerDefaults.TypeDiscriminatorPropertyName);
-			_discriminatorFormat = options.GetValueOrDefault(SerializerOptionKeys.TypeRegistry.DiscriminatorFormat, SerializerDefaults.TypeDiscriminatorFormat);
+			_typeDiscriminatorPropertyName = typeDiscriminatorPropertyName;
+			_discriminatorFormat = discriminatorFormat;
 		}
 
 		public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -108,7 +106,7 @@ public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptio
 
 			// Deserialize to the concrete type
 			var json = rootElement.GetRawText();
-			return (T)JsonSerializer.Deserialize(json, type, options)!;
+			return (T)System.Text.Json.JsonSerializer.Deserialize(json, type, options)!;
 		}
 
 		public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -124,7 +122,7 @@ public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptio
 			// Skip discriminator if the concrete type is the exact type requested
 			if (concreteType == typeof(T))
 			{
-				JsonSerializer.Serialize(writer, value, concreteType, options);
+				System.Text.Json.JsonSerializer.Serialize(writer, value, options);
 				return;
 			}
 
@@ -134,7 +132,7 @@ public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptio
 			{
 				case TypeDiscriminatorFormat.Property:
 					// Serialize the value to a document
-					var valueJson = JsonSerializer.Serialize(value, concreteType, options);
+					var valueJson = System.Text.Json.JsonSerializer.Serialize(value, concreteType, options);
 
 					// Parse the document to add the type discriminator
 					using (var document = JsonDocument.Parse(valueJson))
@@ -163,7 +161,7 @@ public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptio
 					writer.WriteStartObject();
 					writer.WriteString("type", typeName);
 					writer.WritePropertyName("value");
-					JsonSerializer.Serialize(writer, value, concreteType, options);
+					System.Text.Json.JsonSerializer.Serialize(writer, value, concreteType, options);
 					writer.WriteEndObject();
 					break;
 				default:

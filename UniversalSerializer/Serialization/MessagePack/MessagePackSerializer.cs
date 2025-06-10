@@ -3,10 +3,11 @@
 // Licensed under the MIT license.
 
 using MessagePack;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ktsu.UniversalSerializer.Serialization.MessagePack;
 using global::MessagePack;
@@ -38,10 +39,10 @@ public class MessagePackSerializer : SerializerBase
 		_typeRegistry = typeRegistry;
 
 		// Create MessagePack options
-		var resolver = StandardResolver.Default;
+		var resolver = StandardResolver.Instance;
 		_options = global::MessagePack.MessagePackSerializerOptions.Standard
 			.WithResolver(resolver)
-			.WithSecurity(new MessagePackSecurity());
+			.WithSecurity(MessagePackSecurity.UntrustedData);
 	}
 
 	/// <inheritdoc/>

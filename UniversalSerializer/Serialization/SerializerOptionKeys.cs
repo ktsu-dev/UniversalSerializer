@@ -90,6 +90,27 @@ public static class SerializerOptionKeys
 	}
 
 	/// <summary>
+	/// XML serializer options.
+	/// </summary>
+	public static class Xml
+	{
+		/// <summary>
+		/// Option key for indenting XML output.
+		/// </summary>
+		public const string Indent = "Xml:Indent";
+
+		/// <summary>
+		/// Option key for omitting XML declaration.
+		/// </summary>
+		public const string OmitXmlDeclaration = "Xml:OmitXmlDeclaration";
+
+		/// <summary>
+		/// Option key for XML encoding.
+		/// </summary>
+		public const string Encoding = "Xml:Encoding";
+	}
+
+	/// <summary>
 	/// Type registry-related options.
 	/// </summary>
 	public static class TypeRegistry

@@ -2,13 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ktsu.UniversalSerializer.Serialization.TypeRegistry;
-using System.Reflection;
 
 /// <summary>
 /// A registry for managing type mappings in polymorphic serialization.
@@ -85,6 +86,12 @@ public class TypeRegistry(SerializerOptions options)
 			? type.AssemblyQualifiedName ?? type.FullName ?? type.Name
 			: type.FullName ?? type.Name;
 	}
+
+	/// <summary>
+	/// Checks if the registry has any polymorphic types registered.
+	/// </summary>
+	/// <returns>True if there are polymorphic types registered; otherwise, false.</returns>
+	public bool HasPolymorphicTypes() => _typeMap.Count > 0;
 
 	/// <summary>
 	/// Registers all subtypes of a base type.

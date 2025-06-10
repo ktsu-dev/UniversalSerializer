@@ -2,10 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ktsu.UniversalSerializer.Serialization.TypeConverter;
 using System.Collections.Concurrent;

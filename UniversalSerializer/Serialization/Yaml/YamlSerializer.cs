@@ -2,10 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -50,7 +51,7 @@ public class YamlSerializer : SerializerBase
 
 		// Configure serializer
 		_serializerBuilder = new SerializerBuilder()
-			.EmitDefaults()
+			.ConfigureDefaultValuesHandling(DefaultValuesHandling.Preserve)
 			.WithIndentedSequences();
 
 		// Configure deserializer

@@ -45,21 +45,15 @@ public class YamlPolymorphicNodeDeserializer : INodeDeserializer
 	}
 
 	/// <inheritdoc/>
-	public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value)
+	public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value, ObjectDeserializer rootDeserializer)
 	{
 		// Fallback to inner deserializer if not an abstract type or interface
-		if (!_typeRegistry.HasPolymorphicTypes(expectedType))
+		if (!_typeRegistry.HasPolymorphicTypes())
 		{
-			return _innerDeserializer.Deserialize(reader, expectedType, nestedObjectDeserializer, out value);
+			return _innerDeserializer.Deserialize(reader, expectedType, nestedObjectDeserializer, out value, rootDeserializer);
 		}
 
 		value = null;
 		return false;
-	}
-
-	/// <inheritdoc/>
-	public bool Deserialize(IParser parser, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value, ObjectDeserializer objectDeserializer)
-	{
-		return Deserialize(parser, expectedType, nestedObjectDeserializer, out value);
 	}
 }

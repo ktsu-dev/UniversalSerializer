@@ -2,12 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
-using Tomlyn.Model;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Tomlyn;
+using Tomlyn.Model;
 
 namespace ktsu.UniversalSerializer.Serialization.Toml;
 
@@ -48,9 +49,18 @@ public class TomlSerializer : SerializerBase
 			TypeDiscriminatorFormat.Property.ToString());
 
 		// Try to parse the format from string if stored as string
-		_discriminatorFormat = formatValue is string formatString && Enum.TryParse(formatString, out TypeDiscriminatorFormat format)
-			? format
-			: formatValue is TypeDiscriminatorFormat typeDiscriminatorFormat ? typeDiscriminatorFormat : TypeDiscriminatorFormat.Property;
+		if (formatValue is string formatString && Enum.TryParse(formatString, out TypeDiscriminatorFormat format))
+		{
+			_discriminatorFormat = format;
+		}
+		else if (formatValue is TypeDiscriminatorFormat typeDiscriminatorFormat)
+		{
+			_discriminatorFormat = typeDiscriminatorFormat;
+		}
+		else
+		{
+			_discriminatorFormat = TypeDiscriminatorFormat.Property;
+		}
 	}
 
 	/// <inheritdoc/>
@@ -74,7 +84,7 @@ public class TomlSerializer : SerializerBase
 		}
 
 		var tomlTable = ConvertObjectToToml(obj);
-		return Toml.ToText(tomlTable);
+		return Toml.FromModel(tomlTable);
 	}
 
 	/// <inheritdoc/>
@@ -86,7 +96,7 @@ public class TomlSerializer : SerializerBase
 		}
 
 		var tomlTable = ConvertObjectToToml(obj);
-		return Toml.ToText(tomlTable);
+		return Toml.FromModel(tomlTable);
 	}
 
 	/// <inheritdoc/>
