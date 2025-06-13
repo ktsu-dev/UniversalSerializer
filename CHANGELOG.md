@@ -17,6 +17,7 @@
 - initial commit ([@matt-edmondson](https://github.com/matt-edmondson))
 - Update .editorconfig to disable var usage for built-in types, modify .runsettings for parallel test execution, enhance .gitignore for SpecStory files, and update Directory.Packages.props with new dependencies and versioning. Introduce global.json for SDK management and refine PSBuild.psm1 for improved package publishing and version handling. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Update dependencies and enhance serialization options ([@matt-edmondson](https://github.com/matt-edmondson))
+- Remove PowerShell script for adding missing using statements and update README to reflect package name change to ktsu.UniversalSerializer. Add a new rule for ensuring unit and integration tests with > 80% code coverage. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Remove unnescessary file ([@matt-edmondson](https://github.com/matt-edmondson))
 - Complete implementation tasks for UniversalSerializer project ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add TOML serialization support ([@matt-edmondson](https://github.com/matt-edmondson))
