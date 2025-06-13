@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.IO;
+using ktsu.UniversalSerializer.Serialization.Compression;
 
 namespace ktsu.UniversalSerializer.Serialization;
 
@@ -19,6 +20,7 @@ namespace ktsu.UniversalSerializer.Serialization;
 /// <param name="options">The serializer options.</param>
 public abstract class SerializerBase(SerializerOptions options) : ISerializer
 {
+	private static readonly CompressionManager s_compressionManager = new();
 
 	/// <summary>
 	/// Gets the serializer options.
@@ -47,19 +49,41 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	public virtual byte[] SerializeToBytes<T>(T obj)
 	{
 		var serialized = Serialize(obj);
-		return System.Text.Encoding.UTF8.GetBytes(serialized);
+		var bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
+
+		// Apply compression if enabled
+		if (Options.EnableCompression && Options.CompressionType != CompressionType.None)
+		{
+			return s_compressionManager.Compress(bytes, Options.CompressionType, Options.CompressionLevel);
+		}
+
+		return bytes;
 	}
 
 	/// <inheritdoc/>
 	public virtual byte[] SerializeToBytes(object obj, Type type)
 	{
 		var serialized = Serialize(obj, type);
-		return System.Text.Encoding.UTF8.GetBytes(serialized);
+		var bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
+
+		// Apply compression if enabled
+		if (Options.EnableCompression && Options.CompressionType != CompressionType.None)
+		{
+			return s_compressionManager.Compress(bytes, Options.CompressionType, Options.CompressionLevel);
+		}
+
+		return bytes;
 	}
 
 	/// <inheritdoc/>
 	public virtual T DeserializeFromBytes<T>(byte[] bytes)
 	{
+		// Apply decompression if enabled
+		if (Options.EnableCompression && Options.CompressionType != CompressionType.None)
+		{
+			bytes = s_compressionManager.Decompress(bytes, Options.CompressionType);
+		}
+
 		var serialized = System.Text.Encoding.UTF8.GetString(bytes);
 		return Deserialize<T>(serialized);
 	}
@@ -67,6 +91,12 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	/// <inheritdoc/>
 	public virtual object DeserializeFromBytes(byte[] bytes, Type type)
 	{
+		// Apply decompression if enabled
+		if (Options.EnableCompression && Options.CompressionType != CompressionType.None)
+		{
+			bytes = s_compressionManager.Decompress(bytes, Options.CompressionType);
+		}
+
 		var serialized = System.Text.Encoding.UTF8.GetString(bytes);
 		return Deserialize(serialized, type);
 	}

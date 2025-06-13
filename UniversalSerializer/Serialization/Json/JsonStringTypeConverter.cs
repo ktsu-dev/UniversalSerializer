@@ -37,7 +37,8 @@ public class JsonStringTypeConverter(TypeConverterRegistry typeConverterRegistry
 			[_typeConverterRegistry])!;
 	}
 
-	private class JsonStringTypeConverterInner<T>(TypeConverterRegistry typeConverterRegistry) : JsonConverter<T>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated via reflection")]
+	private sealed class JsonStringTypeConverterInner<T>(TypeConverterRegistry typeConverterRegistry) : JsonConverter<T>
 	{
 		private readonly TypeConverterRegistry _typeConverterRegistry = typeConverterRegistry;
 

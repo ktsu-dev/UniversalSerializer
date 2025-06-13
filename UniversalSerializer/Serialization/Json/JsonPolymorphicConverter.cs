@@ -36,6 +36,7 @@ public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptio
 		return (JsonConverter?)Activator.CreateInstance(converterType, _typeRegistry, _typeDiscriminatorPropertyName, _discriminatorFormat);
 	}
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated via reflection")]
 	private sealed class JsonPolymorphicConverterInner<T> : JsonConverter<T>
 	{
 		private readonly TypeRegistry _typeRegistry;
