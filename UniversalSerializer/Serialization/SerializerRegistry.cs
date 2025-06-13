@@ -181,4 +181,35 @@ public class SerializerRegistry(SerializerFactory factory)
 		_serializersByContentType.TryGetValue(contentType, out ISerializer? serializer);
 		return serializer;
 	}
+
+	/// <summary>
+	/// Checks if a format is supported.
+	/// </summary>
+	/// <param name="format">The format name to check.</param>
+	/// <returns>True if the format is supported; otherwise, false.</returns>
+	public bool IsFormatSupported(string format)
+	{
+		if (string.IsNullOrWhiteSpace(format))
+		{
+			return false;
+		}
+
+		return _serializersByFormat.ContainsKey(format);
+	}
+
+	/// <summary>
+	/// Checks if a file extension is supported.
+	/// </summary>
+	/// <param name="extension">The file extension to check.</param>
+	/// <returns>True if the extension is supported; otherwise, false.</returns>
+	public bool IsExtensionSupported(string extension)
+	{
+		if (string.IsNullOrWhiteSpace(extension))
+		{
+			return false;
+		}
+
+		string ext = extension.StartsWith('.') ? extension : $".{extension}";
+		return _serializersByExtension.ContainsKey(ext);
+	}
 }

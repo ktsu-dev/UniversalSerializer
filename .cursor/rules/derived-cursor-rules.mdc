@@ -136,3 +136,14 @@ globs: *
 ## REFERENCES & EXTERNAL LINKS
 
 ## CODE SNIPPETS
+
+1.  To suppress the CS8981 warning about lowercase namespace names in MessagePack generated code, add `<NoWarn>$(NoWarn);CS8981</NoWarn>` to the test project file, or use a `GlobalSuppressions.cs` file.
+
+2.  When using the `SerializerFactory`, register serializer creators before creating instances:
+    ```csharp
+    _factory.RegisterSerializer<JsonSerializer>(options => new JsonSerializer(options));
+    _factory.RegisterSerializer<XmlSerializer>(options => new XmlSerializer(options));
+    _factory.RegisterSerializer<YamlSerializer>(options => new YamlSerializer(options));
+    _factory.RegisterSerializer<TomlSerializer>(options => new TomlSerializer(options));
+    _factory.RegisterSerializer<MessagePackSerializer>(options => new MessagePackSerializer(options));
+    ```

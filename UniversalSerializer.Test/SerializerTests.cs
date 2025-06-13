@@ -31,6 +31,14 @@ public class SerializerTests
 	{
 		_factory = new SerializerFactory();
 		_options = SerializerOptions.Default();
+
+		// Register serializer creators with the factory
+		_factory.RegisterSerializer(options => new JsonSerializer(options));
+		_factory.RegisterSerializer(options => new XmlSerializer(options));
+		_factory.RegisterSerializer(options => new YamlSerializer(options));
+		_factory.RegisterSerializer(options => new TomlSerializer(options));
+		_factory.RegisterSerializer(options => new MessagePackSerializer(options));
+
 		_registry = new SerializerRegistry(_factory);
 		_registry.RegisterBuiltIn(_options);
 	}
@@ -138,7 +146,7 @@ public class SerializerTests
 		Assert.AreEqual(testObject.Name, deserialized.Name);
 		Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
 		Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
+		CollectionAssert.AreEqual((System.Collections.ICollection?)testObject.Tags, (System.Collections.ICollection?)deserialized.Tags);
 	}
 
 	/// <summary>
@@ -168,7 +176,7 @@ public class SerializerTests
 		Assert.AreEqual(testObject.Name, deserialized.Name);
 		Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
 		Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
+		CollectionAssert.AreEqual((System.Collections.ICollection?)testObject.Tags, (System.Collections.ICollection?)deserialized.Tags);
 	}
 
 	/// <summary>
@@ -196,7 +204,7 @@ public class SerializerTests
 		Assert.AreEqual(testObject.Id, deserialized.Id);
 		Assert.AreEqual(testObject.Name, deserialized.Name);
 		Assert.AreEqual(testObject.Description, deserialized.Description);
-		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
+		CollectionAssert.AreEqual((System.Collections.ICollection?)testObject.Tags, (System.Collections.ICollection?)deserialized.Tags);
 	}
 }
 
@@ -244,7 +252,7 @@ public class TestModel
 	/// <summary>
 	/// Gets or sets the tags.
 	/// </summary>
-	public List<string>? Tags { get; set; }
+	public IList<string>? Tags { get; init; }
 }
 
 /// <summary>
@@ -275,5 +283,5 @@ public class MessagePackTestClass
 	/// Gets or sets the tags.
 	/// </summary>
 	[MessagePack.Key(3)]
-	public List<string>? Tags { get; set; }
+	public IList<string>? Tags { get; init; }
 }

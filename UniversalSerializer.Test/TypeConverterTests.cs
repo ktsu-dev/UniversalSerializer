@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 namespace ktsu.UniversalSerializer.Test;
+using System;
 using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,7 +13,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 [TestClass]
 public class TypeConverterTests
 {
-	private required TypeConverterRegistry _registry;
+	/// <summary>
+	/// Gets or sets the type converter registry used for testing.
+	/// </summary>
+	public required TypeConverterRegistry Registry { get; set; }
 
 	/// <summary>
 	/// Initializes the test environment.
@@ -20,7 +24,7 @@ public class TypeConverterTests
 	[TestInitialize]
 	public void Initialize()
 	{
-		_registry = new TypeConverterRegistry();
+		Registry = new TypeConverterRegistry();
 	}
 
 	/// <summary>
@@ -31,22 +35,22 @@ public class TypeConverterTests
 	{
 		// Test int to string conversion
 		int intValue = 42;
-		string stringValue = _registry.ConvertToString(intValue);
+		string stringValue = Registry.ConvertToString(intValue);
 		Assert.AreEqual("42", stringValue);
-		int convertedIntValue = _registry.ConvertFromString<int>(stringValue);
+		int convertedIntValue = Registry.ConvertFromString<int>(stringValue);
 		Assert.AreEqual(intValue, convertedIntValue);
 
 		// Test bool to string conversion
 		bool boolValue = true;
-		stringValue = _registry.ConvertToString(boolValue);
+		stringValue = Registry.ConvertToString(boolValue);
 		Assert.AreEqual("True", stringValue);
-		bool convertedBoolValue = _registry.ConvertFromString<bool>(stringValue);
+		bool convertedBoolValue = Registry.ConvertFromString<bool>(stringValue);
 		Assert.AreEqual(boolValue, convertedBoolValue);
 
 		// Test DateTime to string conversion (using built-in converter)
 		DateTime dateTimeValue = new(2023, 1, 1, 12, 0, 0);
-		stringValue = _registry.ConvertToString(dateTimeValue);
-		DateTime convertedDateTimeValue = _registry.ConvertFromString<DateTime>(stringValue);
+		stringValue = Registry.ConvertToString(dateTimeValue);
+		DateTime convertedDateTimeValue = Registry.ConvertFromString<DateTime>(stringValue);
 		Assert.AreEqual(dateTimeValue, convertedDateTimeValue);
 	}
 
@@ -59,12 +63,12 @@ public class TypeConverterTests
 		// Arrange
 		string customFormat = "yyyy/MM/dd";
 		DateTimeCustomConverter customConverter = new(customFormat);
-		_registry.RegisterConverter(customConverter);
+		Registry.RegisterConverter(customConverter);
 
 		// Act
 		DateTime dateTimeValue = new(2023, 1, 1);
-		string stringValue = _registry.ConvertToString(dateTimeValue);
-		DateTime convertedDateTimeValue = _registry.ConvertFromString<DateTime>(stringValue);
+		string stringValue = Registry.ConvertToString(dateTimeValue);
+		DateTime convertedDateTimeValue = Registry.ConvertFromString<DateTime>(stringValue);
 
 		// Assert
 		Assert.AreEqual("2023/01/01", stringValue);
@@ -81,23 +85,23 @@ public class TypeConverterTests
 		DateTimeCustomConverter customConverter = new("yyyy-MM-dd");
 
 		// Act & Assert - Before Registration
-		Assert.IsTrue(_registry.HasConverter(typeof(DateTime)), "DateTime should have a converter by default");
+		Assert.IsTrue(Registry.HasConverter(typeof(DateTime)), "DateTime should have a converter by default");
 
 		// Register custom converter
-		_registry.RegisterConverter(customConverter);
+		Registry.RegisterConverter(customConverter);
 
 		// Act & Assert - After Registration
 		DateTime dateTimeValue = new(2023, 1, 1);
-		string stringValue = _registry.ConvertToString(dateTimeValue);
+		string stringValue = Registry.ConvertToString(dateTimeValue);
 		Assert.AreEqual("2023-01-01", stringValue);
 
 		// Remove converter
-		bool removed = _registry.RemoveConverter<DateTime>();
+		bool removed = Registry.RemoveConverter<DateTime>();
 
 		// Act & Assert - After Removal
 		Assert.IsTrue(removed, "Converter should be removed successfully");
 		// The default converter should still handle DateTime after custom converter is removed
-		Assert.IsTrue(_registry.HasConverter(typeof(DateTime)), "DateTime should still have a converter after removal");
+		Assert.IsTrue(Registry.HasConverter(typeof(DateTime)), "DateTime should still have a converter after removal");
 	}
 
 	/// <summary>
@@ -145,13 +149,13 @@ public class TypeConverterTests
 	{
 		// Arrange
 		CustomTypeConverter customConverter = new();
-		_registry.RegisterConverter(customConverter);
+		Registry.RegisterConverter(customConverter);
 
 		// Act
 		CustomType customObj = new()
 		{ Id = 123, Name = "Test" };
-		string stringValue = _registry.ConvertToString(customObj);
-		CustomType convertedObj = _registry.ConvertFromString<CustomType>(stringValue);
+		string stringValue = Registry.ConvertToString(customObj);
+		CustomType convertedObj = Registry.ConvertFromString<CustomType>(stringValue);
 
 		// Assert
 		Assert.AreEqual("123|Test", stringValue);

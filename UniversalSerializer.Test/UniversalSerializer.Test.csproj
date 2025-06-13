@@ -1,5 +1,9 @@
 ﻿<Project Sdk="ktsu.Sdk.Test">
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../UniversalSerializer/UniversalSerializer.csproj" />
   </ItemGroup>

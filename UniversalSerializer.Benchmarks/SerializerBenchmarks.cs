@@ -15,6 +15,9 @@ using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 
+/// <summary>
+/// Benchmarks for various serializers to compare performance.
+/// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class SerializerBenchmarks
@@ -23,6 +26,9 @@ public class SerializerBenchmarks
 	private readonly TestData _testData;
 	private readonly TestData[] _testDataArray;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SerializerBenchmarks"/> class.
+	/// </summary>
 	public SerializerBenchmarks()
 	{
 		ServiceCollection services = new();
@@ -81,6 +87,10 @@ public class SerializerBenchmarks
 		}
 	}
 
+	/// <summary>
+	/// Benchmarks JSON serialization performance.
+	/// </summary>
+	/// <returns>The serialized JSON string.</returns>
 	[Benchmark(Baseline = true)]
 	public string JsonSerialize()
 	{
@@ -88,6 +98,10 @@ public class SerializerBenchmarks
 		return serializer.Serialize(_testData);
 	}
 
+	/// <summary>
+	/// Benchmarks JSON deserialization performance.
+	/// </summary>
+	/// <returns>The deserialized test data object.</returns>
 	[Benchmark]
 	public TestData JsonDeserialize()
 	{
@@ -96,6 +110,10 @@ public class SerializerBenchmarks
 		return serializer.Deserialize<TestData>(json);
 	}
 
+	/// <summary>
+	/// Benchmarks XML serialization performance.
+	/// </summary>
+	/// <returns>The serialized XML string.</returns>
 	[Benchmark]
 	public string XmlSerialize()
 	{
@@ -103,6 +121,10 @@ public class SerializerBenchmarks
 		return serializer.Serialize(_testData);
 	}
 
+	/// <summary>
+	/// Benchmarks XML deserialization performance.
+	/// </summary>
+	/// <returns>The deserialized test data object.</returns>
 	[Benchmark]
 	public TestData XmlDeserialize()
 	{
@@ -111,6 +133,10 @@ public class SerializerBenchmarks
 		return serializer.Deserialize<TestData>(xml);
 	}
 
+	/// <summary>
+	/// Benchmarks YAML serialization performance.
+	/// </summary>
+	/// <returns>The serialized YAML string.</returns>
 	[Benchmark]
 	public string YamlSerialize()
 	{
@@ -118,6 +144,10 @@ public class SerializerBenchmarks
 		return serializer.Serialize(_testData);
 	}
 
+	/// <summary>
+	/// Benchmarks YAML deserialization performance.
+	/// </summary>
+	/// <returns>The deserialized test data object.</returns>
 	[Benchmark]
 	public TestData YamlDeserialize()
 	{
@@ -126,6 +156,10 @@ public class SerializerBenchmarks
 		return serializer.Deserialize<TestData>(yaml);
 	}
 
+	/// <summary>
+	/// Benchmarks TOML serialization performance.
+	/// </summary>
+	/// <returns>The serialized TOML string.</returns>
 	[Benchmark]
 	public string TomlSerialize()
 	{
@@ -133,6 +167,10 @@ public class SerializerBenchmarks
 		return serializer.Serialize(_testData);
 	}
 
+	/// <summary>
+	/// Benchmarks TOML deserialization performance.
+	/// </summary>
+	/// <returns>The deserialized test data object.</returns>
 	[Benchmark]
 	public TestData TomlDeserialize()
 	{
@@ -141,6 +179,10 @@ public class SerializerBenchmarks
 		return serializer.Deserialize<TestData>(toml);
 	}
 
+	/// <summary>
+	/// Benchmarks MessagePack serialization performance.
+	/// </summary>
+	/// <returns>The serialized MessagePack string.</returns>
 	[Benchmark]
 	public string MessagePackSerialize()
 	{
@@ -148,6 +190,10 @@ public class SerializerBenchmarks
 		return serializer.Serialize(_testData);
 	}
 
+	/// <summary>
+	/// Benchmarks MessagePack deserialization performance.
+	/// </summary>
+	/// <returns>The deserialized test data object.</returns>
 	[Benchmark]
 	public TestData MessagePackDeserialize()
 	{
@@ -156,6 +202,10 @@ public class SerializerBenchmarks
 		return serializer.Deserialize<TestData>(msgpack);
 	}
 
+	/// <summary>
+	/// Benchmarks JSON serialization performance for arrays.
+	/// </summary>
+	/// <returns>An array of serialized JSON strings.</returns>
 	[Benchmark]
 	public string[] JsonSerializeArray()
 	{
@@ -169,6 +219,10 @@ public class SerializerBenchmarks
 		return results;
 	}
 
+	/// <summary>
+	/// Benchmarks MessagePack serialization performance for arrays.
+	/// </summary>
+	/// <returns>An array of serialized MessagePack strings.</returns>
 	[Benchmark]
 	public string[] MessagePackSerializeArray()
 	{

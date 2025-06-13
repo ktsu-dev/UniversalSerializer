@@ -3,12 +3,12 @@
 <Project Sdk="ktsu.Sdk.Lib">
 
   <ItemGroup>
+    <PackageReference Include="K4os.Compression.LZ4" />
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="Tomlyn" />
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="K4os.Compression.LZ4" />
   </ItemGroup>
 
 </Project>

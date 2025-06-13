@@ -191,8 +191,16 @@ public class TomlSerializer : SerializerBase
 			return string.Empty;
 		}
 
+		// Handle DateTime specially to ensure proper TOML format
+		if (type == typeof(DateTime))
+		{
+			DateTime dateTime = (DateTime)value;
+			// Convert to ISO 8601 format without timezone to preserve the original DateTime
+			return dateTime.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+		}
+
 		// Handle primitive types
-		if (type.IsPrimitive || type == typeof(string) || type == typeof(DateTime) || type == typeof(decimal))
+		if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal))
 		{
 			return value;
 		}
@@ -278,6 +286,76 @@ public class TomlSerializer : SerializerBase
 		if (targetType == typeof(string))
 		{
 			return value.ToString();
+		}
+
+		// Handle DateTime conversion
+		if (targetType == typeof(DateTime))
+		{
+			if (value is DateTime dateTime)
+			{
+				return dateTime;
+			}
+			if (value is string dateString)
+			{
+				// Try multiple DateTime parsing formats
+				if (DateTime.TryParse(dateString, out DateTime parsedDate))
+				{
+					return parsedDate;
+				}
+				// Try ISO 8601 format without timezone
+				if (DateTime.TryParseExact(dateString, "yyyy-MM-ddTHH:mm:ss.fff",
+					System.Globalization.CultureInfo.InvariantCulture,
+					System.Globalization.DateTimeStyles.None, out DateTime isoDate))
+				{
+					return isoDate;
+				}
+				// Try ISO 8601 format with Z suffix
+				if (DateTime.TryParseExact(dateString, "yyyy-MM-ddTHH:mm:ss.fffZ",
+					System.Globalization.CultureInfo.InvariantCulture,
+					System.Globalization.DateTimeStyles.AssumeUniversal, out DateTime isoDateZ))
+				{
+					return isoDateZ;
+				}
+			}
+			if (value is DateTimeOffset dateTimeOffset)
+			{
+				return dateTimeOffset.DateTime;
+			}
+		}
+
+		// Handle nullable DateTime
+		if (targetType == typeof(DateTime?))
+		{
+			if (value is DateTime dateTime)
+			{
+				return dateTime;
+			}
+			if (value is string dateString)
+			{
+				// Try multiple DateTime parsing formats
+				if (DateTime.TryParse(dateString, out DateTime parsedDate))
+				{
+					return parsedDate;
+				}
+				// Try ISO 8601 format without timezone
+				if (DateTime.TryParseExact(dateString, "yyyy-MM-ddTHH:mm:ss.fff",
+					System.Globalization.CultureInfo.InvariantCulture,
+					System.Globalization.DateTimeStyles.None, out DateTime isoDate))
+				{
+					return isoDate;
+				}
+				// Try ISO 8601 format with Z suffix
+				if (DateTime.TryParseExact(dateString, "yyyy-MM-ddTHH:mm:ss.fffZ",
+					System.Globalization.CultureInfo.InvariantCulture,
+					System.Globalization.DateTimeStyles.AssumeUniversal, out DateTime isoDateZ))
+				{
+					return isoDateZ;
+				}
+			}
+			if (value is DateTimeOffset dateTimeOffset)
+			{
+				return dateTimeOffset.DateTime;
+			}
 		}
 
 		if (targetType.IsPrimitive)
