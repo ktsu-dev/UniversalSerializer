@@ -1,3 +1,6 @@
+## v1.0.0
+
+No significant changes detected since v1.0.0.
 ## v1.0.0 (major)
 
 - Refactor project files to use custom SDKs for improved build management. Updated UniversalSerializer, UniversalSerializer.Benchmarks, and UniversalSerializer.Test projects to utilize ktsu.Sdk.Lib, ktsu.Sdk.ConsoleApp, and ktsu.Sdk.Test respectively. This change enhances compatibility and streamlines the build process across different project types. ([@matt-edmondson](https://github.com/matt-edmondson))
