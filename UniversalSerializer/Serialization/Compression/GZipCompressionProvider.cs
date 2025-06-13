@@ -23,15 +23,15 @@ public class GZipCompressionProvider : ICompressionProvider
 	{
 		ArgumentNullException.ThrowIfNull(data);
 
-		var compressionLevel = level switch
+		CompressionLevel compressionLevel = level switch
 		{
-			<= 3 => System.IO.Compression.CompressionLevel.Fastest,
-			<= 6 => System.IO.Compression.CompressionLevel.Optimal,
-			_ => System.IO.Compression.CompressionLevel.SmallestSize
+			<= 3 => CompressionLevel.Fastest,
+			<= 6 => CompressionLevel.Optimal,
+			_ => CompressionLevel.SmallestSize
 		};
 
-		using var output = new MemoryStream();
-		using (var gzip = new GZipStream(output, compressionLevel))
+		using MemoryStream output = new();
+		using (GZipStream gzip = new(output, compressionLevel))
 		{
 			gzip.Write(data, 0, data.Length);
 		}
@@ -43,9 +43,9 @@ public class GZipCompressionProvider : ICompressionProvider
 	{
 		ArgumentNullException.ThrowIfNull(compressedData);
 
-		using var input = new MemoryStream(compressedData);
-		using var gzip = new GZipStream(input, CompressionMode.Decompress);
-		using var output = new MemoryStream();
+		using MemoryStream input = new(compressedData);
+		using GZipStream gzip = new(input, CompressionMode.Decompress);
+		using MemoryStream output = new();
 
 		gzip.CopyTo(output);
 		return output.ToArray();
@@ -57,17 +57,17 @@ public class GZipCompressionProvider : ICompressionProvider
 		ArgumentNullException.ThrowIfNull(data);
 		cancellationToken.ThrowIfCancellationRequested();
 
-		var compressionLevel = level switch
+		CompressionLevel compressionLevel = level switch
 		{
-			<= 3 => System.IO.Compression.CompressionLevel.Fastest,
-			<= 6 => System.IO.Compression.CompressionLevel.Optimal,
-			_ => System.IO.Compression.CompressionLevel.SmallestSize
+			<= 3 => CompressionLevel.Fastest,
+			<= 6 => CompressionLevel.Optimal,
+			_ => CompressionLevel.SmallestSize
 		};
 
-		using var output = new MemoryStream();
-		using (var gzip = new GZipStream(output, compressionLevel))
+		using MemoryStream output = new();
+		using (GZipStream gzip = new(output, compressionLevel))
 		{
-			await gzip.WriteAsync(data, 0, data.Length, cancellationToken).ConfigureAwait(false);
+			await gzip.WriteAsync(data, cancellationToken).ConfigureAwait(false);
 		}
 		return output.ToArray();
 	}
@@ -78,9 +78,9 @@ public class GZipCompressionProvider : ICompressionProvider
 		ArgumentNullException.ThrowIfNull(compressedData);
 		cancellationToken.ThrowIfCancellationRequested();
 
-		using var input = new MemoryStream(compressedData);
-		using var gzip = new GZipStream(input, CompressionMode.Decompress);
-		using var output = new MemoryStream();
+		using MemoryStream input = new(compressedData);
+		using GZipStream gzip = new(input, CompressionMode.Decompress);
+		using MemoryStream output = new();
 
 		await gzip.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
 		return output.ToArray();

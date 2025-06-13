@@ -46,12 +46,9 @@ public class CompressionManager
 	/// <exception cref="NotSupportedException">Thrown when the compression type is not supported.</exception>
 	public ICompressionProvider GetProvider(CompressionType compressionType)
 	{
-		if (compressionType == CompressionType.None)
-		{
-			throw new ArgumentException("Cannot get provider for CompressionType.None", nameof(compressionType));
-		}
-
-		return _providers.TryGetValue(compressionType, out var provider)
+		return compressionType == CompressionType.None
+			? throw new ArgumentException("Cannot get provider for CompressionType.None", nameof(compressionType))
+			: _providers.TryGetValue(compressionType, out ICompressionProvider? provider)
 			? provider
 			: throw new NotSupportedException($"Compression type {compressionType} is not supported");
 	}
@@ -61,10 +58,7 @@ public class CompressionManager
 	/// </summary>
 	/// <param name="compressionType">The compression type to check.</param>
 	/// <returns>true if the compression type is supported; otherwise, false.</returns>
-	public bool IsSupported(CompressionType compressionType)
-	{
-		return compressionType == CompressionType.None || _providers.ContainsKey(compressionType);
-	}
+	public bool IsSupported(CompressionType compressionType) => compressionType == CompressionType.None || _providers.ContainsKey(compressionType);
 
 	/// <summary>
 	/// Compresses data using the specified compression type.
@@ -82,7 +76,7 @@ public class CompressionManager
 			return data;
 		}
 
-		var provider = GetProvider(compressionType);
+		ICompressionProvider provider = GetProvider(compressionType);
 		return provider.Compress(data, level);
 	}
 
@@ -101,7 +95,7 @@ public class CompressionManager
 			return compressedData;
 		}
 
-		var provider = GetProvider(compressionType);
+		ICompressionProvider provider = GetProvider(compressionType);
 		return provider.Decompress(compressedData);
 	}
 
@@ -123,7 +117,7 @@ public class CompressionManager
 			return data;
 		}
 
-		var provider = GetProvider(compressionType);
+		ICompressionProvider provider = GetProvider(compressionType);
 		return await provider.CompressAsync(data, level, cancellationToken).ConfigureAwait(false);
 	}
 
@@ -144,7 +138,7 @@ public class CompressionManager
 			return compressedData;
 		}
 
-		var provider = GetProvider(compressionType);
+		ICompressionProvider provider = GetProvider(compressionType);
 		return await provider.DecompressAsync(compressedData, cancellationToken).ConfigureAwait(false);
 	}
 }

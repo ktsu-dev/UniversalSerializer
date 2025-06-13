@@ -2,12 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization;
+using System;
 using System.Collections.Concurrent;
 
 /// <summary>
@@ -54,9 +50,9 @@ public class SerializerFactory : ISerializerFactory
 	/// <exception cref="InvalidOperationException">Thrown when the serializer type has not been registered.</exception>
 	public TSerializer Create<TSerializer>(SerializerOptions options) where TSerializer : ISerializer
 	{
-		var serializerType = typeof(TSerializer);
+		Type serializerType = typeof(TSerializer);
 
-		return !_serializerCreators.TryGetValue(serializerType, out var creator)
+		return !_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator)
 			? throw new InvalidOperationException($"No creator registered for serializer type {serializerType.Name}.")
 			: (TSerializer)creator(options ?? _defaultOptions);
 	}
@@ -80,7 +76,7 @@ public class SerializerFactory : ISerializerFactory
 	{
 		return !typeof(ISerializer).IsAssignableFrom(serializerType)
 			? throw new ArgumentException($"Type {serializerType.Name} does not implement ISerializer.", nameof(serializerType))
-			: !_serializerCreators.TryGetValue(serializerType, out var creator)
+			: !_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator)
 			? throw new InvalidOperationException($"No creator registered for serializer type {serializerType.Name}.")
 			: creator(options ?? _defaultOptions);
 	}
@@ -102,13 +98,10 @@ public class SerializerFactory : ISerializerFactory
 	/// <returns>A copy of the default options.</returns>
 	public SerializerOptions GetDefaultOptions() => _defaultOptions.Clone();
 
-    /// <summary>
-    /// Gets a serializer of the specified type.
-    /// </summary>
-    /// <typeparam name="TSerializer">The type of serializer to get.</typeparam>
-    /// <returns>An instance of the specified serializer type.</returns>
-    public TSerializer GetSerializer<TSerializer>() where TSerializer : ISerializer
-    {
-        return Create<TSerializer>();
-    }
+	/// <summary>
+	/// Gets a serializer of the specified type.
+	/// </summary>
+	/// <typeparam name="TSerializer">The type of serializer to get.</typeparam>
+	/// <returns>An instance of the specified serializer type.</returns>
+	public TSerializer GetSerializer<TSerializer>() where TSerializer : ISerializer => Create<TSerializer>();
 }

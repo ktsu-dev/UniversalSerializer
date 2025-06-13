@@ -2,19 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+namespace ktsu.UniversalSerializer.Serialization.Yaml;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization;
-
-namespace ktsu.UniversalSerializer.Serialization.Yaml;
-
-using System.Text;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
-using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NodeDeserializers;
 
@@ -59,9 +53,9 @@ public class YamlSerializer : SerializerBase
 			.IgnoreUnmatchedProperties();
 
 		// Handle enum serialization format
-		var enumFormat = GetOption<object>(SerializerOptionKeys.Common.EnumFormat, EnumSerializationFormat.Name.ToString());
+		object enumFormat = GetOption<object>(SerializerOptionKeys.Common.EnumFormat, EnumSerializationFormat.Name.ToString());
 		if (enumFormat is string enumFormatStr &&
-			Enum.TryParse<EnumSerializationFormat>(enumFormatStr, out var enumSerializationFormat) &&
+			Enum.TryParse(enumFormatStr, out EnumSerializationFormat enumSerializationFormat) &&
 			enumSerializationFormat == EnumSerializationFormat.Name)
 		{
 			_serializerBuilder.WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance);
@@ -92,10 +86,10 @@ public class YamlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		var serializer = _serializerBuilder.Build();
-		var stringBuilder = new StringBuilder();
+		ISerializer serializer = _serializerBuilder.Build();
+		StringBuilder stringBuilder = new();
 
-		using var writer = new StringWriter(stringBuilder);
+		using StringWriter writer = new(stringBuilder);
 		serializer.Serialize(writer, obj);
 
 		return stringBuilder.ToString();
@@ -109,10 +103,10 @@ public class YamlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		var serializer = _serializerBuilder.Build();
-		var stringBuilder = new StringBuilder();
+		ISerializer serializer = _serializerBuilder.Build();
+		StringBuilder stringBuilder = new();
 
-		using var writer = new StringWriter(stringBuilder);
+		using StringWriter writer = new(stringBuilder);
 		serializer.Serialize(writer, obj);
 
 		return stringBuilder.ToString();
@@ -126,9 +120,9 @@ public class YamlSerializer : SerializerBase
 			return default!;
 		}
 
-		var deserializer = _deserializerBuilder.Build();
+		IDeserializer deserializer = _deserializerBuilder.Build();
 
-		using var reader = new StringReader(serialized);
+		using StringReader reader = new(serialized);
 		return deserializer.Deserialize<T>(reader);
 	}
 
@@ -140,21 +134,15 @@ public class YamlSerializer : SerializerBase
 			return null!;
 		}
 
-		var deserializer = _deserializerBuilder.Build();
+		IDeserializer deserializer = _deserializerBuilder.Build();
 
-		using var reader = new StringReader(serialized);
+		using StringReader reader = new(serialized);
 		return deserializer.Deserialize(reader, type)!;
 	}
 
 	/// <inheritdoc/>
-	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default)
-	{
-		return await Task.Run(() => Serialize(obj), cancellationToken).ConfigureAwait(false);
-	}
+	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default) => await Task.Run(() => Serialize(obj), cancellationToken).ConfigureAwait(false);
 
 	/// <inheritdoc/>
-	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default)
-	{
-		return await Task.Run(() => Deserialize<T>(serialized), cancellationToken).ConfigureAwait(false);
-	}
+	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default) => await Task.Run(() => Deserialize<T>(serialized), cancellationToken).ConfigureAwait(false);
 }

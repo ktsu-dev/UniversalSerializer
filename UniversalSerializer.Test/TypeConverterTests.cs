@@ -30,23 +30,23 @@ public class TypeConverterTests
 	public void StringConvertibleTypeConverter_ConvertToAndFromString_ReturnsOriginalValue()
 	{
 		// Test int to string conversion
-		var intValue = 42;
-		var stringValue = _registry.ConvertToString(intValue);
+		int intValue = 42;
+		string stringValue = _registry.ConvertToString(intValue);
 		Assert.AreEqual("42", stringValue);
-		var convertedIntValue = _registry.ConvertFromString<int>(stringValue);
+		int convertedIntValue = _registry.ConvertFromString<int>(stringValue);
 		Assert.AreEqual(intValue, convertedIntValue);
 
 		// Test bool to string conversion
-		var boolValue = true;
+		bool boolValue = true;
 		stringValue = _registry.ConvertToString(boolValue);
 		Assert.AreEqual("True", stringValue);
-		var convertedBoolValue = _registry.ConvertFromString<bool>(stringValue);
+		bool convertedBoolValue = _registry.ConvertFromString<bool>(stringValue);
 		Assert.AreEqual(boolValue, convertedBoolValue);
 
 		// Test DateTime to string conversion (using built-in converter)
-		var dateTimeValue = new DateTime(2023, 1, 1, 12, 0, 0);
+		DateTime dateTimeValue = new(2023, 1, 1, 12, 0, 0);
 		stringValue = _registry.ConvertToString(dateTimeValue);
-		var convertedDateTimeValue = _registry.ConvertFromString<DateTime>(stringValue);
+		DateTime convertedDateTimeValue = _registry.ConvertFromString<DateTime>(stringValue);
 		Assert.AreEqual(dateTimeValue, convertedDateTimeValue);
 	}
 
@@ -57,14 +57,14 @@ public class TypeConverterTests
 	public void CustomDateTimeConverter_ConvertToAndFromString_UsesCustomFormat()
 	{
 		// Arrange
-		var customFormat = "yyyy/MM/dd";
-		var customConverter = new DateTimeCustomConverter(customFormat);
+		string customFormat = "yyyy/MM/dd";
+		DateTimeCustomConverter customConverter = new(customFormat);
 		_registry.RegisterConverter(customConverter);
 
 		// Act
-		var dateTimeValue = new DateTime(2023, 1, 1);
-		var stringValue = _registry.ConvertToString(dateTimeValue);
-		var convertedDateTimeValue = _registry.ConvertFromString<DateTime>(stringValue);
+		DateTime dateTimeValue = new(2023, 1, 1);
+		string stringValue = _registry.ConvertToString(dateTimeValue);
+		DateTime convertedDateTimeValue = _registry.ConvertFromString<DateTime>(stringValue);
 
 		// Assert
 		Assert.AreEqual("2023/01/01", stringValue);
@@ -78,7 +78,7 @@ public class TypeConverterTests
 	public void TypeConverterRegistry_RegisterAndRemoveConverter_WorksCorrectly()
 	{
 		// Arrange
-		var customConverter = new DateTimeCustomConverter("yyyy-MM-dd");
+		DateTimeCustomConverter customConverter = new("yyyy-MM-dd");
 
 		// Act & Assert - Before Registration
 		Assert.IsTrue(_registry.HasConverter(typeof(DateTime)), "DateTime should have a converter by default");
@@ -87,12 +87,12 @@ public class TypeConverterTests
 		_registry.RegisterConverter(customConverter);
 
 		// Act & Assert - After Registration
-		var dateTimeValue = new DateTime(2023, 1, 1);
-		var stringValue = _registry.ConvertToString(dateTimeValue);
+		DateTime dateTimeValue = new(2023, 1, 1);
+		string stringValue = _registry.ConvertToString(dateTimeValue);
 		Assert.AreEqual("2023-01-01", stringValue);
 
 		// Remove converter
-		var removed = _registry.RemoveConverter<DateTime>();
+		bool removed = _registry.RemoveConverter<DateTime>();
 
 		// Act & Assert - After Removal
 		Assert.IsTrue(removed, "Converter should be removed successfully");
@@ -128,10 +128,10 @@ public class TypeConverterTests
 				return new CustomType();
 			}
 
-			var parts = value.Split('|');
+			string[] parts = value.Split('|');
 			return new CustomType
 			{
-				Id = parts.Length > 0 && int.TryParse(parts[0], out var id) ? id : 0,
+				Id = parts.Length > 0 && int.TryParse(parts[0], out int id) ? id : 0,
 				Name = parts.Length > 1 ? parts[1] : string.Empty
 			};
 		}
@@ -144,13 +144,14 @@ public class TypeConverterTests
 	public void CustomConverter_ForCustomType_WorksCorrectly()
 	{
 		// Arrange
-		var customConverter = new CustomTypeConverter();
+		CustomTypeConverter customConverter = new();
 		_registry.RegisterConverter(customConverter);
 
 		// Act
-		var customObj = new CustomType { Id = 123, Name = "Test" };
-		var stringValue = _registry.ConvertToString(customObj);
-		var convertedObj = _registry.ConvertFromString<CustomType>(stringValue);
+		CustomType customObj = new()
+		{ Id = 123, Name = "Test" };
+		string stringValue = _registry.ConvertToString(customObj);
+		CustomType convertedObj = _registry.ConvertFromString<CustomType>(stringValue);
 
 		// Assert
 		Assert.AreEqual("123|Test", stringValue);

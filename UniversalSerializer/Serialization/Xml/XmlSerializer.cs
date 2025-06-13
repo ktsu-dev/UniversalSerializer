@@ -2,18 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+namespace ktsu.UniversalSerializer.Serialization.Xml;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
-
-namespace ktsu.UniversalSerializer.Serialization.Xml;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 
 /// <summary>
@@ -21,7 +17,7 @@ using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 /// </summary>
 public class XmlSerializer : SerializerBase
 {
-	private readonly Dictionary<Type, System.Xml.Serialization.XmlSerializer> _serializerCache = new();
+	private readonly Dictionary<Type, System.Xml.Serialization.XmlSerializer> _serializerCache = [];
 	private readonly XmlWriterSettings _writerSettings;
 	private readonly XmlReaderSettings _readerSettings;
 	private readonly TypeRegistry? _typeRegistry;
@@ -55,7 +51,7 @@ public class XmlSerializer : SerializerBase
 
 		if (HasOption(SerializerOptionKeys.Xml.Encoding))
 		{
-			var encodingName = GetOption(SerializerOptionKeys.Xml.Encoding, "utf-8");
+			string encodingName = GetOption(SerializerOptionKeys.Xml.Encoding, "utf-8");
 			_writerSettings.Encoding = Encoding.GetEncoding(encodingName);
 		}
 		else
@@ -85,10 +81,10 @@ public class XmlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		var xmlSerializer = GetXmlSerializer(typeof(T));
+		System.Xml.Serialization.XmlSerializer xmlSerializer = GetXmlSerializer(typeof(T));
 
-		using var stringWriter = new StringWriter();
-		using var xmlWriter = XmlWriter.Create(stringWriter, _writerSettings);
+		using StringWriter stringWriter = new();
+		using XmlWriter xmlWriter = XmlWriter.Create(stringWriter, _writerSettings);
 		xmlSerializer.Serialize(xmlWriter, obj);
 		return stringWriter.ToString();
 	}
@@ -101,10 +97,10 @@ public class XmlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		var xmlSerializer = GetXmlSerializer(type);
+		System.Xml.Serialization.XmlSerializer xmlSerializer = GetXmlSerializer(type);
 
-		using var stringWriter = new StringWriter();
-		using var xmlWriter = XmlWriter.Create(stringWriter, _writerSettings);
+		using StringWriter stringWriter = new();
+		using XmlWriter xmlWriter = XmlWriter.Create(stringWriter, _writerSettings);
 		xmlSerializer.Serialize(xmlWriter, obj);
 		return stringWriter.ToString();
 	}
@@ -117,9 +113,9 @@ public class XmlSerializer : SerializerBase
 			return default!;
 		}
 
-		var xmlSerializer = GetXmlSerializer(typeof(T));
+		System.Xml.Serialization.XmlSerializer xmlSerializer = GetXmlSerializer(typeof(T));
 
-		using var stringReader = new StringReader(serialized);
+		using StringReader stringReader = new(serialized);
 		return (T)xmlSerializer.Deserialize(stringReader)!;
 	}
 
@@ -131,34 +127,28 @@ public class XmlSerializer : SerializerBase
 			return null!;
 		}
 
-		var xmlSerializer = GetXmlSerializer(type);
+		System.Xml.Serialization.XmlSerializer xmlSerializer = GetXmlSerializer(type);
 
-		using var stringReader = new StringReader(serialized);
+		using StringReader stringReader = new(serialized);
 		return xmlSerializer.Deserialize(stringReader)!;
 	}
 
 	/// <inheritdoc/>
-	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default)
-	{
-		return await Task.Run(() => Serialize(obj), cancellationToken).ConfigureAwait(false);
-	}
+	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default) => await Task.Run(() => Serialize(obj), cancellationToken).ConfigureAwait(false);
 
 	/// <inheritdoc/>
-	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default)
-	{
-		return await Task.Run(() => Deserialize<T>(serialized), cancellationToken).ConfigureAwait(false);
-	}
+	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default) => await Task.Run(() => Deserialize<T>(serialized), cancellationToken).ConfigureAwait(false);
 
 	private System.Xml.Serialization.XmlSerializer GetXmlSerializer(Type type)
 	{
 		// Check if we have a cached serializer
-		if (_serializerCache.TryGetValue(type, out var cachedSerializer))
+		if (_serializerCache.TryGetValue(type, out System.Xml.Serialization.XmlSerializer? cachedSerializer))
 		{
 			return cachedSerializer;
 		}
 
 		// Create a new serializer
-		var newSerializer = new System.Xml.Serialization.XmlSerializer(type);
+		System.Xml.Serialization.XmlSerializer newSerializer = new(type);
 
 		// Cache the serializer
 		_serializerCache[type] = newSerializer;

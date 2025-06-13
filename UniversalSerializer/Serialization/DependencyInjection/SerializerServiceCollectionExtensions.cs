@@ -2,18 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using MessagePack;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Xml.Serialization;
-using System.Xml;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization.DependencyInjection;
+using System;
+using System.Text.Json;
+using System.Xml.Serialization;
+using global::MessagePack;
 using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.MessagePack;
 using ktsu.UniversalSerializer.Serialization.Toml;
@@ -40,7 +33,7 @@ public static class SerializerServiceCollectionExtensions
 		Action<SerializerOptions>? optionsAction = null)
 	{
 		// Register options
-		var options = SerializerOptions.Default();
+		SerializerOptions options = SerializerOptions.Default();
 		optionsAction?.Invoke(options);
 		services.TryAddSingleton(options);
 

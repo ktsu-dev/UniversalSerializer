@@ -2,14 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization.Json;
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ktsu.UniversalSerializer.Serialization.TypeConverter;
@@ -31,7 +25,7 @@ public class JsonStringTypeConverter(TypeConverterRegistry typeConverterRegistry
 	/// <inheritdoc/>
 	public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
 	{
-		var converterType = typeof(JsonStringTypeConverterInner<>).MakeGenericType(typeToConvert);
+		Type converterType = typeof(JsonStringTypeConverterInner<>).MakeGenericType(typeToConvert);
 		return (JsonConverter)Activator.CreateInstance(
 			converterType,
 			[_typeConverterRegistry])!;
@@ -49,7 +43,7 @@ public class JsonStringTypeConverter(TypeConverterRegistry typeConverterRegistry
 				throw new JsonException($"Cannot convert {reader.TokenType} to {typeToConvert}. Expected string.");
 			}
 
-			var stringValue = reader.GetString();
+			string? stringValue = reader.GetString();
 			return stringValue == null
 				? throw new JsonException($"Cannot convert null to {typeToConvert}.")
 				: (T)_typeConverterRegistry.ConvertFromString(stringValue, typeToConvert);
@@ -63,7 +57,7 @@ public class JsonStringTypeConverter(TypeConverterRegistry typeConverterRegistry
 				return;
 			}
 
-			var stringValue = _typeConverterRegistry.ConvertToString(value);
+			string stringValue = _typeConverterRegistry.ConvertToString(value);
 			writer.WriteStringValue(stringValue);
 		}
 	}

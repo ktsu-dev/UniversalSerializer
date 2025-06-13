@@ -2,17 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+namespace ktsu.UniversalSerializer.Serialization.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
-namespace ktsu.UniversalSerializer.Serialization.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 
@@ -63,7 +59,7 @@ public class JsonSerializer : SerializerBase
 
 		if (HasOption(SerializerOptionKeys.Json.PropertyNamingPolicy))
 		{
-			var policy = GetOption<string>(SerializerOptionKeys.Json.PropertyNamingPolicy, null);
+			string policy = GetOption<string>(SerializerOptionKeys.Json.PropertyNamingPolicy, null);
 			if (policy != null)
 			{
 				_jsonOptions.PropertyNamingPolicy = policy.ToLowerInvariant() switch
@@ -79,9 +75,9 @@ public class JsonSerializer : SerializerBase
 		}
 
 		// Add enum converter if specified
-		var enumFormat = GetOption<object>(SerializerOptionKeys.Common.EnumFormat, EnumSerializationFormat.Name.ToString());
+		object enumFormat = GetOption<object>(SerializerOptionKeys.Common.EnumFormat, EnumSerializationFormat.Name.ToString());
 		if (enumFormat is string enumFormatStr &&
-			Enum.TryParse<EnumSerializationFormat>(enumFormatStr, out var enumSerializationFormat) &&
+			Enum.TryParse(enumFormatStr, out EnumSerializationFormat enumSerializationFormat) &&
 			enumSerializationFormat == EnumSerializationFormat.Name)
 		{
 			_jsonOptions.Converters.Add(new JsonStringEnumConverter());
@@ -125,17 +121,17 @@ public class JsonSerializer : SerializerBase
 	/// <inheritdoc/>
 	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default)
 	{
-		using var stream = new MemoryStream();
+		using MemoryStream stream = new();
 		await System.Text.Json.JsonSerializer.SerializeAsync(stream, obj, _jsonOptions, cancellationToken).ConfigureAwait(false);
 		stream.Position = 0;
-		using var reader = new StreamReader(stream);
+		using StreamReader reader = new(stream);
 		return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
 	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default)
 	{
-		using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(serialized));
+		using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(serialized));
 		return await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false)!;
 	}
 }

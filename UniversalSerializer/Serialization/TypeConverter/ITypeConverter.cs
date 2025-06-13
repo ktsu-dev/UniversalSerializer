@@ -2,12 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization.TypeConverter;
+using System;
 
 /// <summary>
 /// Defines a type converter that can convert between objects and string representations.

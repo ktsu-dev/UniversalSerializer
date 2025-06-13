@@ -2,14 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+namespace ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace ktsu.UniversalSerializer.Serialization.TypeRegistry;
 
 /// <summary>
 /// A registry for managing type mappings in polymorphic serialization.
@@ -57,7 +54,7 @@ public class TypeRegistry(SerializerOptions options)
 			throw new ArgumentException("Type name cannot be null or empty.", nameof(typeName));
 		}
 
-		if (_typeMap.TryGetValue(typeName, out var type))
+		if (_typeMap.TryGetValue(typeName, out Type? type))
 		{
 			return type;
 		}
@@ -75,13 +72,13 @@ public class TypeRegistry(SerializerOptions options)
 	{
 		ArgumentNullException.ThrowIfNull(type);
 
-		if (_nameMap.TryGetValue(type, out var name))
+		if (_nameMap.TryGetValue(type, out string? name))
 		{
 			return name;
 		}
 
 		// Get type name based on options
-		var useFullyQualifiedName = _options.GetOption("TypeRegistry:UseFullyQualifiedTypeNames", false);
+		bool useFullyQualifiedName = _options.GetOption("TypeRegistry:UseFullyQualifiedTypeNames", false);
 		return useFullyQualifiedName
 			? type.AssemblyQualifiedName ?? type.FullName ?? type.Name
 			: type.FullName ?? type.Name;
@@ -102,7 +99,7 @@ public class TypeRegistry(SerializerOptions options)
 	{
 		assembly ??= Assembly.GetAssembly(typeof(TBase)) ?? throw new InvalidOperationException("Could not get assembly for type.");
 
-		foreach (var type in assembly.GetTypes()
+		foreach (Type? type in assembly.GetTypes()
 			.Where(t => typeof(TBase).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface))
 		{
 			RegisterType(type);

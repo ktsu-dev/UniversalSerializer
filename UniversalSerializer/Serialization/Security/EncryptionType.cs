@@ -17,12 +17,12 @@ public enum EncryptionType
 	/// <summary>
 	/// AES encryption with CBC mode.
 	/// </summary>
-	AES_CBC,
+	AESCBC,
 
 	/// <summary>
 	/// AES encryption with GCM mode (authenticated encryption).
 	/// </summary>
-	AES_GCM,
+	AESGCM,
 
 	/// <summary>
 	/// ChaCha20-Poly1305 authenticated encryption.

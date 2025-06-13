@@ -12,7 +12,7 @@ public interface ICompressionProvider
 	/// <summary>
 	/// Gets the compression type this provider supports.
 	/// </summary>
-	CompressionType CompressionType { get; }
+	public CompressionType CompressionType { get; }
 
 	/// <summary>
 	/// Compresses the specified data.
@@ -20,14 +20,14 @@ public interface ICompressionProvider
 	/// <param name="data">The data to compress.</param>
 	/// <param name="level">The compression level (1-9, where 9 is maximum compression).</param>
 	/// <returns>The compressed data.</returns>
-	byte[] Compress(byte[] data, int level = 6);
+	public byte[] Compress(byte[] data, int level = 6);
 
 	/// <summary>
 	/// Decompresses the specified compressed data.
 	/// </summary>
 	/// <param name="compressedData">The compressed data to decompress.</param>
 	/// <returns>The decompressed data.</returns>
-	byte[] Decompress(byte[] compressedData);
+	public byte[] Decompress(byte[] compressedData);
 
 	/// <summary>
 	/// Asynchronously compresses the specified data.
@@ -36,7 +36,7 @@ public interface ICompressionProvider
 	/// <param name="level">The compression level (1-9, where 9 is maximum compression).</param>
 	/// <param name="cancellationToken">A cancellation token.</param>
 	/// <returns>A task that represents the asynchronous compression operation.</returns>
-	Task<byte[]> CompressAsync(byte[] data, int level = 6, CancellationToken cancellationToken = default);
+	public Task<byte[]> CompressAsync(byte[] data, int level = 6, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Asynchronously decompresses the specified compressed data.
@@ -44,5 +44,5 @@ public interface ICompressionProvider
 	/// <param name="compressedData">The compressed data to decompress.</param>
 	/// <param name="cancellationToken">A cancellation token.</param>
 	/// <returns>A task that represents the asynchronous decompression operation.</returns>
-	Task<byte[]> DecompressAsync(byte[] compressedData, CancellationToken cancellationToken = default);
+	public Task<byte[]> DecompressAsync(byte[] compressedData, CancellationToken cancellationToken = default);
 }

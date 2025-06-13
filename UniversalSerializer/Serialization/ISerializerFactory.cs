@@ -2,12 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization;
+using System;
 
 /// <summary>
 /// Interface for factory creating serializer instances.
@@ -19,7 +15,7 @@ public interface ISerializerFactory
 	/// </summary>
 	/// <typeparam name="TSerializer">The type of serializer to create.</typeparam>
 	/// <returns>A new instance of the specified serializer type.</returns>
-	TSerializer Create<TSerializer>() where TSerializer : ISerializer;
+	public TSerializer Create<TSerializer>() where TSerializer : ISerializer;
 
 	/// <summary>
 	/// Creates a new instance of a serializer with the specified options.
@@ -27,14 +23,14 @@ public interface ISerializerFactory
 	/// <typeparam name="TSerializer">The type of serializer to create.</typeparam>
 	/// <param name="options">The options to use when creating the serializer.</param>
 	/// <returns>A new instance of the specified serializer type.</returns>
-	TSerializer Create<TSerializer>(SerializerOptions options) where TSerializer : ISerializer;
+	public TSerializer Create<TSerializer>(SerializerOptions options) where TSerializer : ISerializer;
 
 	/// <summary>
 	/// Creates a new instance of a serializer by type.
 	/// </summary>
 	/// <param name="serializerType">The type of serializer to create.</param>
 	/// <returns>A new instance of the specified serializer type.</returns>
-	ISerializer Create(Type serializerType);
+	public ISerializer Create(Type serializerType);
 
 	/// <summary>
 	/// Creates a new instance of a serializer by type with the specified options.
@@ -42,18 +38,18 @@ public interface ISerializerFactory
 	/// <param name="serializerType">The type of serializer to create.</param>
 	/// <param name="options">The options to use when creating the serializer.</param>
 	/// <returns>A new instance of the specified serializer type.</returns>
-	ISerializer Create(Type serializerType, SerializerOptions options);
+	public ISerializer Create(Type serializerType, SerializerOptions options);
 
 	/// <summary>
 	/// Gets a copy of the default options used by this factory.
 	/// </summary>
 	/// <returns>A copy of the default options.</returns>
-	SerializerOptions GetDefaultOptions();
+	public SerializerOptions GetDefaultOptions();
 
 	/// <summary>
 	/// Gets a serializer of the specified type.
 	/// </summary>
 	/// <typeparam name="TSerializer">The type of serializer to get.</typeparam>
 	/// <returns>An instance of the specified serializer type.</returns>
-	TSerializer GetSerializer<TSerializer>() where TSerializer : ISerializer;
+	public TSerializer GetSerializer<TSerializer>() where TSerializer : ISerializer;
 }

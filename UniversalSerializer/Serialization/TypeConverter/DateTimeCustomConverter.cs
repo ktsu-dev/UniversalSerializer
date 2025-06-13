@@ -2,12 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization.TypeConverter;
+using System;
 
 /// <summary>
 /// A custom converter for DateTime types with configurable format.
@@ -39,7 +35,7 @@ public class DateTimeCustomConverter(string format) : ICustomTypeConverter<DateT
 			return DateTime.MinValue;
 		}
 
-		if (DateTime.TryParse(value, out var result))
+		if (DateTime.TryParse(value, out DateTime result))
 		{
 			return result;
 		}

@@ -2,15 +2,10 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization;
-
-using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 
 /// <summary>
 /// Provides configuration options for serializers.
@@ -43,7 +38,7 @@ public class SerializerOptions
 	/// <typeparam name="T">The type of the option value.</typeparam>
 	/// <param name="key">The option key.</param>
 	/// <returns>The option value, or default if not found.</returns>
-	public T? GetOption<T>(string key) => _options.TryGetValue(key, out var value) && value is T typedValue ? typedValue : default;
+	public T? GetOption<T>(string key) => _options.TryGetValue(key, out object? value) && value is T typedValue ? typedValue : default;
 
 	/// <summary>
 	/// Gets an option with the specified key, or a default value if not found.
@@ -52,7 +47,7 @@ public class SerializerOptions
 	/// <param name="key">The option key.</param>
 	/// <param name="defaultValue">The default value to return if the option is not found.</param>
 	/// <returns>The option value, or the specified default value if not found.</returns>
-	public T GetOption<T>(string key, T defaultValue) => _options.TryGetValue(key, out var value) && value is T typedValue ? typedValue : defaultValue;
+	public T GetOption<T>(string key, T defaultValue) => _options.TryGetValue(key, out object? value) && value is T typedValue ? typedValue : defaultValue;
 
 	/// <summary>
 	/// Tries to get an option with the specified key.
@@ -63,7 +58,7 @@ public class SerializerOptions
 	/// <returns>true if the option was found; otherwise, false.</returns>
 	public bool TryGetOption<T>(string key, out T? value)
 	{
-		if (_options.TryGetValue(key, out var objValue) && objValue is T typedValue)
+		if (_options.TryGetValue(key, out object? objValue) && objValue is T typedValue)
 		{
 			value = typedValue;
 			return true;
@@ -104,8 +99,8 @@ public class SerializerOptions
 	/// <returns>A new options instance with the same values.</returns>
 	public SerializerOptions Clone()
 	{
-		var clone = new SerializerOptions();
-		foreach (var kvp in _options)
+		SerializerOptions clone = new();
+		foreach (KeyValuePair<string, object> kvp in _options)
 		{
 			clone._options[kvp.Key] = kvp.Value;
 		}
@@ -117,13 +112,13 @@ public class SerializerOptions
 	public bool UseStringConversionForUnsupportedTypes { get; set; } = true;
 
 	// Type discriminator settings for polymorphic serialization
-	public bool EnableTypeDiscriminator { get; set; } = false;
+	public bool EnableTypeDiscriminator { get; set; }
 	public TypeDiscriminatorFormat TypeDiscriminatorFormat { get; set; } = TypeDiscriminatorFormat.Property;
 	public string TypeDiscriminatorPropertyName { get; set; } = "$type";
-	public bool UseFullyQualifiedTypeNames { get; set; } = false;
+	public bool UseFullyQualifiedTypeNames { get; set; }
 
 	// Compression settings
-	public bool EnableCompression { get; set; } = false;
+	public bool EnableCompression { get; set; }
 	public CompressionType CompressionType { get; set; } = CompressionType.GZip;
 	public int CompressionLevel { get; set; } = 6; // Default compression level
 

@@ -9,6 +9,6 @@ public static class Program
 {
 	public static void Main(string[] args)
 	{
-		var summary = BenchmarkRunner.Run<SerializerBenchmarks>();
+		BenchmarkDotNet.Reports.Summary summary = BenchmarkRunner.Run<SerializerBenchmarks>();
 	}
 }

@@ -2,14 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+namespace ktsu.UniversalSerializer.Serialization.TypeConverter;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace ktsu.UniversalSerializer.Serialization.TypeConverter;
-using System.Collections.Concurrent;
 
 /// <summary>
 /// Registry for type converters that manages type conversion operations.
@@ -46,7 +43,7 @@ public class TypeConverterRegistry
 	{
 		ArgumentNullException.ThrowIfNull(converter);
 
-		var adapter = new CustomTypeConverterAdapter<T>(converter);
+		CustomTypeConverterAdapter<T> adapter = new(converter);
 		_customConvertersByType[typeof(T)] = adapter;
 	}
 
@@ -60,7 +57,7 @@ public class TypeConverterRegistry
 		ArgumentNullException.ThrowIfNull(type);
 
 		// First check for a custom converter specifically registered for this type
-		if (_customConvertersByType.TryGetValue(type, out var customConverter))
+		if (_customConvertersByType.TryGetValue(type, out ITypeConverter? customConverter))
 		{
 			return customConverter;
 		}
@@ -68,8 +65,8 @@ public class TypeConverterRegistry
 		// Check if we have a custom converter for the underlying type of a nullable type
 		if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
 		{
-			var underlyingType = Nullable.GetUnderlyingType(type);
-			if (underlyingType != null && _customConvertersByType.TryGetValue(underlyingType, out var nullableConverter))
+			Type? underlyingType = Nullable.GetUnderlyingType(type);
+			if (underlyingType != null && _customConvertersByType.TryGetValue(underlyingType, out ITypeConverter? nullableConverter))
 			{
 				return nullableConverter;
 			}
@@ -97,7 +94,7 @@ public class TypeConverterRegistry
 		// Check for a custom converter for the underlying type of a nullable type
 		if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
 		{
-			var underlyingType = Nullable.GetUnderlyingType(type);
+			Type? underlyingType = Nullable.GetUnderlyingType(type);
 			if (underlyingType != null && _customConvertersByType.ContainsKey(underlyingType))
 			{
 				return true;
@@ -121,8 +118,8 @@ public class TypeConverterRegistry
 			return string.Empty;
 		}
 
-		var type = value.GetType();
-		var converter = GetConverter(type);
+		Type type = value.GetType();
+		ITypeConverter? converter = GetConverter(type);
 
 		return converter == null
 			? throw new InvalidOperationException($"No converter found for type {type.Name}")
@@ -140,7 +137,7 @@ public class TypeConverterRegistry
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 
-		var converter = GetConverter(targetType);
+		ITypeConverter? converter = GetConverter(targetType);
 
 		return converter == null
 			? throw new InvalidOperationException($"No converter found for type {targetType.Name}")
@@ -156,8 +153,8 @@ public class TypeConverterRegistry
 	/// <exception cref="InvalidOperationException">No converter is found for the specified type.</exception>
 	public T ConvertFromString<T>(string value)
 	{
-		var targetType = typeof(T);
-		var result = ConvertFromString(value, targetType);
+		Type targetType = typeof(T);
+		object result = ConvertFromString(value, targetType);
 
 		return (T)result;
 	}

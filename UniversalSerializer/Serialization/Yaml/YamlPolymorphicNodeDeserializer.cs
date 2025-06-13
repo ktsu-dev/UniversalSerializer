@@ -2,47 +2,30 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization;
-
 namespace ktsu.UniversalSerializer.Serialization.Yaml;
+using System;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
 /// <summary>
 /// YAML node deserializer that handles polymorphic types with discriminators.
 /// </summary>
-public class YamlPolymorphicNodeDeserializer : INodeDeserializer
+/// <remarks>
+/// Initializes a new instance of the <see cref="YamlPolymorphicNodeDeserializer"/> class.
+/// </remarks>
+/// <param name="typeRegistry">The type registry.</param>
+/// <param name="discriminatorPropertyName">The type discriminator property name.</param>
+/// <param name="discriminatorFormat">The type discriminator format.</param>
+/// <param name="innerDeserializer">The inner deserializer to use after type resolution.</param>
+public class YamlPolymorphicNodeDeserializer(
+	TypeRegistry typeRegistry,
+	string discriminatorPropertyName,
+	string discriminatorFormat,
+	INodeDeserializer innerDeserializer) : INodeDeserializer
 {
-	private readonly INodeDeserializer _innerDeserializer;
-	private readonly TypeRegistry _typeRegistry;
-	private readonly string _discriminatorPropertyName;
-	private readonly string _discriminatorFormat;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="YamlPolymorphicNodeDeserializer"/> class.
-	/// </summary>
-	/// <param name="typeRegistry">The type registry.</param>
-	/// <param name="discriminatorPropertyName">The type discriminator property name.</param>
-	/// <param name="discriminatorFormat">The type discriminator format.</param>
-	/// <param name="innerDeserializer">The inner deserializer to use after type resolution.</param>
-	public YamlPolymorphicNodeDeserializer(
-		TypeRegistry typeRegistry,
-		string discriminatorPropertyName,
-		string discriminatorFormat,
-		INodeDeserializer innerDeserializer)
-	{
-		_typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
-		_discriminatorPropertyName = discriminatorPropertyName ?? throw new ArgumentNullException(nameof(discriminatorPropertyName));
-		_discriminatorFormat = discriminatorFormat ?? throw new ArgumentNullException(nameof(discriminatorFormat));
-		_innerDeserializer = innerDeserializer ?? throw new ArgumentNullException(nameof(innerDeserializer));
-	}
+	private readonly INodeDeserializer _innerDeserializer = innerDeserializer ?? throw new ArgumentNullException(nameof(innerDeserializer));
+	private readonly TypeRegistry _typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
 
 	/// <inheritdoc/>
 	public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value, ObjectDeserializer rootDeserializer)

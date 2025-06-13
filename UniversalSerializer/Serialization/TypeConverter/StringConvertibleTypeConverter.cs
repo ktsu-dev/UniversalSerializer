@@ -2,12 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization.TypeConverter;
+using System;
 using System.Reflection;
 
 /// <summary>
@@ -45,7 +41,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 		// Try Parse method first (instance.ToString / static.Parse pattern)
 		if (HasParseMethod(targetType))
 		{
-			var parseMethod = targetType.GetMethod("Parse",
+			MethodInfo? parseMethod = targetType.GetMethod("Parse",
 				BindingFlags.Public | BindingFlags.Static,
 				null,
 				[typeof(string)],
@@ -58,7 +54,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 		// Try FromString method next (instance.ToString / static.FromString pattern)
 		if (HasFromStringMethod(targetType))
 		{
-			var fromStringMethod = targetType.GetMethod("FromString",
+			MethodInfo? fromStringMethod = targetType.GetMethod("FromString",
 				BindingFlags.Public | BindingFlags.Static,
 				null,
 				[typeof(string)],
@@ -71,7 +67,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 		// Try string constructor as last resort
 		if (HasStringConstructor(targetType))
 		{
-			var constructor = targetType.GetConstructor([typeof(string)]);
+			ConstructorInfo? constructor = targetType.GetConstructor([typeof(string)]);
 			return constructor?.Invoke([value]) ??
 				   throw new InvalidOperationException($"String constructor not found for type {targetType.Name}");
 		}
@@ -83,7 +79,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 	private static bool HasToStringOverride(Type type)
 	{
 		// Check if the type overrides ToString
-		var toStringMethod = type.GetMethod("ToString",
+		MethodInfo? toStringMethod = type.GetMethod("ToString",
 			BindingFlags.Public | BindingFlags.Instance,
 			null,
 			Type.EmptyTypes,
@@ -97,7 +93,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 	private static bool HasParseMethod(Type type)
 	{
 		// Check for static Parse(string) method
-		var parseMethod = type.GetMethod("Parse",
+		MethodInfo? parseMethod = type.GetMethod("Parse",
 			BindingFlags.Public | BindingFlags.Static,
 			null,
 			[typeof(string)],
@@ -109,7 +105,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 	private static bool HasFromStringMethod(Type type)
 	{
 		// Check for static FromString(string) method
-		var fromStringMethod = type.GetMethod("FromString",
+		MethodInfo? fromStringMethod = type.GetMethod("FromString",
 			BindingFlags.Public | BindingFlags.Static,
 			null,
 			[typeof(string)],
@@ -121,7 +117,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 	private static bool HasStringConstructor(Type type)
 	{
 		// Check for constructor that takes a single string parameter
-		var constructor = type.GetConstructor([typeof(string)]);
+		ConstructorInfo? constructor = type.GetConstructor([typeof(string)]);
 		return constructor != null;
 	}
 }

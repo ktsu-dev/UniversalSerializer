@@ -23,15 +23,15 @@ public class DeflateCompressionProvider : ICompressionProvider
 	{
 		ArgumentNullException.ThrowIfNull(data);
 
-		var compressionLevel = level switch
+		CompressionLevel compressionLevel = level switch
 		{
-			<= 3 => System.IO.Compression.CompressionLevel.Fastest,
-			<= 6 => System.IO.Compression.CompressionLevel.Optimal,
-			_ => System.IO.Compression.CompressionLevel.SmallestSize
+			<= 3 => CompressionLevel.Fastest,
+			<= 6 => CompressionLevel.Optimal,
+			_ => CompressionLevel.SmallestSize
 		};
 
-		using var output = new MemoryStream();
-		using (var deflate = new DeflateStream(output, compressionLevel))
+		using MemoryStream output = new();
+		using (DeflateStream deflate = new(output, compressionLevel))
 		{
 			deflate.Write(data, 0, data.Length);
 		}
@@ -43,9 +43,9 @@ public class DeflateCompressionProvider : ICompressionProvider
 	{
 		ArgumentNullException.ThrowIfNull(compressedData);
 
-		using var input = new MemoryStream(compressedData);
-		using var deflate = new DeflateStream(input, CompressionMode.Decompress);
-		using var output = new MemoryStream();
+		using MemoryStream input = new(compressedData);
+		using DeflateStream deflate = new(input, CompressionMode.Decompress);
+		using MemoryStream output = new();
 
 		deflate.CopyTo(output);
 		return output.ToArray();
@@ -57,17 +57,17 @@ public class DeflateCompressionProvider : ICompressionProvider
 		ArgumentNullException.ThrowIfNull(data);
 		cancellationToken.ThrowIfCancellationRequested();
 
-		var compressionLevel = level switch
+		CompressionLevel compressionLevel = level switch
 		{
-			<= 3 => System.IO.Compression.CompressionLevel.Fastest,
-			<= 6 => System.IO.Compression.CompressionLevel.Optimal,
-			_ => System.IO.Compression.CompressionLevel.SmallestSize
+			<= 3 => CompressionLevel.Fastest,
+			<= 6 => CompressionLevel.Optimal,
+			_ => CompressionLevel.SmallestSize
 		};
 
-		using var output = new MemoryStream();
-		using (var deflate = new DeflateStream(output, compressionLevel))
+		using MemoryStream output = new();
+		using (DeflateStream deflate = new(output, compressionLevel))
 		{
-			await deflate.WriteAsync(data, 0, data.Length, cancellationToken).ConfigureAwait(false);
+			await deflate.WriteAsync(data, cancellationToken).ConfigureAwait(false);
 		}
 		return output.ToArray();
 	}
@@ -78,9 +78,9 @@ public class DeflateCompressionProvider : ICompressionProvider
 		ArgumentNullException.ThrowIfNull(compressedData);
 		cancellationToken.ThrowIfCancellationRequested();
 
-		using var input = new MemoryStream(compressedData);
-		using var deflate = new DeflateStream(input, CompressionMode.Decompress);
-		using var output = new MemoryStream();
+		using MemoryStream input = new(compressedData);
+		using DeflateStream deflate = new(input, CompressionMode.Decompress);
+		using MemoryStream output = new();
 
 		await deflate.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
 		return output.ToArray();

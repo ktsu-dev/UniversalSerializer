@@ -2,12 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization;
+using System;
 
 /// <summary>
 /// Resolver for finding serializers by format, extension, or content type.
@@ -19,33 +15,24 @@ public class SerializerResolver(SerializerRegistry registry) : ISerializerResolv
 	/// <inheritdoc/>
 	public ISerializer? ResolveByFormat(string format)
 	{
-		if (string.IsNullOrWhiteSpace(format))
-		{
-			throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
-		}
-
-		return _registry.GetSerializer(format);
+		return string.IsNullOrWhiteSpace(format)
+			? throw new ArgumentException("Format cannot be null or whitespace.", nameof(format))
+			: _registry.GetSerializer(format);
 	}
 
 	/// <inheritdoc/>
 	public ISerializer? ResolveByExtension(string extension)
 	{
-		if (string.IsNullOrWhiteSpace(extension))
-		{
-			throw new ArgumentException("Extension cannot be null or whitespace.", nameof(extension));
-		}
-
-		return _registry.GetSerializerByExtension(extension);
+		return string.IsNullOrWhiteSpace(extension)
+			? throw new ArgumentException("Extension cannot be null or whitespace.", nameof(extension))
+			: _registry.GetSerializerByExtension(extension);
 	}
 
 	/// <inheritdoc/>
 	public ISerializer? ResolveByContentType(string contentType)
 	{
-		if (string.IsNullOrWhiteSpace(contentType))
-		{
-			throw new ArgumentException("Content type cannot be null or whitespace.", nameof(contentType));
-		}
-
-		return _registry.GetSerializerByContentType(contentType);
+		return string.IsNullOrWhiteSpace(contentType)
+			? throw new ArgumentException("Content type cannot be null or whitespace.", nameof(contentType))
+			: _registry.GetSerializerByContentType(contentType);
 	}
 }

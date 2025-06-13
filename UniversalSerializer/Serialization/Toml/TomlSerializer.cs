@@ -2,17 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+namespace ktsu.UniversalSerializer.Serialization.Toml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Tomlyn;
-using Tomlyn.Model;
-
-namespace ktsu.UniversalSerializer.Serialization.Toml;
-
-using System.Reflection;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using Tomlyn;
 using Tomlyn.Model;
@@ -45,22 +41,13 @@ public class TomlSerializer : SerializerBase
 		_enableTypeDiscriminator = GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false);
 		_typeDiscriminatorPropertyName = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorPropertyName, "$type");
 
-		var formatValue = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorFormat,
+		string formatValue = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorFormat,
 			TypeDiscriminatorFormat.Property.ToString());
 
 		// Try to parse the format from string if stored as string
-		if (formatValue is string formatString && Enum.TryParse(formatString, out TypeDiscriminatorFormat format))
-		{
-			_discriminatorFormat = format;
-		}
-		else if (formatValue is TypeDiscriminatorFormat typeDiscriminatorFormat)
-		{
-			_discriminatorFormat = typeDiscriminatorFormat;
-		}
-		else
-		{
-			_discriminatorFormat = TypeDiscriminatorFormat.Property;
-		}
+		_discriminatorFormat = formatValue is string formatString && Enum.TryParse(formatString, out TypeDiscriminatorFormat format)
+			? format
+			: formatValue is TypeDiscriminatorFormat typeDiscriminatorFormat ? typeDiscriminatorFormat : TypeDiscriminatorFormat.Property;
 	}
 
 	/// <inheritdoc/>
@@ -83,7 +70,7 @@ public class TomlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		var tomlTable = ConvertObjectToToml(obj);
+		TomlTable tomlTable = ConvertObjectToToml(obj);
 		return Toml.FromModel(tomlTable);
 	}
 
@@ -95,7 +82,7 @@ public class TomlSerializer : SerializerBase
 			return string.Empty;
 		}
 
-		var tomlTable = ConvertObjectToToml(obj);
+		TomlTable tomlTable = ConvertObjectToToml(obj);
 		return Toml.FromModel(tomlTable);
 	}
 
@@ -108,10 +95,10 @@ public class TomlSerializer : SerializerBase
 		}
 
 		// Parse TOML
-		var model = Toml.ToModel(serialized);
+		TomlTable model = Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
-		return (T)TomlSerializer.ConvertFromTomlModel(model, typeof(T))!;
+		return (T)ConvertFromTomlModel(model, typeof(T))!;
 	}
 
 	/// <inheritdoc/>
@@ -123,10 +110,10 @@ public class TomlSerializer : SerializerBase
 		}
 
 		// Parse TOML
-		var model = Toml.ToModel(serialized);
+		TomlTable model = Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
-		return TomlSerializer.ConvertFromTomlModel(model, type)!;
+		return ConvertFromTomlModel(model, type)!;
 	}
 
 	/// <inheritdoc/>
@@ -141,7 +128,7 @@ public class TomlSerializer : SerializerBase
 
 	private TomlTable ConvertObjectToToml(object obj)
 	{
-		var tomlTable = new TomlTable();
+		TomlTable tomlTable = [];
 
 		// Handle null objects
 		if (obj == null)
@@ -149,30 +136,30 @@ public class TomlSerializer : SerializerBase
 			return tomlTable;
 		}
 
-		var type = obj.GetType();
+		Type type = obj.GetType();
 
 		// For polymorphic types, include type information if enabled
 		if (_enableTypeDiscriminator && _typeRegistry != null)
 		{
-			var baseType = type.BaseType;
-			if (baseType != null && baseType != typeof(object) || type.GetInterfaces().Length > 0)
+			Type? baseType = type.BaseType;
+			if ((baseType != null && baseType != typeof(object)) || type.GetInterfaces().Length > 0)
 			{
-				var typeName = _typeRegistry.GetTypeName(type);
+				string typeName = _typeRegistry.GetTypeName(type);
 				if (!string.IsNullOrEmpty(typeName))
 				{
 					// Create a wrapper table with type information
-					var wrapperTable = new TomlTable
-						{
-							["type"] = typeName,
-							["value"] = TomlSerializer.ConvertObjectToTomlValue(obj, type)
-						};
+					TomlTable wrapperTable = new()
+					{
+						["type"] = typeName,
+						["value"] = ConvertObjectToTomlValue(obj, type)
+					};
 					return wrapperTable;
 				}
 			}
 		}
 
 		// Handle regular object conversion
-		foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+		foreach (PropertyInfo property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
 		{
 			if (!property.CanRead)
 			{
@@ -186,14 +173,14 @@ public class TomlSerializer : SerializerBase
 				continue;
 			}
 
-			var propertyValue = property.GetValue(obj);
+			object? propertyValue = property.GetValue(obj);
 			if (propertyValue == null)
 			{
 				continue;
 			}
 
 			// Convert the property value to a TOML-compatible value
-			var tomlValue = TomlSerializer.ConvertObjectToTomlValue(propertyValue, property.PropertyType);
+			object tomlValue = ConvertObjectToTomlValue(propertyValue, property.PropertyType);
 			tomlTable[property.Name] = tomlValue;
 		}
 
@@ -204,7 +191,9 @@ public class TomlSerializer : SerializerBase
 	private static object ConvertObjectToTomlValue(object value, Type type)
 	{
 		if (value == null)
+		{
 			return string.Empty;
+		}
 
 		// Handle primitive types
 		if (type.IsPrimitive || type == typeof(string) || type == typeof(DateTime) || type == typeof(decimal))
@@ -215,7 +204,7 @@ public class TomlSerializer : SerializerBase
 		// Handle collections
 		if (value is IEnumerable enumerable && type != typeof(string))
 		{
-			var list = new List<object>();
+			List<object> list = [];
 			foreach (var item in enumerable)
 			{
 				if (item != null)
@@ -232,25 +221,24 @@ public class TomlSerializer : SerializerBase
 
 	private static object ConvertFromTomlModel(TomlTable model, Type type)
 	{
-		if (model == null)
-			throw new ArgumentNullException(nameof(model));
+		ArgumentNullException.ThrowIfNull(model);
 
 		// Create instance of the target type
-		var instance = Activator.CreateInstance(type);
-		if (instance == null)
-			throw new InvalidOperationException($"Cannot create instance of type {type.Name}");
+		object? instance = Activator.CreateInstance(type) ?? throw new InvalidOperationException($"Cannot create instance of type {type.Name}");
 
 		// Set properties from TOML table
-		foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+		foreach (PropertyInfo property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
 		{
 			if (!property.CanWrite)
+			{
 				continue;
+			}
 
-			if (model.TryGetValue(property.Name, out var value) && value != null)
+			if (model.TryGetValue(property.Name, out object? value) && value != null)
 			{
 				try
 				{
-					var convertedValue = ConvertTomlValueToProperty(value, property.PropertyType);
+					object? convertedValue = ConvertTomlValueToProperty(value, property.PropertyType);
 					property.SetValue(instance, convertedValue);
 				}
 				catch
@@ -267,15 +255,21 @@ public class TomlSerializer : SerializerBase
 	private static object? ConvertTomlValueToProperty(object value, Type targetType)
 	{
 		if (value == null)
+		{
 			return null;
+		}
 
 		// Handle direct assignment
 		if (targetType.IsAssignableFrom(value.GetType()))
+		{
 			return value;
+		}
 
 		// Handle type conversion
 		if (targetType == typeof(string))
+		{
 			return value.ToString();
+		}
 
 		if (targetType.IsPrimitive)
 		{
@@ -285,16 +279,16 @@ public class TomlSerializer : SerializerBase
 		// Handle collections
 		if (value is IEnumerable enumerable && targetType.IsGenericType)
 		{
-			var elementType = targetType.GetGenericArguments()[0];
-			var listType = typeof(List<>).MakeGenericType(elementType);
-			var list = Activator.CreateInstance(listType);
-			var addMethod = listType.GetMethod("Add");
+			Type elementType = targetType.GetGenericArguments()[0];
+			Type listType = typeof(List<>).MakeGenericType(elementType);
+			object? list = Activator.CreateInstance(listType);
+			MethodInfo? addMethod = listType.GetMethod("Add");
 
 			foreach (var item in enumerable)
 			{
 				if (item != null)
 				{
-					var convertedItem = ConvertTomlValueToProperty(item, elementType);
+					object convertedItem = ConvertTomlValueToProperty(item, elementType);
 					addMethod?.Invoke(list, [convertedItem]);
 				}
 			}

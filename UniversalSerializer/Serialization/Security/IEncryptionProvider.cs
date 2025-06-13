@@ -12,7 +12,7 @@ public interface IEncryptionProvider
 	/// <summary>
 	/// Gets the encryption algorithm this provider supports.
 	/// </summary>
-	EncryptionType EncryptionType { get; }
+	public EncryptionType EncryptionType { get; }
 
 	/// <summary>
 	/// Encrypts the specified data.
@@ -21,7 +21,7 @@ public interface IEncryptionProvider
 	/// <param name="key">The encryption key.</param>
 	/// <param name="iv">The initialization vector (optional).</param>
 	/// <returns>The encrypted data.</returns>
-	byte[] Encrypt(byte[] data, byte[] key, byte[]? iv = null);
+	public byte[] Encrypt(byte[] data, byte[] key, byte[]? iv = null);
 
 	/// <summary>
 	/// Decrypts the specified encrypted data.
@@ -30,7 +30,7 @@ public interface IEncryptionProvider
 	/// <param name="key">The decryption key.</param>
 	/// <param name="iv">The initialization vector (optional).</param>
 	/// <returns>The decrypted data.</returns>
-	byte[] Decrypt(byte[] encryptedData, byte[] key, byte[]? iv = null);
+	public byte[] Decrypt(byte[] encryptedData, byte[] key, byte[]? iv = null);
 
 	/// <summary>
 	/// Asynchronously encrypts the specified data.
@@ -40,7 +40,7 @@ public interface IEncryptionProvider
 	/// <param name="iv">The initialization vector (optional).</param>
 	/// <param name="cancellationToken">A cancellation token.</param>
 	/// <returns>A task that represents the asynchronous encryption operation.</returns>
-	Task<byte[]> EncryptAsync(byte[] data, byte[] key, byte[]? iv = null, CancellationToken cancellationToken = default);
+	public Task<byte[]> EncryptAsync(byte[] data, byte[] key, byte[]? iv = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Asynchronously decrypts the specified encrypted data.
@@ -50,17 +50,17 @@ public interface IEncryptionProvider
 	/// <param name="iv">The initialization vector (optional).</param>
 	/// <param name="cancellationToken">A cancellation token.</param>
 	/// <returns>A task that represents the asynchronous decryption operation.</returns>
-	Task<byte[]> DecryptAsync(byte[] encryptedData, byte[] key, byte[]? iv = null, CancellationToken cancellationToken = default);
+	public Task<byte[]> DecryptAsync(byte[] encryptedData, byte[] key, byte[]? iv = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Generates a new encryption key.
 	/// </summary>
 	/// <returns>A new encryption key.</returns>
-	byte[] GenerateKey();
+	public byte[] GenerateKey();
 
 	/// <summary>
 	/// Generates a new initialization vector.
 	/// </summary>
 	/// <returns>A new initialization vector.</returns>
-	byte[] GenerateIV();
+	public byte[] GenerateIV();
 }

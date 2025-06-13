@@ -2,12 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
+namespace ktsu.UniversalSerializer.Serialization;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-namespace ktsu.UniversalSerializer.Serialization;
 
 /// <summary>
 /// Defines the standard interface for serialization operations across all formats.

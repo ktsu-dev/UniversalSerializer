@@ -2,14 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using MessagePack;
+namespace ktsu.UniversalSerializer.Serialization.MessagePack;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-namespace ktsu.UniversalSerializer.Serialization.MessagePack;
 using global::MessagePack;
 using global::MessagePack.Resolvers;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
@@ -39,8 +36,8 @@ public class MessagePackSerializer : SerializerBase
 		_typeRegistry = typeRegistry;
 
 		// Create MessagePack options
-		var resolver = StandardResolver.Instance;
-		_options = global::MessagePack.MessagePackSerializerOptions.Standard
+		StandardResolver resolver = StandardResolver.Instance;
+		_options = MessagePackSerializerOptions.Standard
 			.WithResolver(resolver)
 			.WithSecurity(MessagePackSecurity.UntrustedData);
 	}
@@ -60,44 +57,44 @@ public class MessagePackSerializer : SerializerBase
 	/// <inheritdoc/>
 	public override string Serialize<T>(T obj)
 	{
-		var bytes = global::MessagePack.MessagePackSerializer.Serialize(obj, _options);
+		byte[] bytes = global::MessagePack.MessagePackSerializer.Serialize(obj, _options);
 		return Convert.ToBase64String(bytes);
 	}
 
 	/// <inheritdoc/>
 	public override string Serialize(object obj, Type type)
 	{
-		var bytes = global::MessagePack.MessagePackSerializer.Serialize(type, obj, _options);
+		byte[] bytes = global::MessagePack.MessagePackSerializer.Serialize(type, obj, _options);
 		return Convert.ToBase64String(bytes);
 	}
 
 	/// <inheritdoc/>
 	public override T Deserialize<T>(string serialized)
 	{
-		var bytes = Convert.FromBase64String(serialized);
+		byte[] bytes = Convert.FromBase64String(serialized);
 		return global::MessagePack.MessagePackSerializer.Deserialize<T>(bytes, _options);
 	}
 
 	/// <inheritdoc/>
 	public override object Deserialize(string serialized, Type type)
 	{
-		var bytes = Convert.FromBase64String(serialized);
+		byte[] bytes = Convert.FromBase64String(serialized);
 		return global::MessagePack.MessagePackSerializer.Deserialize(type, bytes, _options);
 	}
 
 	/// <inheritdoc/>
 	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default)
 	{
-		using var stream = new MemoryStream();
-		await global::MessagePack.MessagePackSerializer.SerializeAsync(stream, obj, _options, cancellationToken);
+		using MemoryStream stream = new();
+		await global::MessagePack.MessagePackSerializer.SerializeAsync(stream, obj, _options, cancellationToken).ConfigureAwait(false);
 		return Convert.ToBase64String(stream.ToArray());
 	}
 
 	/// <inheritdoc/>
 	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default)
 	{
-		var bytes = Convert.FromBase64String(serialized);
-		using var stream = new MemoryStream(bytes);
-		return await global::MessagePack.MessagePackSerializer.DeserializeAsync<T>(stream, _options, cancellationToken);
+		byte[] bytes = Convert.FromBase64String(serialized);
+		using MemoryStream stream = new(bytes);
+		return await global::MessagePack.MessagePackSerializer.DeserializeAsync<T>(stream, _options, cancellationToken).ConfigureAwait(false);
 	}
 }

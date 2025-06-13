@@ -1,13 +1,6 @@
 ﻿<Project Sdk="ktsu.Sdk.Test">
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="MSTest.TestAdapter" />
-    <PackageReference Include="MSTest.TestFramework" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="../UniversalSerializer/UniversalSerializer.csproj" />
   </ItemGroup>
 

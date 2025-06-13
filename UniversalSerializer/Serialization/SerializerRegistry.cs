@@ -2,19 +2,12 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using MessagePack;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Xml.Serialization;
-using System.Xml;
-using System;
-
 namespace ktsu.UniversalSerializer.Serialization;
-
+using System;
 using System.Collections.Concurrent;
+using System.Text.Json;
+using System.Xml.Serialization;
+using global::MessagePack;
 using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.MessagePack;
 using ktsu.UniversalSerializer.Serialization.Toml;
@@ -41,34 +34,34 @@ public class SerializerRegistry(SerializerFactory factory)
 	/// <param name="options">Optional serializer options.</param>
 	public void RegisterBuiltIn(SerializerOptions? options = null)
 	{
-		var serializerOptions = options ?? SerializerOptions.Default();
+		SerializerOptions serializerOptions = options ?? SerializerOptions.Default();
 
 		// Register JSON serializer
-		var jsonSerializer = _factory.Create<JsonSerializer>(serializerOptions);
+		JsonSerializer jsonSerializer = _factory.Create<JsonSerializer>(serializerOptions);
 		Register("json", jsonSerializer);
 		RegisterFileExtensions("json", ".json");
 		RegisterContentTypes("json", "application/json", "text/json");
 
 		// Register XML serializer
-		var xmlSerializer = _factory.Create<XmlSerializer>(serializerOptions);
+		XmlSerializer xmlSerializer = _factory.Create<XmlSerializer>(serializerOptions);
 		Register("xml", xmlSerializer);
 		RegisterFileExtensions("xml", ".xml");
 		RegisterContentTypes("xml", "application/xml", "text/xml");
 
 		// Register YAML serializer
-		var yamlSerializer = _factory.Create<YamlSerializer>(serializerOptions);
+		YamlSerializer yamlSerializer = _factory.Create<YamlSerializer>(serializerOptions);
 		Register("yaml", yamlSerializer);
 		RegisterFileExtensions("yaml", ".yaml", ".yml");
 		RegisterContentTypes("yaml", "application/x-yaml", "text/yaml");
 
 		// Register TOML serializer
-		var tomlSerializer = _factory.Create<TomlSerializer>(serializerOptions);
+		TomlSerializer tomlSerializer = _factory.Create<TomlSerializer>(serializerOptions);
 		Register("toml", tomlSerializer);
 		RegisterFileExtensions("toml", ".toml", ".tml");
 		RegisterContentTypes("toml", "application/toml");
 
 		// Register MessagePack serializer
-		var messagePackSerializer = _factory.Create<MessagePackSerializer>(serializerOptions);
+		MessagePackSerializer messagePackSerializer = _factory.Create<MessagePackSerializer>(serializerOptions);
 		Register("messagepack", messagePackSerializer);
 		RegisterFileExtensions("messagepack", ".msgpack", ".mp");
 		RegisterContentTypes("messagepack", "application/x-msgpack");
@@ -106,14 +99,14 @@ public class SerializerRegistry(SerializerFactory factory)
 			throw new ArgumentException("At least one extension must be provided.", nameof(extensions));
 		}
 
-		if (!_serializersByFormat.TryGetValue(format, out var serializer))
+		if (!_serializersByFormat.TryGetValue(format, out ISerializer? serializer))
 		{
 			throw new ArgumentException($"Format '{format}' is not registered.", nameof(format));
 		}
 
-		foreach (var extension in extensions)
+		foreach (string extension in extensions)
 		{
-			var ext = extension.StartsWith('.') ? extension : $".{extension}";
+			string ext = extension.StartsWith('.') ? extension : $".{extension}";
 			_serializersByExtension[ext] = serializer;
 		}
 	}
@@ -135,12 +128,12 @@ public class SerializerRegistry(SerializerFactory factory)
 			throw new ArgumentException("At least one content type must be provided.", nameof(contentTypes));
 		}
 
-		if (!_serializersByFormat.TryGetValue(format, out var serializer))
+		if (!_serializersByFormat.TryGetValue(format, out ISerializer? serializer))
 		{
 			throw new ArgumentException($"Format '{format}' is not registered.", nameof(format));
 		}
 
-		foreach (var contentType in contentTypes)
+		foreach (string contentType in contentTypes)
 		{
 			_serializersByContentType[contentType] = serializer;
 		}
@@ -158,7 +151,7 @@ public class SerializerRegistry(SerializerFactory factory)
 			throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
 		}
 
-		_serializersByFormat.TryGetValue(format, out var serializer);
+		_serializersByFormat.TryGetValue(format, out ISerializer? serializer);
 		return serializer;
 	}
 
@@ -174,8 +167,8 @@ public class SerializerRegistry(SerializerFactory factory)
 			throw new ArgumentException("Extension cannot be null or whitespace.", nameof(extension));
 		}
 
-		var ext = extension.StartsWith('.') ? extension : $".{extension}";
-		_serializersByExtension.TryGetValue(ext, out var serializer);
+		string ext = extension.StartsWith('.') ? extension : $".{extension}";
+		_serializersByExtension.TryGetValue(ext, out ISerializer? serializer);
 		return serializer;
 	}
 
@@ -191,7 +184,7 @@ public class SerializerRegistry(SerializerFactory factory)
 			throw new ArgumentException("Content type cannot be null or whitespace.", nameof(contentType));
 		}
 
-		_serializersByContentType.TryGetValue(contentType, out var serializer);
+		_serializersByContentType.TryGetValue(contentType, out ISerializer? serializer);
 		return serializer;
 	}
 }

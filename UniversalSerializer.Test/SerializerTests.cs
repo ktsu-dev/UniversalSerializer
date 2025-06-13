@@ -42,11 +42,11 @@ public class SerializerTests
 	public void SerializerRegistry_RegisterSerializers_Success()
 	{
 		// Arrange
-		var json = _factory.Create<JsonSerializer>();
-		var xml = _factory.Create<XmlSerializer>();
-		var yaml = _factory.Create<YamlSerializer>();
-		var toml = _factory.Create<TomlSerializer>();
-		var messagepack = _factory.Create<MessagePackSerializer>();
+		JsonSerializer json = _factory.Create<JsonSerializer>();
+		XmlSerializer xml = _factory.Create<XmlSerializer>();
+		YamlSerializer yaml = _factory.Create<YamlSerializer>();
+		TomlSerializer toml = _factory.Create<TomlSerializer>();
+		MessagePackSerializer messagepack = _factory.Create<MessagePackSerializer>();
 
 		// Act
 		_registry.Register("json", json);
@@ -76,12 +76,13 @@ public class SerializerTests
 	public void JsonSerializer_SerializeDeserialize_SimpleType_Success()
 	{
 		// Arrange
-		var serializer = _factory.Create<JsonSerializer>();
-		var testData = new TestData { IntValue = 42, StringValue = "Hello, World!" };
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+		TestData testData = new()
+		{ IntValue = 42, StringValue = "Hello, World!" };
 
 		// Act
-		var serialized = serializer.Serialize(testData);
-		var deserialized = serializer.Deserialize<TestData>(serialized);
+		string serialized = serializer.Serialize(testData);
+		TestData deserialized = serializer.Deserialize<TestData>(serialized);
 
 		// Assert
 		Assert.IsNotNull(deserialized);
@@ -96,12 +97,13 @@ public class SerializerTests
 	public void XmlSerializer_SerializeDeserialize_SimpleType_Success()
 	{
 		// Arrange
-		var serializer = _factory.Create<XmlSerializer>();
-		var testData = new TestData { IntValue = 42, StringValue = "Hello, World!" };
+		XmlSerializer serializer = _factory.Create<XmlSerializer>();
+		TestData testData = new()
+		{ IntValue = 42, StringValue = "Hello, World!" };
 
 		// Act
-		var serialized = serializer.Serialize(testData);
-		var deserialized = serializer.Deserialize<TestData>(serialized);
+		string serialized = serializer.Serialize(testData);
+		TestData deserialized = serializer.Deserialize<TestData>(serialized);
 
 		// Assert
 		Assert.IsNotNull(deserialized);
@@ -116,8 +118,8 @@ public class SerializerTests
 	public void YamlSerializer_SerializeDeserialize_SimpleType_Success()
 	{
 		// Arrange
-		var serializer = _factory.Create<YamlSerializer>();
-		var testObject = new TestModel
+		YamlSerializer serializer = _factory.Create<YamlSerializer>();
+		TestModel testObject = new()
 		{
 			Id = 1,
 			Name = "Test Object",
@@ -127,8 +129,8 @@ public class SerializerTests
 		};
 
 		// Act
-		var serialized = serializer.Serialize(testObject);
-		var deserialized = serializer.Deserialize<TestModel>(serialized);
+		string serialized = serializer.Serialize(testObject);
+		TestModel deserialized = serializer.Deserialize<TestModel>(serialized);
 
 		// Assert
 		Assert.IsNotNull(deserialized);
@@ -146,8 +148,8 @@ public class SerializerTests
 	public void TomlSerializer_SerializeDeserialize_SimpleType_Success()
 	{
 		// Arrange
-		var serializer = _factory.Create<TomlSerializer>();
-		var testObject = new TestModel
+		TomlSerializer serializer = _factory.Create<TomlSerializer>();
+		TestModel testObject = new()
 		{
 			Id = 1,
 			Name = "Test Object",
@@ -157,8 +159,8 @@ public class SerializerTests
 		};
 
 		// Act
-		var serialized = serializer.Serialize(testObject);
-		var deserialized = serializer.Deserialize<TestModel>(serialized);
+		string serialized = serializer.Serialize(testObject);
+		TestModel deserialized = serializer.Deserialize<TestModel>(serialized);
 
 		// Assert
 		Assert.IsNotNull(deserialized);
@@ -176,8 +178,8 @@ public class SerializerTests
 	public void MessagePackSerializer_SerializeDeserialize_SimpleType_Success()
 	{
 		// Arrange
-		var serializer = _factory.Create<MessagePackSerializer>();
-		var testObject = new MessagePackTestClass
+		MessagePackSerializer serializer = _factory.Create<MessagePackSerializer>();
+		MessagePackTestClass testObject = new()
 		{
 			Id = 1,
 			Name = "Test Object",
@@ -186,8 +188,8 @@ public class SerializerTests
 		};
 
 		// Act
-		var serialized = serializer.SerializeToBytes(testObject);
-		var deserialized = serializer.DeserializeFromBytes<MessagePackTestClass>(serialized);
+		byte[] serialized = serializer.SerializeToBytes(testObject);
+		MessagePackTestClass deserialized = serializer.DeserializeFromBytes<MessagePackTestClass>(serialized);
 
 		// Assert
 		Assert.IsNotNull(deserialized);

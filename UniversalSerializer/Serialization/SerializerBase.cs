@@ -2,14 +2,12 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
+namespace ktsu.UniversalSerializer.Serialization;
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using ktsu.UniversalSerializer.Serialization.Compression;
-
-namespace ktsu.UniversalSerializer.Serialization;
 
 /// <summary>
 /// Provides a base implementation for serializers.
@@ -48,31 +46,25 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	/// <inheritdoc/>
 	public virtual byte[] SerializeToBytes<T>(T obj)
 	{
-		var serialized = Serialize(obj);
-		var bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
+		string serialized = Serialize(obj);
+		byte[] bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
 
 		// Apply compression if enabled
-		if (Options.EnableCompression && Options.CompressionType != CompressionType.None)
-		{
-			return s_compressionManager.Compress(bytes, Options.CompressionType, Options.CompressionLevel);
-		}
-
-		return bytes;
+		return Options.EnableCompression && Options.CompressionType != CompressionType.None
+			? s_compressionManager.Compress(bytes, Options.CompressionType, Options.CompressionLevel)
+			: bytes;
 	}
 
 	/// <inheritdoc/>
 	public virtual byte[] SerializeToBytes(object obj, Type type)
 	{
-		var serialized = Serialize(obj, type);
-		var bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
+		string serialized = Serialize(obj, type);
+		byte[] bytes = System.Text.Encoding.UTF8.GetBytes(serialized);
 
 		// Apply compression if enabled
-		if (Options.EnableCompression && Options.CompressionType != CompressionType.None)
-		{
-			return s_compressionManager.Compress(bytes, Options.CompressionType, Options.CompressionLevel);
-		}
-
-		return bytes;
+		return Options.EnableCompression && Options.CompressionType != CompressionType.None
+			? s_compressionManager.Compress(bytes, Options.CompressionType, Options.CompressionLevel)
+			: bytes;
 	}
 
 	/// <inheritdoc/>
@@ -84,7 +76,7 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 			bytes = s_compressionManager.Decompress(bytes, Options.CompressionType);
 		}
 
-		var serialized = System.Text.Encoding.UTF8.GetString(bytes);
+		string serialized = System.Text.Encoding.UTF8.GetString(bytes);
 		return Deserialize<T>(serialized);
 	}
 
@@ -97,7 +89,7 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 			bytes = s_compressionManager.Decompress(bytes, Options.CompressionType);
 		}
 
-		var serialized = System.Text.Encoding.UTF8.GetString(bytes);
+		string serialized = System.Text.Encoding.UTF8.GetString(bytes);
 		return Deserialize(serialized, type);
 	}
 
@@ -149,8 +141,8 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	public virtual void SerializeToStream<T>(T obj, Stream stream)
 	{
 		ArgumentNullException.ThrowIfNull(stream);
-		var serialized = Serialize(obj);
-		using var writer = new StreamWriter(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		string serialized = Serialize(obj);
+		using StreamWriter writer = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
 		writer.Write(serialized);
 		writer.Flush();
 	}
@@ -159,8 +151,8 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	public virtual T DeserializeFromStream<T>(Stream stream)
 	{
 		ArgumentNullException.ThrowIfNull(stream);
-		using var reader = new StreamReader(stream, System.Text.Encoding.UTF8, leaveOpen: true);
-		var serialized = reader.ReadToEnd();
+		using StreamReader reader = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		string serialized = reader.ReadToEnd();
 		return Deserialize<T>(serialized);
 	}
 
@@ -169,10 +161,10 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	{
 		ArgumentNullException.ThrowIfNull(stream);
 		cancellationToken.ThrowIfCancellationRequested();
-		var serialized = await SerializeAsync(obj, cancellationToken).ConfigureAwait(false);
-		using var writer = new StreamWriter(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		string serialized = await SerializeAsync(obj, cancellationToken).ConfigureAwait(false);
+		using StreamWriter writer = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
 		await writer.WriteAsync(serialized).ConfigureAwait(false);
-		await writer.FlushAsync().ConfigureAwait(false);
+		await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
@@ -180,8 +172,8 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	{
 		ArgumentNullException.ThrowIfNull(stream);
 		cancellationToken.ThrowIfCancellationRequested();
-		using var reader = new StreamReader(stream, System.Text.Encoding.UTF8, leaveOpen: true);
-		var serialized = await reader.ReadToEndAsync().ConfigureAwait(false);
+		using StreamReader reader = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		string serialized = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 		return await DeserializeAsync<T>(serialized, cancellationToken).ConfigureAwait(false);
 	}
 }
