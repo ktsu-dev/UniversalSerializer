@@ -5,13 +5,7 @@
 namespace ktsu.UniversalSerializer.Serialization;
 using System;
 using System.Collections.Concurrent;
-using System.Text.Json;
-using System.Xml.Serialization;
-using global::MessagePack;
-using ktsu.UniversalSerializer.Serialization.Json;
-using ktsu.UniversalSerializer.Serialization.MessagePack;
 using ktsu.UniversalSerializer.Serialization.Toml;
-using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 
 /// <summary>
@@ -37,13 +31,13 @@ public class SerializerRegistry(SerializerFactory factory)
 		SerializerOptions serializerOptions = options ?? SerializerOptions.Default();
 
 		// Register JSON serializer
-		JsonSerializer jsonSerializer = _factory.Create<JsonSerializer>(serializerOptions);
+		Json.JsonSerializer jsonSerializer = _factory.Create<Json.JsonSerializer>(serializerOptions);
 		Register("json", jsonSerializer);
 		RegisterFileExtensions("json", ".json");
 		RegisterContentTypes("json", "application/json", "text/json");
 
 		// Register XML serializer
-		XmlSerializer xmlSerializer = _factory.Create<XmlSerializer>(serializerOptions);
+		Xml.XmlSerializer xmlSerializer = _factory.Create<Xml.XmlSerializer>(serializerOptions);
 		Register("xml", xmlSerializer);
 		RegisterFileExtensions("xml", ".xml");
 		RegisterContentTypes("xml", "application/xml", "text/xml");
@@ -61,7 +55,7 @@ public class SerializerRegistry(SerializerFactory factory)
 		RegisterContentTypes("toml", "application/toml");
 
 		// Register MessagePack serializer
-		MessagePackSerializer messagePackSerializer = _factory.Create<MessagePackSerializer>(serializerOptions);
+		MessagePack.MessagePackSerializer messagePackSerializer = _factory.Create<MessagePack.MessagePackSerializer>(serializerOptions);
 		Register("messagepack", messagePackSerializer);
 		RegisterFileExtensions("messagepack", ".msgpack", ".mp");
 		RegisterContentTypes("messagepack", "application/x-msgpack");

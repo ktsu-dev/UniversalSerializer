@@ -49,10 +49,10 @@ public class CustomTypeConverterAdapter<T>(ICustomTypeConverter<T> customConvert
 		{
 			if (string.IsNullOrEmpty(value))
 			{
-				return null;
+				return null!;
 			}
 		}
 
-		return _customConverter.ConvertFromString(value);
+		return _customConverter.ConvertFromString(value) ?? throw new InvalidOperationException("Conversion returned null");
 	}
 }

@@ -4,15 +4,10 @@
 
 namespace ktsu.UniversalSerializer.Serialization.DependencyInjection;
 using System;
-using System.Text.Json;
-using System.Xml.Serialization;
-using global::MessagePack;
 using ktsu.UniversalSerializer.Serialization.Json;
-using ktsu.UniversalSerializer.Serialization.MessagePack;
 using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.TypeConverter;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
-using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -84,7 +79,7 @@ public static class SerializerServiceCollectionExtensions
 	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddXmlSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<XmlSerializer>();
+		services.TryAddTransient<Xml.XmlSerializer>();
 		return services;
 	}
 
@@ -119,7 +114,7 @@ public static class SerializerServiceCollectionExtensions
 	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddMessagePackSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<MessagePackSerializer>();
+		services.TryAddTransient<MessagePack.MessagePackSerializer>();
 		return services;
 	}
 }

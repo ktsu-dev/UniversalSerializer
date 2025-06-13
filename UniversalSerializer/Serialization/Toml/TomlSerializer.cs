@@ -20,8 +20,6 @@ public class TomlSerializer : SerializerBase
 {
 	private readonly TypeRegistry? _typeRegistry;
 	private readonly bool _enableTypeDiscriminator;
-	private readonly string _typeDiscriminatorPropertyName;
-	private readonly TypeDiscriminatorFormat _discriminatorFormat;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="TomlSerializer"/> class with default options.
@@ -39,15 +37,12 @@ public class TomlSerializer : SerializerBase
 	{
 		_typeRegistry = typeRegistry;
 		_enableTypeDiscriminator = GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false);
-		_typeDiscriminatorPropertyName = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorPropertyName, "$type");
 
 		string formatValue = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorFormat,
 			TypeDiscriminatorFormat.Property.ToString());
 
-		// Try to parse the format from string if stored as string
-		_discriminatorFormat = formatValue is string formatString && Enum.TryParse(formatString, out TypeDiscriminatorFormat format)
-			? format
-			: formatValue is TypeDiscriminatorFormat typeDiscriminatorFormat ? typeDiscriminatorFormat : TypeDiscriminatorFormat.Property;
+		// Parse the format from string - not currently used but may be needed for future features
+		_ = Enum.TryParse(formatValue, out TypeDiscriminatorFormat format) ? format : TypeDiscriminatorFormat.Property;
 	}
 
 	/// <inheritdoc/>
@@ -104,6 +99,7 @@ public class TomlSerializer : SerializerBase
 	/// <inheritdoc/>
 	public override object Deserialize(string serialized, Type type)
 	{
+		ArgumentNullException.ThrowIfNull(type);
 		if (string.IsNullOrWhiteSpace(serialized))
 		{
 			return null!;
@@ -202,10 +198,10 @@ public class TomlSerializer : SerializerBase
 		}
 
 		// Handle collections
-		if (value is IEnumerable enumerable && type != typeof(string))
+		if (value is System.Collections.IEnumerable enumerable && type != typeof(string))
 		{
 			List<object> list = [];
-			foreach (var item in enumerable)
+			foreach (object? item in enumerable)
 			{
 				if (item != null)
 				{
@@ -239,11 +235,24 @@ public class TomlSerializer : SerializerBase
 				try
 				{
 					object? convertedValue = ConvertTomlValueToProperty(value, property.PropertyType);
-					property.SetValue(instance, convertedValue);
+					if (convertedValue != null)
+					{
+						property.SetValue(instance, convertedValue);
+					}
 				}
-				catch
+				catch (ArgumentException)
 				{
-					// Skip properties that can't be converted
+					// Skip properties that can't be converted due to argument issues
+					continue;
+				}
+				catch (InvalidOperationException)
+				{
+					// Skip properties that can't be converted due to operation issues
+					continue;
+				}
+				catch (NotSupportedException)
+				{
+					// Skip properties that can't be converted due to unsupported conversions
 					continue;
 				}
 			}
@@ -277,19 +286,22 @@ public class TomlSerializer : SerializerBase
 		}
 
 		// Handle collections
-		if (value is IEnumerable enumerable && targetType.IsGenericType)
+		if (value is System.Collections.IEnumerable enumerable && targetType.IsGenericType)
 		{
 			Type elementType = targetType.GetGenericArguments()[0];
 			Type listType = typeof(List<>).MakeGenericType(elementType);
 			object? list = Activator.CreateInstance(listType);
 			MethodInfo? addMethod = listType.GetMethod("Add");
 
-			foreach (var item in enumerable)
+			foreach (object? item in enumerable)
 			{
 				if (item != null)
 				{
-					object convertedItem = ConvertTomlValueToProperty(item, elementType);
-					addMethod?.Invoke(list, [convertedItem]);
+					object? convertedItem = ConvertTomlValueToProperty(item, elementType);
+					if (convertedItem != null)
+					{
+						addMethod?.Invoke(list, [convertedItem]);
+					}
 				}
 			}
 			return list;

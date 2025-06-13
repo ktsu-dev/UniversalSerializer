@@ -74,6 +74,7 @@ public class SerializerFactory : ISerializerFactory
 	/// <exception cref="InvalidOperationException">Thrown when the serializer type has not been registered.</exception>
 	public ISerializer Create(Type serializerType, SerializerOptions options)
 	{
+		ArgumentNullException.ThrowIfNull(serializerType);
 		return !typeof(ISerializer).IsAssignableFrom(serializerType)
 			? throw new ArgumentException($"Type {serializerType.Name} does not implement ISerializer.", nameof(serializerType))
 			: !_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator)

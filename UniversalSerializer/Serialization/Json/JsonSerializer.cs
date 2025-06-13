@@ -59,7 +59,7 @@ public class JsonSerializer : SerializerBase
 
 		if (HasOption(SerializerOptionKeys.Json.PropertyNamingPolicy))
 		{
-			string policy = GetOption<string>(SerializerOptionKeys.Json.PropertyNamingPolicy, null);
+			string? policy = GetOption<string?>(SerializerOptionKeys.Json.PropertyNamingPolicy, null);
 			if (policy != null)
 			{
 				_jsonOptions.PropertyNamingPolicy = policy.ToLowerInvariant() switch
@@ -116,7 +116,7 @@ public class JsonSerializer : SerializerBase
 	public override T Deserialize<T>(string serialized) => System.Text.Json.JsonSerializer.Deserialize<T>(serialized, _jsonOptions)!;
 
 	/// <inheritdoc/>
-	public override object Deserialize(string serialized, Type type) => System.Text.Json.JsonSerializer.Deserialize(serialized, type, _jsonOptions)!;
+	public override object Deserialize(string serialized, Type type) => System.Text.Json.JsonSerializer.Deserialize(serialized, type, _jsonOptions) ?? throw new InvalidOperationException("Deserialization returned null");
 
 	/// <inheritdoc/>
 	public override async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default)
@@ -132,6 +132,6 @@ public class JsonSerializer : SerializerBase
 	public override async Task<T> DeserializeAsync<T>(string serialized, CancellationToken cancellationToken = default)
 	{
 		using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(serialized));
-		return await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false)!;
+		return await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Deserialization returned null");
 	}
 }

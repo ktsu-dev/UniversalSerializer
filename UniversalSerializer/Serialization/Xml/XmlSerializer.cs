@@ -20,9 +20,6 @@ public class XmlSerializer : SerializerBase
 	private readonly Dictionary<Type, System.Xml.Serialization.XmlSerializer> _serializerCache = [];
 	private readonly XmlWriterSettings _writerSettings;
 	private readonly XmlReaderSettings _readerSettings;
-	private readonly TypeRegistry? _typeRegistry;
-	private readonly bool _enableTypeDiscriminator;
-	private readonly string _typeDiscriminatorFormat;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="XmlSerializer"/> class with default options.
@@ -36,13 +33,10 @@ public class XmlSerializer : SerializerBase
 	/// </summary>
 	/// <param name="options">The serializer options.</param>
 	/// <param name="typeRegistry">Optional registry for polymorphic types.</param>
+#pragma warning disable IDE0060 // Remove unused parameter
 	public XmlSerializer(SerializerOptions options, TypeRegistry? typeRegistry = null) : base(options)
+#pragma warning restore IDE0060 // Remove unused parameter
 	{
-		_typeRegistry = typeRegistry;
-		_enableTypeDiscriminator = GetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, false);
-		_typeDiscriminatorFormat = GetOption(SerializerOptionKeys.TypeRegistry.TypeDiscriminatorFormat,
-			TypeDiscriminatorFormat.Property.ToString());
-
 		_writerSettings = new XmlWriterSettings
 		{
 			Indent = GetOption(SerializerOptionKeys.Xml.Indent, true),
@@ -63,7 +57,9 @@ public class XmlSerializer : SerializerBase
 		{
 			IgnoreWhitespace = true,
 			IgnoreComments = true,
-			IgnoreProcessingInstructions = true
+			IgnoreProcessingInstructions = true,
+			DtdProcessing = DtdProcessing.Prohibit,
+			XmlResolver = null
 		};
 	}
 
@@ -116,7 +112,8 @@ public class XmlSerializer : SerializerBase
 		System.Xml.Serialization.XmlSerializer xmlSerializer = GetXmlSerializer(typeof(T));
 
 		using StringReader stringReader = new(serialized);
-		return (T)xmlSerializer.Deserialize(stringReader)!;
+		using XmlReader xmlReader = XmlReader.Create(stringReader, _readerSettings);
+		return (T)xmlSerializer.Deserialize(xmlReader)!;
 	}
 
 	/// <inheritdoc/>
@@ -130,7 +127,8 @@ public class XmlSerializer : SerializerBase
 		System.Xml.Serialization.XmlSerializer xmlSerializer = GetXmlSerializer(type);
 
 		using StringReader stringReader = new(serialized);
-		return xmlSerializer.Deserialize(stringReader)!;
+		using XmlReader xmlReader = XmlReader.Create(stringReader, _readerSettings);
+		return xmlSerializer.Deserialize(xmlReader)!;
 	}
 
 	/// <inheritdoc/>

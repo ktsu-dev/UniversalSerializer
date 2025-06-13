@@ -33,6 +33,8 @@ globs: *
 
 8.  The .NET implementation for FlatBuffers uses `FlatSharp`.
 
+9.  LZ4 compression uses `K4os.Compression.LZ4`.
+
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
 1.  Use XML comments for API documentation.
@@ -80,8 +82,11 @@ globs: *
     *   `using Microsoft.Extensions.DependencyInjection;` (when using `IServiceCollection` or `ServiceCollectionExtensions`)
     *   `using System.Linq;` (when using LINQ)
     *   `using System.IO;`
+    *   `using K4os.Compression.LZ4;` (when using `LZ4CompressionProvider`)
 
 ## DEBUGGING
+
+1. When using `K4os.Compression.LZ4`, catch `ArgumentException` for buffer size issues and `InvalidOperationException` for decompression errors.
 
 ## TESTING
 
@@ -110,6 +115,7 @@ globs: *
 ## SECURITY
 
 1.  Check for security vulnerabilities.
+2.  When using `XmlSerializer`, use `XmlReader` with secure settings like `DtdProcessing.Prohibit` and `XmlResolver = null` to prevent unsafe XML deserialization.
 
 ## WORKFLOW & RELEASE RULES
 

@@ -109,17 +109,46 @@ public class SerializerOptions
 	}
 
 	// Use string conversion for types not natively supported by the serializer
+	/// <summary>
+	/// Gets or sets a value indicating whether to use string conversion for types not natively supported by the serializer.
+	/// </summary>
 	public bool UseStringConversionForUnsupportedTypes { get; set; } = true;
 
 	// Type discriminator settings for polymorphic serialization
+	/// <summary>
+	/// Gets or sets a value indicating whether to enable type discriminators for polymorphic serialization.
+	/// </summary>
 	public bool EnableTypeDiscriminator { get; set; }
+
+	/// <summary>
+	/// Gets or sets the format for type discriminators.
+	/// </summary>
 	public TypeDiscriminatorFormat TypeDiscriminatorFormat { get; set; } = TypeDiscriminatorFormat.Property;
+
+	/// <summary>
+	/// Gets or sets the property name used for type discriminators.
+	/// </summary>
 	public string TypeDiscriminatorPropertyName { get; set; } = "$type";
+
+	/// <summary>
+	/// Gets or sets a value indicating whether to use fully qualified type names in type discriminators.
+	/// </summary>
 	public bool UseFullyQualifiedTypeNames { get; set; }
 
 	// Compression settings
+	/// <summary>
+	/// Gets or sets a value indicating whether compression is enabled.
+	/// </summary>
 	public bool EnableCompression { get; set; }
+
+	/// <summary>
+	/// Gets or sets the compression type to use.
+	/// </summary>
 	public CompressionType CompressionType { get; set; } = CompressionType.GZip;
+
+	/// <summary>
+	/// Gets or sets the compression level (0-9, where higher values provide better compression but slower speed).
+	/// </summary>
 	public int CompressionLevel { get; set; } = 6; // Default compression level
 
 	// Format-specific settings dictionary for advanced customization

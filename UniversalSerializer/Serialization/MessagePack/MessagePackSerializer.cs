@@ -17,7 +17,6 @@ using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 public class MessagePackSerializer : SerializerBase
 {
 	private readonly MessagePackSerializerOptions _options;
-	private readonly TypeRegistry? _typeRegistry;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MessagePackSerializer"/> class.
@@ -31,10 +30,10 @@ public class MessagePackSerializer : SerializerBase
 	/// </summary>
 	/// <param name="options">The serializer options.</param>
 	/// <param name="typeRegistry">The type registry for polymorphic serialization.</param>
+#pragma warning disable IDE0060 // Remove unused parameter
 	public MessagePackSerializer(SerializerOptions options, TypeRegistry? typeRegistry = null) : base(options)
+#pragma warning restore IDE0060 // Remove unused parameter
 	{
-		_typeRegistry = typeRegistry;
-
 		// Create MessagePack options
 		StandardResolver resolver = StandardResolver.Instance;
 		_options = MessagePackSerializerOptions.Standard
@@ -79,7 +78,7 @@ public class MessagePackSerializer : SerializerBase
 	public override object Deserialize(string serialized, Type type)
 	{
 		byte[] bytes = Convert.FromBase64String(serialized);
-		return global::MessagePack.MessagePackSerializer.Deserialize(type, bytes, _options);
+		return global::MessagePack.MessagePackSerializer.Deserialize(type, bytes, _options) ?? throw new InvalidOperationException("Deserialization returned null");
 	}
 
 	/// <inheritdoc/>

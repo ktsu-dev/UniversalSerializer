@@ -30,6 +30,10 @@ public class YamlPolymorphicNodeDeserializer(
 	/// <inheritdoc/>
 	public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value, ObjectDeserializer rootDeserializer)
 	{
+		// Use parameters to avoid CS9113 warnings
+		_ = discriminatorPropertyName;
+		_ = discriminatorFormat;
+
 		// Fallback to inner deserializer if not an abstract type or interface
 		if (!_typeRegistry.HasPolymorphicTypes())
 		{

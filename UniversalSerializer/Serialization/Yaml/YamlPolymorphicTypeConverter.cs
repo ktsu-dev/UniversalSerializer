@@ -53,6 +53,7 @@ public class YamlPolymorphicTypeConverter : IYamlTypeConverter
 	/// <inheritdoc/>
 	public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
 	{
+		ArgumentNullException.ThrowIfNull(emitter);
 		if (value == null)
 		{
 			emitter.Emit(new Scalar(null, null, "null", ScalarStyle.Plain, true, false));

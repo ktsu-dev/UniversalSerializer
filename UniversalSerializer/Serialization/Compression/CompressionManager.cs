@@ -26,6 +26,7 @@ public class CompressionManager
 		// Register built-in providers
 		RegisterProvider(new GZipCompressionProvider());
 		RegisterProvider(new DeflateCompressionProvider());
+		RegisterProvider(new LZ4CompressionProvider());
 	}
 
 	/// <summary>
