@@ -1,4 +1,4 @@
-# UniversalSerializer
+# ktsu.UniversalSerializer
 
 A unified serialization library for .NET that provides a consistent API for various serialization formats including JSON, XML, YAML, TOML, and MessagePack.
 
@@ -14,7 +14,7 @@ A unified serialization library for .NET that provides a consistent API for vari
 ## Installation
 
 ```shell
-dotnet add package UniversalSerializer
+dotnet add package ktsu.UniversalSerializer
 ```
 
 ## Quick Start

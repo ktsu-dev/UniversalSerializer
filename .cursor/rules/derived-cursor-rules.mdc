@@ -112,6 +112,8 @@ globs: *
 
 11. Analyze payload sizes.
 
+12. Ensure all code has unit and integration tests with > 80% code coverage.
+
 ## SECURITY
 
 1.  Check for security vulnerabilities.
