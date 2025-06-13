@@ -32,6 +32,7 @@
 - Refactor SerializerRegistry and update serializer methods ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add XML serializer options, enhance JsonPolymorphicConverter for better type handling, and fix missing using statements across various serializers. Implemented HasPolymorphicTypes method in TypeRegistry and updated SerializerOptionKeys for XML settings. Addressed pattern matching issues in TOML and YAML serializers. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Update README.md with comprehensive documentation for UniversalSerializer ([@matt-edmondson](https://github.com/matt-edmondson))
+- Add LZ4 compression support and enhance serializer error handling ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add implementation tasks for UniversalSerializer ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add polymorphic serialization support with type discriminator options ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refactor SerializerRegistry and update serialization methods ([@matt-edmondson](https://github.com/matt-edmondson))
