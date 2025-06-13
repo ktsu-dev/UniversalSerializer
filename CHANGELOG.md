@@ -34,6 +34,7 @@
 - Update README.md with comprehensive documentation for UniversalSerializer ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add LZ4 compression support and enhance serializer error handling ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add implementation tasks for UniversalSerializer ([@matt-edmondson](https://github.com/matt-edmondson))
+- Enhance serializer functionality and update project files ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add polymorphic serialization support with type discriminator options ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refactor SerializerRegistry and update serialization methods ([@matt-edmondson](https://github.com/matt-edmondson))
 - Remove INI serialization support ([@matt-edmondson](https://github.com/matt-edmondson))
