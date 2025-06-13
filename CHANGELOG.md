@@ -1,5 +1,6 @@
 ## v1.0.0 (major)
 
+- Refactor project files to use custom SDKs for improved build management. Updated UniversalSerializer, UniversalSerializer.Benchmarks, and UniversalSerializer.Test projects to utilize ktsu.Sdk.Lib, ktsu.Sdk.ConsoleApp, and ktsu.Sdk.Test respectively. This change enhances compatibility and streamlines the build process across different project types. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refine StringConvertibleTypeConverter and enhance documentation ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add compression and encryption support to serializers, including the implementation of ICompressionProvider and associated compression algorithms (GZip, Deflate). Integrated compression functionality into SerializerBase for byte serialization. Established security infrastructure with IEncryptionProvider and EncryptionType enum. Enhanced YAML polymorphic type converter and improved overall build stability by addressing compilation errors and validation issues. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refactor SerializerServiceCollectionExtensions and update serializer registrations ([@matt-edmondson](https://github.com/matt-edmondson))
