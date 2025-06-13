@@ -1,12 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+﻿<Project Sdk="ktsu.Sdk.ConsoleApp">
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />

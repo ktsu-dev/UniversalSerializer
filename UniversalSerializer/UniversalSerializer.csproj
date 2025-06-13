@@ -1,24 +1,6 @@
 ﻿
 
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>UniversalSerializer</PackageId>
-    <Title>Universal Serializer</Title>
-    <Description>A unified serialization library for .NET that provides a consistent API for various serialization formats including JSON, XML, YAML, TOML, and MessagePack.</Description>
-    <PackageTags>serialization;json;xml;yaml;toml;messagepack;converter;dotnet</PackageTags>
-    <RepositoryUrl>https://github.com/ktsu-dev/UniversalSerializer</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>icon.png</PackageIcon>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <WarningsNotAsErrors>CS1591;NU1902;NU1603</WarningsNotAsErrors>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+<Project Sdk="ktsu.Sdk.Lib">
 
   <ItemGroup>
     <PackageReference Include="YamlDotNet" />
@@ -26,10 +8,6 @@
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="../icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

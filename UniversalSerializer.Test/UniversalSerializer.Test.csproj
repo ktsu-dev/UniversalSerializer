@@ -1,12 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
+﻿<Project Sdk="ktsu.Sdk.Test">
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
