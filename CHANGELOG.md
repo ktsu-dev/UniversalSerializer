@@ -26,6 +26,7 @@
 - Add common and type registry option keys for serialization ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add streaming and compression support to serializers, including new methods in ISerializer for stream handling. Introduced CompressionType enum and updated SerializerOptions for compression settings. Enhanced TOML serializer with complete object conversion and added parameter validation for compliance. Fixed various compilation errors and improved YAML polymorphic type converter implementation. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refactor SerializerRegistry and TomlSerializer for improved clarity and performance ([@matt-edmondson](https://github.com/matt-edmondson))
+- Refactor serializer interfaces and implementations to improve code clarity and consistency. Removed unnecessary using directives, added access modifiers to interface members, and standardized variable declarations. Enhanced type handling in various serializers and converters, ensuring better adherence to coding standards and practices. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Remove Protobuf and FlatBuffers support from UniversalSerializer ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add polymorphic serialization support for JSON, XML, and YAML ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refactor SerializerRegistry and update serializer methods ([@matt-edmondson](https://github.com/matt-edmondson))
