@@ -201,11 +201,106 @@ public class TomlSerializer : SerializerBase
 	}
 
 	// Add placeholder methods to make the file compile
-	private static object ConvertObjectToTomlValue(object value, Type type) =>
-		// Stub implementation - would need to be properly implemented
-		value?.ToString() ?? string.Empty;
+	private static object ConvertObjectToTomlValue(object value, Type type)
+	{
+		if (value == null)
+			return string.Empty;
 
-	private static object ConvertFromTomlModel(TomlTable model, Type type) =>
-		// Stub implementation - would need to be properly implemented
-		Activator.CreateInstance(type)!;
+		// Handle primitive types
+		if (type.IsPrimitive || type == typeof(string) || type == typeof(DateTime) || type == typeof(decimal))
+		{
+			return value;
+		}
+
+		// Handle collections
+		if (value is IEnumerable enumerable && type != typeof(string))
+		{
+			var list = new List<object>();
+			foreach (var item in enumerable)
+			{
+				if (item != null)
+				{
+					list.Add(ConvertObjectToTomlValue(item, item.GetType()));
+				}
+			}
+			return list;
+		}
+
+		// For complex objects, convert to string representation
+		return value.ToString() ?? string.Empty;
+	}
+
+	private static object ConvertFromTomlModel(TomlTable model, Type type)
+	{
+		if (model == null)
+			throw new ArgumentNullException(nameof(model));
+
+		// Create instance of the target type
+		var instance = Activator.CreateInstance(type);
+		if (instance == null)
+			throw new InvalidOperationException($"Cannot create instance of type {type.Name}");
+
+		// Set properties from TOML table
+		foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+		{
+			if (!property.CanWrite)
+				continue;
+
+			if (model.TryGetValue(property.Name, out var value) && value != null)
+			{
+				try
+				{
+					var convertedValue = ConvertTomlValueToProperty(value, property.PropertyType);
+					property.SetValue(instance, convertedValue);
+				}
+				catch
+				{
+					// Skip properties that can't be converted
+					continue;
+				}
+			}
+		}
+
+		return instance;
+	}
+
+	private static object? ConvertTomlValueToProperty(object value, Type targetType)
+	{
+		if (value == null)
+			return null;
+
+		// Handle direct assignment
+		if (targetType.IsAssignableFrom(value.GetType()))
+			return value;
+
+		// Handle type conversion
+		if (targetType == typeof(string))
+			return value.ToString();
+
+		if (targetType.IsPrimitive)
+		{
+			return Convert.ChangeType(value, targetType);
+		}
+
+		// Handle collections
+		if (value is IEnumerable enumerable && targetType.IsGenericType)
+		{
+			var elementType = targetType.GetGenericArguments()[0];
+			var listType = typeof(List<>).MakeGenericType(elementType);
+			var list = Activator.CreateInstance(listType);
+			var addMethod = listType.GetMethod("Add");
+
+			foreach (var item in enumerable)
+			{
+				if (item != null)
+				{
+					var convertedItem = ConvertTomlValueToProperty(item, elementType);
+					addMethod?.Invoke(list, [convertedItem]);
+				}
+			}
+			return list;
+		}
+
+		return value;
+	}
 }

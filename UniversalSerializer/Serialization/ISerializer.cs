@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -122,4 +123,40 @@ public interface ISerializer
 	/// <param name="cancellationToken">A cancellation token.</param>
 	/// <returns>A task that represents the asynchronous operation.</returns>
 	public Task<T> DeserializeFromBytesAsync<T>(byte[] bytes, CancellationToken cancellationToken = default);
+
+	// Streaming API methods for large file handling
+	/// <summary>
+	/// Serializes an object to a stream.
+	/// </summary>
+	/// <typeparam name="T">The type of the object to serialize.</typeparam>
+	/// <param name="obj">The object to serialize.</param>
+	/// <param name="stream">The stream to write to.</param>
+	public void SerializeToStream<T>(T obj, Stream stream);
+
+	/// <summary>
+	/// Deserializes an object from a stream.
+	/// </summary>
+	/// <typeparam name="T">The type to deserialize to.</typeparam>
+	/// <param name="stream">The stream to read from.</param>
+	/// <returns>The deserialized object.</returns>
+	public T DeserializeFromStream<T>(Stream stream);
+
+	/// <summary>
+	/// Asynchronously serializes an object to a stream.
+	/// </summary>
+	/// <typeparam name="T">The type of the object to serialize.</typeparam>
+	/// <param name="obj">The object to serialize.</param>
+	/// <param name="stream">The stream to write to.</param>
+	/// <param name="cancellationToken">A cancellation token.</param>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	public Task SerializeToStreamAsync<T>(T obj, Stream stream, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Asynchronously deserializes an object from a stream.
+	/// </summary>
+	/// <typeparam name="T">The type to deserialize to.</typeparam>
+	/// <param name="stream">The stream to read from.</param>
+	/// <param name="cancellationToken">A cancellation token.</param>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	public Task<T> DeserializeFromStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default);
 }

@@ -25,6 +25,7 @@ public static class SerializerExtensions
 	/// <param name="filePath">The file path to save to.</param>
 	public static void SerializeToFile<T>(this ISerializer serializer, T obj, string filePath)
 	{
+		ArgumentNullException.ThrowIfNull(serializer);
 		var serialized = serializer.Serialize(obj);
 		File.WriteAllText(filePath, serialized);
 	}
@@ -40,6 +41,7 @@ public static class SerializerExtensions
 	/// <returns>A task representing the asynchronous operation.</returns>
 	public static async Task SerializeToFileAsync<T>(this ISerializer serializer, T obj, string filePath, CancellationToken cancellationToken = default)
 	{
+		ArgumentNullException.ThrowIfNull(serializer);
 		var serialized = await serializer.SerializeAsync(obj, cancellationToken).ConfigureAwait(false);
 		await File.WriteAllTextAsync(filePath, serialized, cancellationToken).ConfigureAwait(false);
 	}
@@ -53,6 +55,7 @@ public static class SerializerExtensions
 	/// <param name="filePath">The file path to save to.</param>
 	public static void SerializeToBinaryFile<T>(this ISerializer serializer, T obj, string filePath)
 	{
+		ArgumentNullException.ThrowIfNull(serializer);
 		var bytes = serializer.SerializeToBytes(obj);
 		File.WriteAllBytes(filePath, bytes);
 	}
@@ -81,6 +84,7 @@ public static class SerializerExtensions
 	/// <returns>The deserialized object.</returns>
 	public static T DeserializeFromFile<T>(this ISerializer serializer, string filePath)
 	{
+		ArgumentNullException.ThrowIfNull(serializer);
 		var serialized = File.ReadAllText(filePath);
 		return serializer.Deserialize<T>(serialized);
 	}

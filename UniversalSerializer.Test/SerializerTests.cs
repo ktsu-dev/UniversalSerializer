@@ -3,23 +3,14 @@
 // Licensed under the MIT license.
 
 namespace ktsu.UniversalSerializer.Test;
+
+using System.Collections.Generic;
 using ktsu.UniversalSerializer.Serialization;
-=======
-using ktsu.UniversalSerializer.Serialization.Json;
-using ktsu.UniversalSerializer.Serialization.Toml;
-using ktsu.UniversalSerializer.Serialization.Xml;
-using ktsu.UniversalSerializer.Serialization.Yaml;
-using ktsu.UniversalSerializer.Serialization.MessagePack;
-using ktsu.UniversalSerializer.Serialization.Protobuf;
-using ktsu.UniversalSerializer.Serialization.FlatBuffers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
->>>>>>> After
 using ktsu.UniversalSerializer.Serialization.Json;
 using ktsu.UniversalSerializer.Serialization.MessagePack;
 using ktsu.UniversalSerializer.Serialization.Toml;
 using ktsu.UniversalSerializer.Serialization.Xml;
 using ktsu.UniversalSerializer.Serialization.Yaml;
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -56,15 +47,13 @@ public class SerializerTests
 		var yaml = _factory.Create<YamlSerializer>();
 		var toml = _factory.Create<TomlSerializer>();
 		var messagepack = _factory.Create<MessagePackSerializer>();
-		var protobuf = _factory.Create<ProtobufSerializer>();
 
 		// Act
-		SerializerRegistry.Register("json", json);
-		SerializerRegistry.Register("xml", xml);
-		SerializerRegistry.Register("yaml", yaml);
-		SerializerRegistry.Register("toml", toml);
-		SerializerRegistry.Register("messagepack", messagepack);
-		_registry.Register("protobuf", protobuf);
+		_registry.Register("json", json);
+		_registry.Register("xml", xml);
+		_registry.Register("yaml", yaml);
+		_registry.Register("toml", toml);
+		_registry.Register("messagepack", messagepack);
 
 		// Assert
 		Assert.IsTrue(_registry.IsFormatSupported("json"));
@@ -72,34 +61,12 @@ public class SerializerTests
 		Assert.IsTrue(_registry.IsFormatSupported("yaml"));
 		Assert.IsTrue(_registry.IsFormatSupported("toml"));
 		Assert.IsTrue(_registry.IsFormatSupported("messagepack"));
-		Assert.IsTrue(_registry.IsFormatSupported("protobuf"));
 
 		Assert.IsTrue(_registry.IsExtensionSupported(".json"));
 		Assert.IsTrue(_registry.IsExtensionSupported(".xml"));
 		Assert.IsTrue(_registry.IsExtensionSupported(".yaml"));
 		Assert.IsTrue(_registry.IsExtensionSupported(".toml"));
 		Assert.IsTrue(_registry.IsExtensionSupported(".msgpack"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".proto"));
-	}
-
-	/// <summary>
-	/// Tests the XML serializer with simple types.
-	/// </summary>
-	[TestMethod]
-	public void XmlSerializer_SerializeDeserialize_SimpleType_Success()
-	{
-		// Arrange
-		var serializer = _factory.Create<XmlSerializer>();
-		var testData = new TestData { IntValue = 42, StringValue = "Hello, World!" };
-
-		// Act
-		var serialized = serializer.Serialize(testData);
-		var deserialized = serializer.Deserialize<TestData>(serialized);
-
-		// Assert
-		Assert.IsNotNull(deserialized);
-		Assert.AreEqual(testData.IntValue, deserialized.IntValue);
-		Assert.AreEqual(testData.StringValue, deserialized.StringValue);
 	}
 
 	/// <summary>
@@ -123,6 +90,26 @@ public class SerializerTests
 	}
 
 	/// <summary>
+	/// Tests the XML serializer with simple types.
+	/// </summary>
+	[TestMethod]
+	public void XmlSerializer_SerializeDeserialize_SimpleType_Success()
+	{
+		// Arrange
+		var serializer = _factory.Create<XmlSerializer>();
+		var testData = new TestData { IntValue = 42, StringValue = "Hello, World!" };
+
+		// Act
+		var serialized = serializer.Serialize(testData);
+		var deserialized = serializer.Deserialize<TestData>(serialized);
+
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(testData.IntValue, deserialized.IntValue);
+		Assert.AreEqual(testData.StringValue, deserialized.StringValue);
+	}
+
+	/// <summary>
 	/// Tests the YAML serializer with simple types.
 	/// </summary>
 	[TestMethod]
@@ -130,9 +117,6 @@ public class SerializerTests
 	{
 		// Arrange
 		var serializer = _factory.Create<YamlSerializer>();
-		var yamlSerializer = _registry.GetSerializer("yaml") as YamlSerializer;
-		Assert.IsNotNull(yamlSerializer, "YAML serializer should be available");
-
 		var testObject = new TestModel
 		{
 			Id = 1,
@@ -140,275 +124,121 @@ public class SerializerTests
 			CreatedAt = new DateTime(2023, 1, 1, 12, 0, 0, DateTimeKind.Utc),
 			IsActive = true,
 			Tags = ["test", "serialization", "yaml"]
-
-
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
 		};
 
 		// Act
-		var serialized = yamlSerializer.Serialize(testObject);
-=======
-		};
+		var serialized = serializer.Serialize(testObject);
+		var deserialized = serializer.Deserialize<TestModel>(serialized);
 
-		// Act
-		var serialized = yamlSerializer.Serialize(testObject);
->>>>>>> After
-	};
-=======
-=======
-		};
-
-		// Act
-		var serialized = yamlSerializer.Serialize(testObject);
->>>>>>> After
-};
-
-private var deserialized = yamlSerializer.Deserialize<TestModel>(serialized);
->>>>>>> After
-		};
-
-// Act
-var serialized = yamlSerializer.Serialize(testObject);
-=======
-		};
-
-		// Act
-		var serialized = yamlSerializer.Serialize(testObject);
->>>>>>> After
-	};
-
-private var deserialized = yamlSerializer.Deserialize<TestModel>(serialized);
-
-// Assert
-Assert.IsNotNull(deserialized);
-Assert.AreEqual(testObject.Id, deserialized.Id);
-Assert.AreEqual(testObject.Name, deserialized.Name);
-Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
-Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
-	}
-;
-
-=======
-		};
->>>>>>> After
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
-=======
-=======
-		};
-
-		// Act
-		var serialized = tomlSerializer.Serialize(testObject);
->>>>>>> After
-	};
-
-private var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
->>>>>>> After
-		};
-
-// Act
-var serialized = tomlSerializer.Serialize(testObject);
-=======
-		};
-
-		// Act
-		var serialized = tomlSerializer.Serialize(testObject);
->>>>>>> After
-	};
-
-private var deserialized = tomlSerializer.Deserialize<TestModel>(serialized);
-
-// Assert
-Assert.IsNotNull(deserialized);
-Assert.AreEqual(testObject.Id, deserialized.Id);
-Assert.AreEqual(testObject.Name, deserialized.Name);
-Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
-Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
-	}
-;
-
-// Act
-// Test string-based serialization (Base64 encoded)
-var serialized = messagePackSerializer.Serialize(testObject);
-var deserialized = messagePackSerializer.Deserialize<TestModel>(serialized);
-
-// Test binary serialization
-var bytesSerialized = messagePackSerializer.SerializeToBytes(testObject);
-var bytesDeserialized = messagePackSerializer.DeserializeFromBytes<TestModel>(bytesSerialized);
-
-// Assert
-Assert.IsNotNull(deserialized);
-Assert.AreEqual(testObject.Id, deserialized.Id);
-Assert.AreEqual(testObject.Name, deserialized.Name);
-Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
-Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
-CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
-
-Assert.IsNotNull(bytesDeserialized);
-Assert.AreEqual(testObject.Id, bytesDeserialized.Id);
-Assert.AreEqual(testObject.Name, bytesDeserialized.Name);
-Assert.AreEqual(testObject.CreatedAt, bytesDeserialized.CreatedAt);
-Assert.AreEqual(testObject.IsActive, bytesDeserialized.IsActive);
-CollectionAssert.AreEqual(testObject.Tags, bytesDeserialized.Tags);
-	}
-;
-
-// Act
-var bytes = serializer.SerializeToBytes(testObject);
-var result = serializer.DeserializeFromBytes<TestClass>(bytes);
-
-// Assert
-Assert.IsNotNull(result);
-Assert.AreEqual(testObject.Id, result.Id);
-Assert.AreEqual(testObject.Name, result.Name);
-Assert.AreEqual(testObject.Description, result.Description);
-CollectionAssert.AreEqual(testObject.Tags, result.Tags);
-	}
-;
-
-// Act
-var bytes = serializer.SerializeToBytes(testObject);
-var result = serializer.DeserializeFromBytes<TestClass>(bytes);
-
-// Assert
-Assert.IsNotNull(result);
-Assert.AreEqual(testObject.Id, result.Id);
-Assert.AreEqual(testObject.Name, result.Name);
-Assert.AreEqual(testObject.Description, result.Description);
-CollectionAssert.AreEqual(testObject.Tags, result.Tags);
-	}
-;
-
-// Act
-var bytes = serializer.SerializeToBytes(testObject);
-var result = serializer.DeserializeFromBytes<TestClass>(bytes);
-
-// Assert
-Assert.IsNotNull(result);
-Assert.AreEqual(testObject.Id, result.Id);
-Assert.AreEqual(testObject.Name, result.Name);
-Assert.AreEqual(testObject.Description, result.Description);
-CollectionAssert.AreEqual(testObject.Tags, result.Tags);
-	}
-;
-
-// Act
-var bytes = serializer.SerializeToBytes(testObject);
-var result = serializer.DeserializeFromBytes<TestClass>(bytes);
-
-// Assert
-Assert.IsNotNull(result);
-Assert.AreEqual(testObject.Id, result.Id);
-Assert.AreEqual(testObject.Name, result.Name);
-Assert.AreEqual(testObject.Description, result.Description);
-CollectionAssert.AreEqual(testObject.Tags, result.Tags);
-	}
-;
-
-// Act
-var bytes = serializer.SerializeToBytes(testObject);
-var result = serializer.DeserializeFromBytes<MessagePackTestClass>(bytes);
-
-// Assert
-Assert.IsNotNull(result);
-Assert.AreEqual(testObject.Id, result.Id);
-Assert.AreEqual(testObject.Name, result.Name);
-Assert.AreEqual(testObject.Description, result.Description);
-CollectionAssert.AreEqual(testObject.Tags, result.Tags);
-	}
-;
-
-// Act
-var bytes = serializer.SerializeToBytes(testObject);
-var result = serializer.DeserializeFromBytes<ProtobufTestClass>(bytes);
-
-// Assert
-Assert.IsNotNull(result);
-Assert.AreEqual(testObject.Id, result.Id);
-Assert.AreEqual(testObject.Name, result.Name);
-Assert.AreEqual(testObject.Description, result.Description);
-CollectionAssert.AreEqual(testObject.Tags, result.Tags);
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(testObject.Id, deserialized.Id);
+		Assert.AreEqual(testObject.Name, deserialized.Name);
+		Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
+		Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
+		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
 	}
 
-/// <summary>
-/// A standard test class for serialization.
-/// </summary>
-public class TestClass
-{
 	/// <summary>
-	/// Gets or sets the ID.
+	/// Tests the TOML serializer with simple types.
 	/// </summary>
-	public int Id { get; set; }
-=======
-/// <summary>
-/// A standard test class for serialization.
-/// </summary>
-public class TestClass
-{
-	/// <summary>
-	/// Gets or sets the ID.
-	/// </summary>
-	public int Id { get; set; }
->>>>>>> After
-	/// <summary>
-	/// A standard test class for serialization.
-	/// </summary>
-	public class TestClass
+	[TestMethod]
+	public void TomlSerializer_SerializeDeserialize_SimpleType_Success()
 	{
-		/// <summary>
-		/// Gets or sets the ID.
-		/// </summary>
-		public int Id { get; set; }
+		// Arrange
+		var serializer = _factory.Create<TomlSerializer>();
+		var testObject = new TestModel
+		{
+			Id = 1,
+			Name = "Test Object",
+			CreatedAt = new DateTime(2023, 1, 1, 12, 0, 0, DateTimeKind.Utc),
+			IsActive = true,
+			Tags = ["test", "serialization", "toml"]
+		};
 
-		/// <summary>
-		/// Gets or sets the name.
-		/// </summary>
-		public string? Name { get; set; }
+		// Act
+		var serialized = serializer.Serialize(testObject);
+		var deserialized = serializer.Deserialize<TestModel>(serialized);
 
-		/// <summary>
-		/// Gets or sets the description.
-		/// </summary>
-		public string? Description { get; set; }
-
-		/// <summary>
-		/// Gets or sets the tags.
-		/// </summary>
-		public List<string>? Tags { get; set; }
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(testObject.Id, deserialized.Id);
+		Assert.AreEqual(testObject.Name, deserialized.Name);
+		Assert.AreEqual(testObject.CreatedAt, deserialized.CreatedAt);
+		Assert.AreEqual(testObject.IsActive, deserialized.IsActive);
+		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
 	}
 
 	/// <summary>
-	/// A test class with MessagePack attributes for serialization.
+	/// Tests the MessagePack serializer with simple types.
 	/// </summary>
-	[MessagePack.MessagePackObject]
-	public class
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-	/// <summary>
-	/// Gets or sets the name.
-	/// </summary>
-		public string? Name { get; set; }
+	[TestMethod]
+	public void MessagePackSerializer_SerializeDeserialize_SimpleType_Success()
+	{
+		// Arrange
+		var serializer = _factory.Create<MessagePackSerializer>();
+		var testObject = new MessagePackTestClass
+		{
+			Id = 1,
+			Name = "Test Object",
+			Description = "A test object for MessagePack serialization",
+			Tags = ["test", "serialization", "messagepack"]
+		};
 
-=======
+		// Act
+		var serialized = serializer.SerializeToBytes(testObject);
+		var deserialized = serializer.DeserializeFromBytes<MessagePackTestClass>(serialized);
+
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(testObject.Id, deserialized.Id);
+		Assert.AreEqual(testObject.Name, deserialized.Name);
+		Assert.AreEqual(testObject.Description, deserialized.Description);
+		CollectionAssert.AreEqual(testObject.Tags, deserialized.Tags);
+	}
+}
+
+/// <summary>
+/// A test data class.
+/// </summary>
+public class TestData
+{
+	/// <summary>
+	/// Gets or sets the integer value.
+	/// </summary>
+	public int IntValue { get; set; }
+
+	/// <summary>
+	/// Gets or sets the string value.
+	/// </summary>
+	public string? StringValue { get; set; }
+}
+
+/// <summary>
+/// A test model class.
+/// </summary>
+public class TestModel
+{
+	/// <summary>
+	/// Gets or sets the ID.
+	/// </summary>
+	public int Id { get; set; }
+
 	/// <summary>
 	/// Gets or sets the name.
 	/// </summary>
 	public string? Name { get; set; }
->>>>>>> After
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
-	/// <summary>
-	/// Gets or sets the description.
-	/// </summary>
-	public string? Description { get; set; }
 
-=======
 	/// <summary>
-	/// Gets or sets the description.
+	/// Gets or sets the creation date.
 	/// </summary>
-	public string? Description { get; set; }
->>>>>>> After
-<<<<<<< TODO: Unmerged change from project 'UniversalSerializer.Test(net9.0)', Before:
+	public DateTime CreatedAt { get; set; }
+
+	/// <summary>
+	/// Gets or sets a value indicating whether this instance is active.
+	/// </summary>
+	public bool IsActive { get; set; }
+
 	/// <summary>
 	/// Gets or sets the tags.
 	/// </summary>
@@ -420,30 +250,6 @@ public class TestClass
 /// </summary>
 [MessagePack.MessagePackObject]
 public class MessagePackTestClass
-{
-	/// <summary>
-	/// Gets or sets the ID.
-	/// </summary>
-	[MessagePack.Key(0)]
-=======
-	/// <summary>
-	/// Gets or sets the tags.
-	/// </summary>
-	public List<string>? Tags { get; set; }
-}
-
-/// <summary>
-/// A test class with MessagePack attributes for serialization.
-/// </summary>
-[MessagePack.MessagePackObject]
-public class MessagePackTestClass
-{
-	/// <summary>
-	/// Gets or sets the ID.
-	/// </summary>
-	[MessagePack.Key(0)]
->>>>>>> After
-	MessagePackTestClass
 {
 	/// <summary>
 	/// Gets or sets the ID.
@@ -468,91 +274,4 @@ public class MessagePackTestClass
 	/// </summary>
 	[MessagePack.Key(3)]
 	public List<string>? Tags { get; set; }
-}
-
-/// <summary>
-/// A test class with Protocol Buffers attributes for serialization.
-/// </summary>
-[ProtoBuf.ProtoContract]
-public class ProtobufTestClass
-{
-	/// <summary>
-	/// Gets or sets the ID.
-	/// </summary>
-	[ProtoBuf.ProtoMember(1)]
-	public int Id { get; set; }
-
-	/// <summary>
-	/// Gets or sets the name.
-	/// </summary>
-	[ProtoBuf.ProtoMember(2)]
-	public string? Name { get; set; }
-
-	/// <summary>
-	/// Gets or sets the description.
-	/// </summary>
-	[ProtoBuf.ProtoMember(3)]
-	public string? Description { get; set; }
-
-	/// <summary>
-	/// Gets or sets the tags.
-	/// </summary>
-	[ProtoBuf.ProtoMember(4)]
-	public List<string>? Tags { get; set; }
-}
-
-/// <summary>
-/// A simple FlatBuffers test class (would normally be generated from an FBS schema).
-/// This is for illustrative purposes only and would not actually be used in tests as-is.
-/// </summary>
-[FlatSharp.FlatBufferTable]
-public class FlatBuffersTestClass
-{
-	[FlatSharp.FlatBufferItem(0)]
-	public virtual int Id { get; set; }
-
-	[FlatSharp.FlatBufferItem(1)]
-	public virtual string? Name { get; set; }
-
-	[FlatSharp.FlatBufferItem(2)]
-	public virtual string? Description { get; set; }
-
-	[FlatSharp.FlatBufferItem(3)]
-	public virtual IList<string>? Tags { get; set; }
-
-	// FlatSharp generates a Serializer property automatically which the serializer looks for
-	// via reflection when writing/reading FlatBuffers data
-	// public static readonly ISerializer<FlatBuffersTestClass> Serializer = /* generated code */;
-}
-}
-
-/// <summary>
-/// Sample test model for serialization tests.
-/// </summary>
-public class TestModel
-{
-	/// <summary>
-	/// Gets or sets the ID.
-	/// </summary>
-	public int Id { get; set; }
-
-	/// <summary>
-	/// Gets or sets the name.
-	/// </summary>
-	public string Name { get; set; } = string.Empty;
-
-	/// <summary>
-	/// Gets or sets the creation date.
-	/// </summary>
-	public DateTime CreatedAt { get; set; }
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the model is active.
-	/// </summary>
-	public bool IsActive { get; set; }
-
-	/// <summary>
-	/// Gets or sets the tags.
-	/// </summary>
-	public List<string> Tags { get; set; } = [];
 }

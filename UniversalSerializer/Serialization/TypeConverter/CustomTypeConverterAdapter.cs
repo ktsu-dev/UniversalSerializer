@@ -42,6 +42,7 @@ public class CustomTypeConverterAdapter<T>(ICustomTypeConverter<T> customConvert
 	/// <inheritdoc/>
 	public object ConvertFromString(string value, Type targetType)
 	{
+		ArgumentNullException.ThrowIfNull(targetType);
 		if (!CanConvert(targetType))
 		{
 			throw new InvalidOperationException($"This converter cannot convert to type {targetType.Name}");

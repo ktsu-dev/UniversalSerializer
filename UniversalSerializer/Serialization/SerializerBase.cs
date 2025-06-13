@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using System.IO;
 
 namespace ktsu.UniversalSerializer.Serialization;
 
@@ -113,4 +114,44 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	/// <param name="key">The option key.</param>
 	/// <returns>true if the option exists; otherwise, false.</returns>
 	protected bool HasOption(string key) => Options.HasOption(key);
+
+	/// <inheritdoc/>
+	public virtual void SerializeToStream<T>(T obj, Stream stream)
+	{
+		ArgumentNullException.ThrowIfNull(stream);
+		var serialized = Serialize(obj);
+		using var writer = new StreamWriter(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		writer.Write(serialized);
+		writer.Flush();
+	}
+
+	/// <inheritdoc/>
+	public virtual T DeserializeFromStream<T>(Stream stream)
+	{
+		ArgumentNullException.ThrowIfNull(stream);
+		using var reader = new StreamReader(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		var serialized = reader.ReadToEnd();
+		return Deserialize<T>(serialized);
+	}
+
+	/// <inheritdoc/>
+	public virtual async Task SerializeToStreamAsync<T>(T obj, Stream stream, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(stream);
+		cancellationToken.ThrowIfCancellationRequested();
+		var serialized = await SerializeAsync(obj, cancellationToken).ConfigureAwait(false);
+		using var writer = new StreamWriter(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		await writer.WriteAsync(serialized).ConfigureAwait(false);
+		await writer.FlushAsync().ConfigureAwait(false);
+	}
+
+	/// <inheritdoc/>
+	public virtual async Task<T> DeserializeFromStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(stream);
+		cancellationToken.ThrowIfCancellationRequested();
+		using var reader = new StreamReader(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		var serialized = await reader.ReadToEndAsync().ConfigureAwait(false);
+		return await DeserializeAsync<T>(serialized, cancellationToken).ConfigureAwait(false);
+	}
 }

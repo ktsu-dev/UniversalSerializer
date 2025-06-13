@@ -2,15 +2,9 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization;
-
 namespace ktsu.UniversalSerializer.Serialization.Yaml;
-using System.Reflection;
+
+using System;
 using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
@@ -22,8 +16,6 @@ using YamlDotNet.Serialization;
 public class YamlPolymorphicTypeConverter : IYamlTypeConverter
 {
 	private readonly TypeRegistry _typeRegistry;
-	private readonly string _discriminatorPropertyName;
-	private readonly string _discriminatorFormat;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="YamlPolymorphicTypeConverter"/> class.
@@ -37,24 +29,25 @@ public class YamlPolymorphicTypeConverter : IYamlTypeConverter
 		string discriminatorFormat)
 	{
 		_typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
-		_discriminatorPropertyName = discriminatorPropertyName ?? throw new ArgumentNullException(nameof(discriminatorPropertyName));
-		_discriminatorFormat = discriminatorFormat ?? throw new ArgumentNullException(nameof(discriminatorFormat));
+		// Parameters are stored for future use but not currently implemented
+		_ = discriminatorPropertyName ?? throw new ArgumentNullException(nameof(discriminatorPropertyName));
+		_ = discriminatorFormat ?? throw new ArgumentNullException(nameof(discriminatorFormat));
 	}
 
 	/// <inheritdoc/>
-	public bool Accepts(Type type) => _typeRegistry.HasPolymorphicTypes(type);
+	public bool Accepts(Type type)
+	{
+		ArgumentNullException.ThrowIfNull(type);
+		return _typeRegistry.HasPolymorphicTypes() && type.IsClass && !type.IsSealed;
+	}
 
 	/// <inheritdoc/>
-	public object ReadYaml(IParser parser, Type type, ObjectDeserializer deserializer)
-	{
+	public object ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer) =>
 		// Implementation for reading YAML and handling type discriminators
 		throw new NotImplementedException("YamlPolymorphicTypeConverter.ReadYaml is not implemented");
-	}
 
 	/// <inheritdoc/>
-	public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
-	{
+	public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer) =>
 		// Implementation for writing YAML with type discriminators
 		throw new NotImplementedException("YamlPolymorphicTypeConverter.WriteYaml is not implemented");
-	}
 }

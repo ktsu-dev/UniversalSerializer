@@ -8,6 +8,8 @@ using System.Threading;
 using System;
 
 namespace ktsu.UniversalSerializer.Serialization;
+
+using ktsu.UniversalSerializer.Serialization.TypeRegistry;
 using System.Collections.Concurrent;
 
 /// <summary>
@@ -110,4 +112,22 @@ public class SerializerOptions
 
 		return clone;
 	}
+
+	// Use string conversion for types not natively supported by the serializer
+	public bool UseStringConversionForUnsupportedTypes { get; set; } = true;
+
+	// Type discriminator settings for polymorphic serialization
+	public bool EnableTypeDiscriminator { get; set; } = false;
+	public TypeDiscriminatorFormat TypeDiscriminatorFormat { get; set; } = TypeDiscriminatorFormat.Property;
+	public string TypeDiscriminatorPropertyName { get; set; } = "$type";
+	public bool UseFullyQualifiedTypeNames { get; set; } = false;
+
+	// Compression settings
+	public bool EnableCompression { get; set; } = false;
+	public CompressionType CompressionType { get; set; } = CompressionType.GZip;
+	public int CompressionLevel { get; set; } = 6; // Default compression level
+
+	// Format-specific settings dictionary for advanced customization
+	// These will be handled internally by each serializer implementation
+	internal Dictionary<string, object> FormatSpecificOptions { get; } = [];
 }
