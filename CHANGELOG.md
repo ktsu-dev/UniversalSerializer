@@ -1,6 +1,7 @@
 ## v1.0.0 (major)
 
 - Refine StringConvertibleTypeConverter and enhance documentation ([@matt-edmondson](https://github.com/matt-edmondson))
+- Add compression and encryption support to serializers, including the implementation of ICompressionProvider and associated compression algorithms (GZip, Deflate). Integrated compression functionality into SerializerBase for byte serialization. Established security infrastructure with IEncryptionProvider and EncryptionType enum. Enhanced YAML polymorphic type converter and improved overall build stability by addressing compilation errors and validation issues. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refactor SerializerServiceCollectionExtensions and update serializer registrations ([@matt-edmondson](https://github.com/matt-edmondson))
 - Enhance serializer functionality and update dependencies ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add enum serialization format options to serializer settings ([@matt-edmondson](https://github.com/matt-edmondson))
@@ -22,6 +23,7 @@
 - Update task list to mark build pipeline configuration as complete ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add INI serialization support ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add common and type registry option keys for serialization ([@matt-edmondson](https://github.com/matt-edmondson))
+- Add streaming and compression support to serializers, including new methods in ISerializer for stream handling. Introduced CompressionType enum and updated SerializerOptions for compression settings. Enhanced TOML serializer with complete object conversion and added parameter validation for compliance. Fixed various compilation errors and improved YAML polymorphic type converter implementation. ([@matt-edmondson](https://github.com/matt-edmondson))
 - Refactor SerializerRegistry and TomlSerializer for improved clarity and performance ([@matt-edmondson](https://github.com/matt-edmondson))
 - Remove Protobuf and FlatBuffers support from UniversalSerializer ([@matt-edmondson](https://github.com/matt-edmondson))
 - Add polymorphic serialization support for JSON, XML, and YAML ([@matt-edmondson](https://github.com/matt-edmondson))
