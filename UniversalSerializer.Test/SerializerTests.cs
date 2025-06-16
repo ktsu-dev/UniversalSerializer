@@ -206,6 +206,191 @@ public class SerializerTests
 		Assert.AreEqual(testObject.Description, deserialized.Description);
 		CollectionAssert.AreEqual((System.Collections.ICollection?)testObject.Tags, (System.Collections.ICollection?)deserialized.Tags);
 	}
+
+	/// <summary>
+	/// Tests error handling for unsupported format.
+	/// </summary>
+	[TestMethod]
+	public void SerializerRegistry_UnsupportedFormat_ReturnsNull()
+	{
+		// Act
+		ISerializer? serializer = _registry.GetSerializer("unsupported");
+
+		// Assert
+		Assert.IsNull(serializer);
+	}
+
+	/// <summary>
+	/// Tests error handling for unsupported extension.
+	/// </summary>
+	[TestMethod]
+	public void SerializerRegistry_UnsupportedExtension_ReturnsNull()
+	{
+		// Act
+		ISerializer? serializer = _registry.GetSerializerByExtension(".unsupported");
+
+		// Assert
+		Assert.IsNull(serializer);
+	}
+
+	/// <summary>
+	/// Tests error handling for unsupported content type.
+	/// </summary>
+	[TestMethod]
+	public void SerializerRegistry_UnsupportedContentType_ReturnsNull()
+	{
+		// Act
+		ISerializer? serializer = _registry.GetSerializerByContentType("application/unsupported");
+
+		// Assert
+		Assert.IsNull(serializer);
+	}
+
+	/// <summary>
+	/// Tests serialization with null object.
+	/// </summary>
+	[TestMethod]
+	public void JsonSerializer_SerializeNull_HandlesGracefully()
+	{
+		// Arrange
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+
+		// Act
+		string serialized = serializer.Serialize<TestData?>(null);
+
+		// Assert
+		Assert.IsNotNull(serialized);
+		TestData? deserialized = serializer.Deserialize<TestData?>(serialized);
+		Assert.IsNull(deserialized);
+	}
+
+	/// <summary>
+	/// Tests deserialization with empty string.
+	/// </summary>
+	[TestMethod]
+	public void JsonSerializer_DeserializeEmptyString_ThrowsException()
+	{
+		// Arrange
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+
+		// Act & Assert
+		Assert.ThrowsException<System.Text.Json.JsonException>(() =>
+			serializer.Deserialize<TestData>(""));
+	}
+
+	/// <summary>
+	/// Tests deserialization with invalid JSON.
+	/// </summary>
+	[TestMethod]
+	public void JsonSerializer_DeserializeInvalidJson_ThrowsException()
+	{
+		// Arrange
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+
+		// Act & Assert
+		Assert.ThrowsException<System.Text.Json.JsonException>(() =>
+			serializer.Deserialize<TestData>("invalid json"));
+	}
+
+	/// <summary>
+	/// Tests serialization with complex nested objects.
+	/// </summary>
+	[TestMethod]
+	public void JsonSerializer_SerializeComplexObject_Success()
+	{
+		// Arrange
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+		ComplexTestObject complexObject = new()
+		{
+			Id = 1,
+			Name = "Complex Object",
+			NestedObject = new TestData { IntValue = 123, StringValue = "Nested" },
+			ListOfObjects = [
+				new TestData { IntValue = 1, StringValue = "First" },
+				new TestData { IntValue = 2, StringValue = "Second" }
+			],
+			Dictionary = new Dictionary<string, object>
+			{
+				{"key1", "value1"},
+				{"key2", 42},
+				{"key3", true}
+			}
+		};
+
+		// Act
+		string serialized = serializer.Serialize(complexObject);
+		ComplexTestObject deserialized = serializer.Deserialize<ComplexTestObject>(serialized);
+
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(complexObject.Id, deserialized.Id);
+		Assert.AreEqual(complexObject.Name, deserialized.Name);
+		Assert.IsNotNull(deserialized.NestedObject);
+		Assert.AreEqual(complexObject.NestedObject.IntValue, deserialized.NestedObject.IntValue);
+		Assert.AreEqual(complexObject.NestedObject.StringValue, deserialized.NestedObject.StringValue);
+		Assert.IsNotNull(deserialized.ListOfObjects);
+		Assert.AreEqual(2, deserialized.ListOfObjects.Count);
+	}
+
+	/// <summary>
+	/// Tests async serialization and deserialization.
+	/// </summary>
+	[TestMethod]
+	public async Task JsonSerializer_SerializeDeserializeAsync_Success()
+	{
+		// Arrange
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+		TestData testData = new() { IntValue = 42, StringValue = "Async Test" };
+
+		// Act
+		string serialized = await serializer.SerializeAsync(testData).ConfigureAwait(false);
+		TestData deserialized = await serializer.DeserializeAsync<TestData>(serialized).ConfigureAwait(false);
+
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(testData.IntValue, deserialized.IntValue);
+		Assert.AreEqual(testData.StringValue, deserialized.StringValue);
+	}
+
+	/// <summary>
+	/// Tests byte array serialization and deserialization.
+	/// </summary>
+	[TestMethod]
+	public void JsonSerializer_SerializeToBytes_Success()
+	{
+		// Arrange
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+		TestData testData = new() { IntValue = 42, StringValue = "Bytes Test" };
+
+		// Act
+		byte[] serialized = serializer.SerializeToBytes(testData);
+		TestData deserialized = serializer.DeserializeFromBytes<TestData>(serialized);
+
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(testData.IntValue, deserialized.IntValue);
+		Assert.AreEqual(testData.StringValue, deserialized.StringValue);
+	}
+
+	/// <summary>
+	/// Tests async byte array serialization and deserialization.
+	/// </summary>
+	[TestMethod]
+	public async Task JsonSerializer_SerializeToBytesAsync_Success()
+	{
+		// Arrange
+		JsonSerializer serializer = _factory.Create<JsonSerializer>();
+		TestData testData = new() { IntValue = 42, StringValue = "Async Bytes Test" };
+
+		// Act
+		byte[] serialized = await serializer.SerializeToBytesAsync(testData).ConfigureAwait(false);
+		TestData deserialized = await serializer.DeserializeFromBytesAsync<TestData>(serialized).ConfigureAwait(false);
+
+		// Assert
+		Assert.IsNotNull(deserialized);
+		Assert.AreEqual(testData.IntValue, deserialized.IntValue);
+		Assert.AreEqual(testData.StringValue, deserialized.StringValue);
+	}
 }
 
 /// <summary>
@@ -284,4 +469,35 @@ public class MessagePackTestClass
 	/// </summary>
 	[MessagePack.Key(3)]
 	public IList<string>? Tags { get; init; }
+}
+
+/// <summary>
+/// A complex test object for testing nested serialization.
+/// </summary>
+public class ComplexTestObject
+{
+	/// <summary>
+	/// Gets or sets the ID.
+	/// </summary>
+	public int Id { get; set; }
+
+	/// <summary>
+	/// Gets or sets the name.
+	/// </summary>
+	public string? Name { get; set; }
+
+	/// <summary>
+	/// Gets or sets the nested object.
+	/// </summary>
+	public TestData? NestedObject { get; set; }
+
+	/// <summary>
+	/// Gets or sets the list of objects.
+	/// </summary>
+	public List<TestData>? ListOfObjects { get; set; }
+
+	/// <summary>
+	/// Gets or sets the dictionary.
+	/// </summary>
+	public Dictionary<string, object>? Dictionary { get; set; }
 }
