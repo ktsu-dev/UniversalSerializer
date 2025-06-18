@@ -1,6 +1,8 @@
-## v1.0.0
+## v1.0.1 (patch)
 
 Changes since v1.0.0:
+
+- Refactor PSBuild script for improved functionality and clarity ([@matt-edmondson](https://github.com/matt-edmondson))
 ## v1.0.0 (major)
 
 - Refactor project files to use custom SDKs for improved build management. Updated UniversalSerializer, UniversalSerializer.Benchmarks, and UniversalSerializer.Test projects to utilize ktsu.Sdk.Lib, ktsu.Sdk.ConsoleApp, and ktsu.Sdk.Test respectively. This change enhances compatibility and streamlines the build process across different project types. ([@matt-edmondson](https://github.com/matt-edmondson))
