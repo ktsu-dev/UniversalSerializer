@@ -1,5 +1,5 @@
-## v1.0.2 (patch)
+## v1.0.3 (patch)
 
-Changes since v1.0.1:
+Changes since v1.0.2:
 
-- Refactor Invoke-DotNetPack to use PackageReleaseNotesFile for changelog reference ([@matt-edmondson](https://github.com/matt-edmondson))
+- Enhance winget manifest update script with improved configuration and error handling ([@matt-edmondson](https://github.com/matt-edmondson))
