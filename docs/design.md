@@ -2,7 +2,7 @@
 
 ## Overview
 
-UniversalSerializer is a .NET library that provides a unified interface for various serialization formats. It abstracts away the implementation details of different serialization libraries, allowing developers to easily switch between formats without changing their code. The library uses dependency injection to manage the various serializer implementations.
+UniversalSerializer is a .NET library that provides a unified interface for various serialization formats. It abstracts away the implementation details of different serialization libraries, allowing developers to easily switch between formats without changing their code. The library uses dependency injection to manage the various serializer implementations and implements the `ISerializationProvider` interface for standardized DI scenarios.
 
 ## Goals
 
