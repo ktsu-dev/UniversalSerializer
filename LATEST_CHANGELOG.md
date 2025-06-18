@@ -1,5 +1,3 @@
-## v1.0.3 (patch)
+## v1.0.3
 
-Changes since v1.0.2:
-
-- Enhance winget manifest update script with improved configuration and error handling ([@matt-edmondson](https://github.com/matt-edmondson))
+No significant changes detected since v1.0.3.
