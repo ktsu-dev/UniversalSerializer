@@ -1,6 +1,30 @@
-## v1.0.0
+## v1.0.4-pre.2 (prerelease)
+
+Changes since v1.0.4-pre.1:
+## v1.0.4-pre.2 (prerelease)
+
+Changes since v1.0.4-pre.1:
+## v1.0.4-pre.1 (prerelease)
+
+Changes since v1.0.3:
+
+- Bump the microsoft group with 2 updates ([@dependabot[bot]](https://github.com/dependabot[bot]))
+## v1.0.3 (patch)
+
+Changes since v1.0.2:
+
+- Enhance winget manifest update script with improved configuration and error handling ([@matt-edmondson](https://github.com/matt-edmondson))
+## v1.0.2 (patch)
+
+Changes since v1.0.1:
+
+- Refactor Invoke-DotNetPack to use PackageReleaseNotesFile for changelog reference ([@matt-edmondson](https://github.com/matt-edmondson))
+## v1.0.1 (patch)
 
 Changes since v1.0.0:
+
+- Enhance UniversalSerializer with SerializationProvider integration and new features ([@matt-edmondson](https://github.com/matt-edmondson))
+- Refactor PSBuild script for improved functionality and clarity ([@matt-edmondson](https://github.com/matt-edmondson))
 ## v1.0.0 (major)
 
 - Refactor project files to use custom SDKs for improved build management. Updated UniversalSerializer, UniversalSerializer.Benchmarks, and UniversalSerializer.Test projects to utilize ktsu.Sdk.Lib, ktsu.Sdk.ConsoleApp, and ktsu.Sdk.Test respectively. This change enhances compatibility and streamlines the build process across different project types. ([@matt-edmondson](https://github.com/matt-edmondson))

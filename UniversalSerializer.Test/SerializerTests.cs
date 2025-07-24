@@ -5,12 +5,12 @@
 namespace ktsu.UniversalSerializer.Test;
 
 using System.Collections.Generic;
-using ktsu.UniversalSerializer.Serialization;
-using ktsu.UniversalSerializer.Serialization.Json;
-using ktsu.UniversalSerializer.Serialization.MessagePack;
-using ktsu.UniversalSerializer.Serialization.Toml;
-using ktsu.UniversalSerializer.Serialization.Xml;
-using ktsu.UniversalSerializer.Serialization.Yaml;
+using ktsu.UniversalSerializer;
+using ktsu.UniversalSerializer.Json;
+using ktsu.UniversalSerializer.MessagePack;
+using ktsu.UniversalSerializer.Toml;
+using ktsu.UniversalSerializer.Xml;
+using ktsu.UniversalSerializer.Yaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -443,31 +443,31 @@ public class TestModel
 /// <summary>
 /// A test class with MessagePack attributes for serialization.
 /// </summary>
-[MessagePack.MessagePackObject]
+[global::MessagePack.MessagePackObject]
 public class MessagePackTestClass
 {
 	/// <summary>
 	/// Gets or sets the ID.
 	/// </summary>
-	[MessagePack.Key(0)]
+	[global::MessagePack.Key(0)]
 	public int Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the name.
 	/// </summary>
-	[MessagePack.Key(1)]
+	[global::MessagePack.Key(1)]
 	public string? Name { get; set; }
 
 	/// <summary>
 	/// Gets or sets the description.
 	/// </summary>
-	[MessagePack.Key(2)]
+	[global::MessagePack.Key(2)]
 	public string? Description { get; set; }
 
 	/// <summary>
 	/// Gets or sets the tags.
 	/// </summary>
-	[MessagePack.Key(3)]
+	[global::MessagePack.Key(3)]
 	public IList<string>? Tags { get; init; }
 }
 
