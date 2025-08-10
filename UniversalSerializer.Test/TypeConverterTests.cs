@@ -4,7 +4,7 @@
 
 namespace ktsu.UniversalSerializer.Test;
 using System;
-using ktsu.UniversalSerializer.TypeConverter;
+using ktsu.UniversalSerializer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>

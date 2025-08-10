@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using global::MessagePack;
 using global::MessagePack.Resolvers;
-using ktsu.UniversalSerializer.TypeRegistry;
 
 /// <summary>
 /// Serializer for MessagePack format.

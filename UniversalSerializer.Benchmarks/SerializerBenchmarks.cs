@@ -7,7 +7,6 @@ namespace UniversalSerializer.Benchmarks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.DependencyInjection;
 using ktsu.UniversalSerializer.Json;
 using ktsu.UniversalSerializer.MessagePack;
 using ktsu.UniversalSerializer.Toml;

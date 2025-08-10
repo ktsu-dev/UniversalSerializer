@@ -2,7 +2,7 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Compression;
+namespace ktsu.UniversalSerializer;
 
 using System;
 using System.Collections.Concurrent;

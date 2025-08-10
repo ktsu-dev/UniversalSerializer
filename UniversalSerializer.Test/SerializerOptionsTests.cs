@@ -4,7 +4,6 @@
 
 namespace ktsu.UniversalSerializer.Test;
 
-using ktsu.UniversalSerializer.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -74,7 +73,7 @@ public class SerializerOptionsTests
 		options.SetOption("TestKey", 42);
 
 		// Act
-		bool success = options.TryGetOption<int>("TestKey", out int value);
+		bool success = options.TryGetOption("TestKey", out int value);
 
 		// Assert
 		Assert.IsTrue(success);
@@ -91,7 +90,7 @@ public class SerializerOptionsTests
 		SerializerOptions options = new();
 
 		// Act
-		bool success = options.TryGetOption<int>("NonExistentKey", out int value);
+		bool success = options.TryGetOption("NonExistentKey", out int value);
 
 		// Assert
 		Assert.IsFalse(success);

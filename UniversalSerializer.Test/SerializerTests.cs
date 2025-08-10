@@ -5,6 +5,7 @@
 namespace ktsu.UniversalSerializer.Test;
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using ktsu.UniversalSerializer;
 using ktsu.UniversalSerializer.Json;
 using ktsu.UniversalSerializer.MessagePack;
@@ -474,6 +475,7 @@ public class MessagePackTestClass
 /// <summary>
 /// A complex test object for testing nested serialization.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Test")]
 public class ComplexTestObject
 {
 	/// <summary>
@@ -494,7 +496,7 @@ public class ComplexTestObject
 	/// <summary>
 	/// Gets or sets the list of objects.
 	/// </summary>
-	public List<TestData>? ListOfObjects { get; set; }
+	public Collection<TestData>? ListOfObjects { get; set; }
 
 	/// <summary>
 	/// Gets or sets the dictionary.

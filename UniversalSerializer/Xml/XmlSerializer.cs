@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using ktsu.UniversalSerializer.TypeRegistry;
 
 /// <summary>
 /// Serializer for XML format using the .NET XmlSerializer.

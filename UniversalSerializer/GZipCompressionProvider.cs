@@ -2,7 +2,7 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Compression;
+namespace ktsu.UniversalSerializer;
 
 using System;
 using System.IO;
@@ -11,12 +11,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Compression provider for Deflate compression using System.IO.Compression.
+/// Compression provider for GZip compression using System.IO.Compression.
 /// </summary>
-public class DeflateCompressionProvider : ICompressionProvider
+public class GZipCompressionProvider : ICompressionProvider
 {
 	/// <inheritdoc/>
-	public CompressionType CompressionType => CompressionType.Deflate;
+	public CompressionType CompressionType => CompressionType.GZip;
 
 	/// <inheritdoc/>
 	public byte[] Compress(byte[] data, int level = 6)
@@ -31,9 +31,9 @@ public class DeflateCompressionProvider : ICompressionProvider
 		};
 
 		using MemoryStream output = new();
-		using (DeflateStream deflate = new(output, compressionLevel))
+		using (GZipStream gzip = new(output, compressionLevel))
 		{
-			deflate.Write(data, 0, data.Length);
+			gzip.Write(data, 0, data.Length);
 		}
 		return output.ToArray();
 	}
@@ -44,10 +44,10 @@ public class DeflateCompressionProvider : ICompressionProvider
 		ArgumentNullException.ThrowIfNull(compressedData);
 
 		using MemoryStream input = new(compressedData);
-		using DeflateStream deflate = new(input, CompressionMode.Decompress);
+		using GZipStream gzip = new(input, CompressionMode.Decompress);
 		using MemoryStream output = new();
 
-		deflate.CopyTo(output);
+		gzip.CopyTo(output);
 		return output.ToArray();
 	}
 
@@ -65,9 +65,9 @@ public class DeflateCompressionProvider : ICompressionProvider
 		};
 
 		using MemoryStream output = new();
-		using (DeflateStream deflate = new(output, compressionLevel))
+		using (GZipStream gzip = new(output, compressionLevel))
 		{
-			await deflate.WriteAsync(data, cancellationToken).ConfigureAwait(false);
+			await gzip.WriteAsync(data, cancellationToken).ConfigureAwait(false);
 		}
 		return output.ToArray();
 	}
@@ -79,10 +79,10 @@ public class DeflateCompressionProvider : ICompressionProvider
 		cancellationToken.ThrowIfCancellationRequested();
 
 		using MemoryStream input = new(compressedData);
-		using DeflateStream deflate = new(input, CompressionMode.Decompress);
+		using GZipStream gzip = new(input, CompressionMode.Decompress);
 		using MemoryStream output = new();
 
-		await deflate.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+		await gzip.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
 		return output.ToArray();
 	}
 }

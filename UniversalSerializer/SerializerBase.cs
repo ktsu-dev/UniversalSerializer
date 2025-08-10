@@ -7,7 +7,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using ktsu.UniversalSerializer.Compression;
 
 /// <summary>
 /// Provides a base implementation for serializers.

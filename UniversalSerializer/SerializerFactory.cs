@@ -29,6 +29,7 @@ public class SerializerFactory : ISerializerFactory
 	/// <returns>The current factory instance for method chaining.</returns>
 	public SerializerFactory RegisterSerializer<TSerializer>(Func<SerializerOptions, TSerializer> creator) where TSerializer : ISerializer
 	{
+		ArgumentNullException.ThrowIfNull(creator);
 		_serializerCreators[typeof(TSerializer)] = options => creator(options);
 		return this;
 	}
@@ -52,9 +53,15 @@ public class SerializerFactory : ISerializerFactory
 	{
 		Type serializerType = typeof(TSerializer);
 
-		return !_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator)
-			? throw new InvalidOperationException($"No creator registered for serializer type {serializerType.Name}.")
-			: (TSerializer)creator(options ?? _defaultOptions);
+		if (!_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator))
+		{
+			throw new InvalidOperationException($"No creator registered for serializer type {serializerType.Name}.");
+		}
+
+		ISerializer? instance = creator(options ?? _defaultOptions);
+		return instance is null
+			? throw new InvalidOperationException($"Factory for {serializerType.Name} returned null.")
+			: (TSerializer)instance;
 	}
 
 	/// <summary>
@@ -77,9 +84,9 @@ public class SerializerFactory : ISerializerFactory
 		ArgumentNullException.ThrowIfNull(serializerType);
 		return !typeof(ISerializer).IsAssignableFrom(serializerType)
 			? throw new ArgumentException($"Type {serializerType.Name} does not implement ISerializer.", nameof(serializerType))
-			: !_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator)
-			? throw new InvalidOperationException($"No creator registered for serializer type {serializerType.Name}.")
-			: creator(options ?? _defaultOptions);
+				: !_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator)
+				? throw new InvalidOperationException($"No creator registered for serializer type {serializerType.Name}.")
+				: creator(options ?? _defaultOptions) ?? throw new InvalidOperationException($"Factory for {serializerType.Name} returned null.");
 	}
 
 	/// <summary>

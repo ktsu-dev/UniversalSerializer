@@ -2,7 +2,7 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.TypeConverter;
+namespace ktsu.UniversalSerializer;
 /// <summary>
 /// Defines a type-specific converter that can convert between objects of a specific type and string representations.
 /// </summary>

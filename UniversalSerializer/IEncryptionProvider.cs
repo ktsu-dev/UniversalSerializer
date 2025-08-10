@@ -2,8 +2,7 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Security;
-
+namespace ktsu.UniversalSerializer;
 /// <summary>
 /// Interface for encryption providers that can encrypt and decrypt data.
 /// </summary>

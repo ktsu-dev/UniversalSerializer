@@ -4,7 +4,6 @@
 
 namespace ktsu.UniversalSerializer.Yaml;
 using System;
-using ktsu.UniversalSerializer.TypeRegistry;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 

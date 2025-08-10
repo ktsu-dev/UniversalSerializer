@@ -11,7 +11,6 @@
     <PackageVersion Include="DiffPlex" Version="1.8.0" />
     <PackageVersion Include="FluentAssertions" Version="6.12.1" />
     <PackageVersion Include="FluentValidation" Version="12.0.0" />
-    <PackageVersion Include="FluentValidation" Version="12.0.0" />
     <PackageVersion Include="ImGui.NET" Version="1.91.6.1" />
     <PackageVersion Include="ktsu.AppDataStorage" Version="1.15.6" />
     <PackageVersion Include="ktsu.CaseConverter" Version="1.3.2" />
@@ -26,6 +25,8 @@
     <PackageVersion Include="ktsu.TextFilter" Version="1.5.3" />
     <PackageVersion Include="ktsu.ToStringJsonConverter" Version="1.2.4" />
     <PackageVersion Include="ktsu.RoundTripStringJsonConverter" Version="1.0.1" />
+    <PackageVersion Include="ktsu.SerializationProvider" Version="1.0.2" />
+    <PackageVersion Include="K4os.Compression.LZ4" Version="1.3.8" />
     <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="Microsoft.Build" Version="17.14.8" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.14.8" />
@@ -42,7 +43,6 @@
     <PackageVersion Include="Microsoft.Testing.Extensions.HotReload" Version="1.7.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.Retry" Version="1.7.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="1.7.2" />
-    <PackageVersion Include="MSTest" Version="3.9.2" />
     <PackageVersion Include="MSTest" Version="3.9.2" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.9.3" />

@@ -30,6 +30,14 @@ public class SerializerRegistry(SerializerFactory factory)
 	{
 		SerializerOptions serializerOptions = options ?? SerializerOptions.Default();
 
+		// Ensure the factory knows how to create built-in serializers
+		_factory
+			.RegisterSerializer(o => new Json.JsonSerializer(o))
+			.RegisterSerializer(o => new Xml.XmlSerializer(o))
+			.RegisterSerializer(o => new YamlSerializer(o))
+			.RegisterSerializer(o => new Toml.TomlSerializer(o))
+			.RegisterSerializer(o => new MessagePack.MessagePackSerializer(o));
+
 		// Register JSON serializer
 		Json.JsonSerializer jsonSerializer = _factory.Create<Json.JsonSerializer>(serializerOptions);
 		Register("json", jsonSerializer);

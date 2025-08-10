@@ -8,7 +8,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ktsu.UniversalSerializer.TypeRegistry;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NodeDeserializers;
 

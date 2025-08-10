@@ -20,45 +20,24 @@ dotnet add package ktsu.UniversalSerializer
 
 ## Quick Start
 
+Minimal DI (SerializationProvider):
+
 ```csharp
+using ktsu.SerializationProvider;
 using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
-// Add to your dependency injection container
-services.AddUniversalSerializer();
+var services = new ServiceCollection();
 
-// Use in your application
-public class MyService
-{
-    private readonly ISerializerFactory _serializerFactory;
-    
-    public MyService(ISerializerFactory serializerFactory)
-    {
-        _serializerFactory = serializerFactory;
-    }
-    
-    public void Process()
-    {
-        var data = new MyData { Id = 1, Name = "Example" };
-        
-        // Serialize to different formats
-        var jsonSerializer = _serializerFactory.GetJsonSerializer();
-        string jsonString = jsonSerializer.Serialize(data);
-        
-        var yamlSerializer = _serializerFactory.GetYamlSerializer();
-        string yamlString = yamlSerializer.Serialize(data);
-        
-        var msgPackSerializer = _serializerFactory.GetMessagePackSerializer();
-        byte[] binaryData = msgPackSerializer.SerializeToBytes(data);
-        
-        // Deserialize from string
-        var deserializedJson = jsonSerializer.Deserialize<MyData>(jsonString);
-        
-        // Deserialize from bytes
-        var deserializedBinary = msgPackSerializer.DeserializeFromBytes<MyData>(binaryData);
-    }
-}
+// Registers a default JSON-based provider and all required core services automatically
+services.AddUniversalSerializationProvider();
+
+using var provider = services.BuildServiceProvider();
+var sp = provider.GetRequiredService<ISerializationProvider>();
+
+var data = new MyData { Id = 1, Name = "Example" };
+string json = sp.Serialize(data);
+var roundTrip = sp.Deserialize<MyData>(json);
 
 public class MyData
 {
@@ -67,28 +46,43 @@ public class MyData
 }
 ```
 
+Format-specific providers:
+
+```csharp
+services.AddJsonSerializationProvider();
+services.AddYamlSerializationProvider();
+services.AddTomlSerializationProvider();
+services.AddXmlSerializationProvider();
+services.AddMessagePackSerializationProvider();
+
+// Or choose by format/extension/content-type at registration time
+services.AddUniversalSerializationProviderForFormat("yaml");
+services.AddUniversalSerializationProviderForExtension(".toml");
+services.AddUniversalSerializationProviderForContentType("application/xml");
+```
+
 ## Advanced Configuration
 
-### Configuring Serializer Options
+### Configuring Serializer Options (DI)
 
 ```csharp
 using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.DependencyInjection;
 
-services.AddUniversalSerializer(options => {
-    // Common options
-    options.PrettyPrint = true;
-    options.IgnoreNullValues = true;
-    options.EnumFormat = EnumSerializationFormat.Name;
-    
-    // Format-specific options
-    options.WithOption(SerializerOptionKeys.Json.AllowComments, true);
-    options.WithOption(SerializerOptionKeys.Json.CaseInsensitive, true);
-    options.WithOption(SerializerOptionKeys.Xml.Indent, true);
-    options.WithOption(SerializerOptionKeys.MessagePack.EnableLz4Compression, true);
+// Registers core services and applies options
+services.AddUniversalSerializer(options =>
+{
+    // Built-in simple properties
+    options.UseStringConversionForUnsupportedTypes = true;
+    options.EnableCompression = true;
+    options.CompressionLevel = 9;
+
+    // Format-specific options via keys
+    options.SetOption(SerializerOptionKeys.Json.AllowComments, true);
+    options.SetOption(SerializerOptionKeys.Json.CaseInsensitive, true);
+    options.SetOption(SerializerOptionKeys.Xml.Indent, true);
 });
 
-// Register only the serializers you need
+// Optional: register serializer types for DI construction (e.g., to inject registries)
 services.AddJsonSerializer();
 services.AddXmlSerializer();
 services.AddYamlSerializer();
@@ -101,7 +95,6 @@ The library supports custom type conversion for types that aren't natively handl
 
 ```csharp
 using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.DependencyInjection;
 
 // Define a custom type with string conversion
 public class CustomId
@@ -127,7 +120,8 @@ public class CustomId
 }
 
 // Enable string conversion in options
-services.AddUniversalSerializer(options => {
+services.AddUniversalSerializer(options =>
+{
     options.UseStringConversionForUnsupportedTypes = true;
 });
 ```
@@ -136,24 +130,15 @@ services.AddUniversalSerializer(options => {
 
 ```csharp
 using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.DependencyInjection;
-using ktsu.UniversalSerializer.TypeRegistry;
 
-// Configure type registry for polymorphic serialization
-services.AddUniversalSerializer(options => {
-    // Enable type discriminator
-    options.EnableTypeDiscriminator = true;
-    options.TypeDiscriminatorPropertyName = "$type";
+// Register core and enable discriminators (Json/Yaml/Toml read option via key)
+services.AddUniversalSerializer(options =>
+{
+    options.SetOption(SerializerOptionKeys.TypeRegistry.EnableTypeDiscriminator, true);
 });
 
-// Register types with the type registry
-services.Configure<TypeRegistry>(registry => {
-    registry.RegisterType<Dog>("dog");
-    registry.RegisterType<Cat>("cat");
-    
-    // Or automatically register all subtypes of Animal
-    registry.RegisterSubtypes<Animal>();
-});
+// Ensure JSON serializer is constructed with registries when used via DI
+services.AddJsonSerializationProvider();
 
 // Define types
 public abstract class Animal
@@ -178,27 +163,36 @@ var animals = new List<Animal>
     new Cat { Name = "Whiskers", Lives = 9 }
 };
 
-var serializer = _serializerFactory.GetJsonSerializer();
-string json = serializer.Serialize(animals);
-// Results in type-aware JSON with $type property
-// Deserialize back to correct types
-var deserializedAnimals = serializer.Deserialize<List<Animal>>(json);
+// Resolve and configure the type registry
+using var provider = services.BuildServiceProvider();
+var registry = provider.GetRequiredService<TypeRegistry>();
+registry.RegisterType<Dog>("dog");
+registry.RegisterType<Cat>("cat");
+
+// Use provider (JSON)
+var sp = provider.GetRequiredService<ktsu.SerializationProvider.ISerializationProvider>();
+string json = sp.Serialize(animals);
+var deserializedAnimals = sp.Deserialize<List<Animal>>(json);
 ```
 
 ## Binary Serialization
 
 ```csharp
 using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.DependencyInjection;
 
-// Configure and use binary serializers
-services.AddUniversalSerializer();
-services.AddMessagePackSerializer();
+// Option 1: Use provider
+services.AddUniversalSerializationProviderForFormat("messagepack");
 
-// In your code
-var messagePackSerializer = _serializerFactory.GetMessagePackSerializer();
-byte[] binary = messagePackSerializer.SerializeToBytes(data);
-var result = messagePackSerializer.DeserializeFromBytes<MyData>(binary);
+using var provider = services.BuildServiceProvider();
+var sp = provider.GetRequiredService<ktsu.SerializationProvider.ISerializationProvider>();
+byte[] bytes = sp.SerializeToBytes(data); // if you need bytes, use serializer directly instead
+
+// Option 2: Use factory directly
+var factory = new SerializerFactory();
+factory.RegisterSerializer(o => new ktsu.UniversalSerializer.MessagePack.MessagePackSerializer(o));
+var mp = factory.Create<ktsu.UniversalSerializer.MessagePack.MessagePackSerializer>();
+byte[] binary = mp.SerializeToBytes(data);
+var result = mp.DeserializeFromBytes<MyData>(binary);
 ```
 
 ## SerializationProvider Integration
@@ -207,12 +201,11 @@ UniversalSerializer implements the `ISerializationProvider` interface for standa
 
 ```csharp
 using ktsu.SerializationProvider;
-using ktsu.UniversalSerializer.DependencyInjection;
 
-// Add core services and serialization providers
-services.AddUniversalSerializer();
+// Add a default JSON provider (auto-bootstraps core)
+services.AddUniversalSerializationProvider();
 
-// Add format-specific providers
+// Or add specific providers
 services.AddJsonSerializationProvider();
 services.AddYamlSerializationProvider();
 services.AddMessagePackSerializationProvider();
@@ -246,7 +239,7 @@ For more details, see the [SerializationProvider Integration Documentation](docs
 |--------|-------------|----------------|-------------------|
 | JSON | application/json | .json | System.Text.Json (built-in) |
 | XML | application/xml | .xml | System.Xml.Serialization (built-in) |
-| YAML | application/yaml | .yaml | YamlDotNet |
+| YAML | text/yaml (also registers application/x-yaml) | .yaml | YamlDotNet |
 | TOML | application/toml | .toml | Tomlyn |
 | MessagePack | application/x-msgpack | .msgpack | MessagePack |
 

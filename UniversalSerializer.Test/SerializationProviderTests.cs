@@ -6,7 +6,6 @@ namespace ktsu.UniversalSerializer.Test;
 using System;
 using System.Threading.Tasks;
 using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.DependencyInjection;
 using ktsu.UniversalSerializer.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

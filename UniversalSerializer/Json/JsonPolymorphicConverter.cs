@@ -6,7 +6,6 @@ namespace ktsu.UniversalSerializer.Json;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ktsu.UniversalSerializer.TypeRegistry;
 
 /// <summary>
 /// A JSON converter factory for polymorphic serialization that uses type discriminators.

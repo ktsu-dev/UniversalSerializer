@@ -2,13 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.DependencyInjection;
+namespace ktsu.UniversalSerializer;
+
 using System;
+using System.Linq;
 using ktsu.SerializationProvider;
 using ktsu.UniversalSerializer.Json;
 using ktsu.UniversalSerializer.Toml;
-using ktsu.UniversalSerializer.TypeConverter;
-using ktsu.UniversalSerializer.TypeRegistry;
 using ktsu.UniversalSerializer.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,30 +18,31 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// </summary>
 public static class SerializerServiceCollectionExtensions
 {
+	private static void EnsureCoreServices(this IServiceCollection services, Action<SerializerOptions>? optionsAction)
+	{
+		if (!services.Any(sd => sd.ServiceType == typeof(SerializerOptions)))
+		{
+			SerializerOptions options = SerializerOptions.Default();
+			optionsAction?.Invoke(options);
+			services.TryAddSingleton(options);
+		}
+
+		services.TryAddSingleton<SerializerFactory>();
+		services.TryAddSingleton<ISerializerFactory>(sp => sp.GetRequiredService<SerializerFactory>());
+		services.TryAddSingleton<SerializerRegistry>();
+		services.TryAddSingleton<TypeRegistry>();
+		services.TryAddSingleton<TypeConverterRegistry>();
+		services.TryAddTransient<ISerializerResolver, SerializerResolver>();
+	}
 	/// <summary>
 	/// Adds the Universal Serializer core services to the service collection.
 	/// </summary>
 	/// <param name="services">The service collection.</param>
 	/// <param name="optionsAction">Optional action to configure options.</param>
 	/// <returns>The service collection with core services added.</returns>
-	public static IServiceCollection AddUniversalSerializer(
-		this IServiceCollection services,
-		Action<SerializerOptions>? optionsAction = null)
+	public static IServiceCollection AddUniversalSerializer(this IServiceCollection services, Action<SerializerOptions>? optionsAction = null)
 	{
-		// Register options
-		SerializerOptions options = SerializerOptions.Default();
-		optionsAction?.Invoke(options);
-		services.TryAddSingleton(options);
-
-		// Register core services
-		services.TryAddSingleton<SerializerFactory>();
-		services.TryAddSingleton<ISerializerFactory>(sp => sp.GetRequiredService<SerializerFactory>());
-		services.TryAddSingleton<SerializerRegistry>();
-		services.TryAddSingleton<TypeRegistry>();
-		services.TryAddSingleton<TypeConverterRegistry>();
-
-		// Register common helper services
-		services.TryAddTransient<ISerializerResolver, SerializerResolver>();
+		services.EnsureCoreServices(optionsAction);
 
 		return services;
 	}
@@ -116,6 +117,106 @@ public static class SerializerServiceCollectionExtensions
 	public static IServiceCollection AddMessagePackSerializer(this IServiceCollection services)
 	{
 		services.TryAddTransient<MessagePack.MessagePackSerializer>();
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a UniversalSerializationProvider to the service collection that internally instantiates its serializer(s).
+	/// Defaults to JSON unless otherwise configured.
+	/// </summary>
+	/// <param name="services">The service collection.</param>
+	/// <param name="providerName">Optional custom provider name.</param>
+	/// <returns>The service collection.</returns>
+	public static IServiceCollection AddUniversalSerializationProvider(
+		this IServiceCollection services,
+		string? providerName = null)
+	{
+		services.EnsureCoreServices(null);
+		services.TryAddTransient<ISerializationProvider>(serviceProvider =>
+		{
+			SerializerOptions options = serviceProvider.GetRequiredService<SerializerOptions>();
+			SerializerRegistry registry = serviceProvider.GetRequiredService<SerializerRegistry>();
+			SerializerFactory factory = serviceProvider.GetRequiredService<SerializerFactory>();
+
+			// Ensure built-ins are available in the factory
+			registry.RegisterBuiltIn(options);
+
+			// Default to JSON unless caller chooses otherwise via specialized methods
+			ISerializer serializer = factory.Create<JsonSerializer>(options);
+			return new UniversalSerializationProvider(serializer, providerName ?? "UniversalSerializer.Json");
+		});
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a UniversalSerializationProvider which selects the serializer by logical format name (e.g., "json", "xml", "yaml", "toml", "messagepack").
+	/// </summary>
+	/// <param name="services">The service collection.</param>
+	/// <param name="format">The logical format name.</param>
+	/// <param name="providerName">Optional custom provider name.</param>
+	/// <returns>The service collection.</returns>
+	public static IServiceCollection AddUniversalSerializationProviderForFormat(
+		this IServiceCollection services,
+		string format,
+		string? providerName = null)
+	{
+		services.EnsureCoreServices(null);
+		services.TryAddTransient<ISerializationProvider>(serviceProvider =>
+		{
+			SerializerOptions options = serviceProvider.GetRequiredService<SerializerOptions>();
+			SerializerRegistry registry = serviceProvider.GetRequiredService<SerializerRegistry>();
+
+			registry.RegisterBuiltIn(options);
+			ISerializer serializer = registry.GetSerializer(format) ?? throw new InvalidOperationException($"No serializer registered for format '{format}'.");
+			return new UniversalSerializationProvider(serializer, providerName ?? $"UniversalSerializer.{format}");
+		});
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a UniversalSerializationProvider which selects the serializer by file extension (e.g., ".json", "json").
+	/// </summary>
+	public static IServiceCollection AddUniversalSerializationProviderForExtension(
+		this IServiceCollection services,
+		string extension,
+		string? providerName = null)
+	{
+		services.EnsureCoreServices(null);
+		services.TryAddTransient<ISerializationProvider>(serviceProvider =>
+		{
+			SerializerOptions options = serviceProvider.GetRequiredService<SerializerOptions>();
+			SerializerRegistry registry = serviceProvider.GetRequiredService<SerializerRegistry>();
+
+			registry.RegisterBuiltIn(options);
+			ISerializer serializer = registry.GetSerializerByExtension(extension) ?? throw new InvalidOperationException($"No serializer registered for extension '{extension}'.");
+			string normalized = extension.StartsWith('.') ? extension[1..] : extension;
+			return new UniversalSerializationProvider(serializer, providerName ?? $"UniversalSerializer.{normalized}");
+		});
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a UniversalSerializationProvider which selects the serializer by content type (e.g., "application/json").
+	/// </summary>
+	public static IServiceCollection AddUniversalSerializationProviderForContentType(
+		this IServiceCollection services,
+		string contentType,
+		string? providerName = null)
+	{
+		services.EnsureCoreServices(null);
+		services.TryAddTransient<ISerializationProvider>(serviceProvider =>
+		{
+			SerializerOptions options = serviceProvider.GetRequiredService<SerializerOptions>();
+			SerializerRegistry registry = serviceProvider.GetRequiredService<SerializerRegistry>();
+
+			registry.RegisterBuiltIn(options);
+			ISerializer serializer = registry.GetSerializerByContentType(contentType) ?? throw new InvalidOperationException($"No serializer registered for content type '{contentType}'.");
+			return new UniversalSerializationProvider(serializer, providerName ?? $"UniversalSerializer.{contentType}");
+		});
+
 		return services;
 	}
 

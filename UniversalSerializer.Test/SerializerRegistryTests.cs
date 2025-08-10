@@ -5,9 +5,8 @@
 namespace ktsu.UniversalSerializer.Test;
 
 using System;
-using ktsu.UniversalSerializer.Serialization;
-using ktsu.UniversalSerializer.Serialization.Json;
-using ktsu.UniversalSerializer.Serialization.Xml;
+using ktsu.UniversalSerializer.Json;
+using ktsu.UniversalSerializer.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -155,7 +154,7 @@ public class SerializerRegistryTests
 		_registry.Register("json", _jsonSerializer);
 
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("json", (string[])null!));
+		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("json", null!));
 		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("json"));
 	}
 
@@ -210,7 +209,7 @@ public class SerializerRegistryTests
 		_registry.Register("json", _jsonSerializer);
 
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("json", (string[])null!));
+		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("json", null!));
 		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("json"));
 	}
 
@@ -482,7 +481,7 @@ public class SerializerRegistryTests
 		// Act & Assert
 		Assert.AreSame(_jsonSerializer, _registry.GetSerializer("json"));
 		Assert.AreSame(_xmlSerializer, _registry.GetSerializer("xml"));
-		Assert.AreNotSame(_jsonSerializer, _xmlSerializer);
+		Assert.AreNotSame((object)_jsonSerializer, _xmlSerializer);
 	}
 
 	/// <summary>

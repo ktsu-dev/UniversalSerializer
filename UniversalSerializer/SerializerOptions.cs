@@ -5,7 +5,6 @@
 namespace ktsu.UniversalSerializer;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ktsu.UniversalSerializer.TypeRegistry;
 
 /// <summary>
 /// Provides configuration options for serializers.
@@ -104,6 +103,16 @@ public class SerializerOptions
 		{
 			clone._options[kvp.Key] = kvp.Value;
 		}
+
+		// Copy simple properties
+		clone.UseStringConversionForUnsupportedTypes = UseStringConversionForUnsupportedTypes;
+		clone.EnableTypeDiscriminator = EnableTypeDiscriminator;
+		clone.TypeDiscriminatorFormat = TypeDiscriminatorFormat;
+		clone.TypeDiscriminatorPropertyName = TypeDiscriminatorPropertyName;
+		clone.UseFullyQualifiedTypeNames = UseFullyQualifiedTypeNames;
+		clone.EnableCompression = EnableCompression;
+		clone.CompressionType = CompressionType;
+		clone.CompressionLevel = CompressionLevel;
 
 		return clone;
 	}

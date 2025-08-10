@@ -6,7 +6,7 @@ namespace ktsu.UniversalSerializer.Json;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ktsu.UniversalSerializer.TypeConverter;
+using ktsu.UniversalSerializer;
 
 /// <summary>
 /// JSON converter that uses the TypeConverterRegistry to convert types to and from strings.

@@ -4,10 +4,10 @@
 
 namespace ktsu.UniversalSerializer.Test;
 
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
-using ktsu.UniversalSerializer.Serialization;
-using ktsu.UniversalSerializer.Serialization.Json;
+using ktsu.UniversalSerializer.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -73,15 +73,15 @@ public class SerializerExtensionsTests
 	public async Task SerializerExtensions_SerializeToFileAsync_Success()
 	{
 		// Act
-		await _serializer.SerializeToFileAsync(_testData, _tempFilePath);
+		await _serializer.SerializeToFileAsync(_testData, _tempFilePath).ConfigureAwait(false);
 
 		// Assert
 		Assert.IsTrue(File.Exists(_tempFilePath));
-		string content = await File.ReadAllTextAsync(_tempFilePath);
+		string content = await File.ReadAllTextAsync(_tempFilePath).ConfigureAwait(false);
 		Assert.IsFalse(string.IsNullOrEmpty(content));
 
 		// Verify content by deserializing
-		TestData deserialized = _serializer.Deserialize<TestData>(content);
+		TestData deserialized = await _serializer.DeserializeAsync<TestData>(content).ConfigureAwait(false);
 		Assert.AreEqual(_testData.IntValue, deserialized.IntValue);
 		Assert.AreEqual(_testData.StringValue, deserialized.StringValue);
 	}
@@ -113,15 +113,15 @@ public class SerializerExtensionsTests
 	public async Task SerializerExtensions_SerializeToBinaryFileAsync_Success()
 	{
 		// Act
-		await _serializer.SerializeToBinaryFileAsync(_testData, _tempFilePath);
+		await _serializer.SerializeToBinaryFileAsync(_testData, _tempFilePath).ConfigureAwait(false);
 
 		// Assert
 		Assert.IsTrue(File.Exists(_tempFilePath));
-		byte[] content = await File.ReadAllBytesAsync(_tempFilePath);
+		byte[] content = await File.ReadAllBytesAsync(_tempFilePath).ConfigureAwait(false);
 		Assert.IsTrue(content.Length > 0);
 
 		// Verify content by deserializing
-		TestData deserialized = _serializer.DeserializeFromBytes<TestData>(content);
+		TestData deserialized = await _serializer.DeserializeFromBytesAsync<TestData>(content).ConfigureAwait(false);
 		Assert.AreEqual(_testData.IntValue, deserialized.IntValue);
 		Assert.AreEqual(_testData.StringValue, deserialized.StringValue);
 	}
@@ -153,10 +153,10 @@ public class SerializerExtensionsTests
 	{
 		// Arrange
 		string serialized = _serializer.Serialize(_testData);
-		await File.WriteAllTextAsync(_tempFilePath, serialized);
+		await File.WriteAllTextAsync(_tempFilePath, serialized).ConfigureAwait(false);
 
 		// Act
-		TestData result = await _serializer.DeserializeFromFileAsync<TestData>(_tempFilePath);
+		TestData result = await _serializer.DeserializeFromFileAsync<TestData>(_tempFilePath).ConfigureAwait(false);
 
 		// Assert
 		Assert.IsNotNull(result);
@@ -191,10 +191,10 @@ public class SerializerExtensionsTests
 	{
 		// Arrange
 		byte[] serialized = _serializer.SerializeToBytes(_testData);
-		await File.WriteAllBytesAsync(_tempFilePath, serialized);
+		await File.WriteAllBytesAsync(_tempFilePath, serialized).ConfigureAwait(false);
 
 		// Act
-		TestData result = await _serializer.DeserializeFromBinaryFileAsync<TestData>(_tempFilePath);
+		TestData result = await _serializer.DeserializeFromBinaryFileAsync<TestData>(_tempFilePath).ConfigureAwait(false);
 
 		// Assert
 		Assert.IsNotNull(result);
@@ -352,10 +352,11 @@ public class SerializerExtensionsTests
 /// <summary>
 /// Complex test data class for testing.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Test data")]
 public class ComplexTestData
 {
 	public int Id { get; set; }
 	public string? Name { get; set; }
-	public List<string>? Items { get; set; }
+	public Collection<string>? Items { get; set; }
 	public Dictionary<string, object>? Metadata { get; set; }
 }

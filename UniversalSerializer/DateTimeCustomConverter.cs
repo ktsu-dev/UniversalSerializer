@@ -2,7 +2,7 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.TypeConverter;
+namespace ktsu.UniversalSerializer;
 using System;
 
 /// <summary>

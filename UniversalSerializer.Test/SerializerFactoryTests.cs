@@ -5,9 +5,8 @@
 namespace ktsu.UniversalSerializer.Test;
 
 using System;
-using ktsu.UniversalSerializer.Serialization;
-using ktsu.UniversalSerializer.Serialization.Json;
-using ktsu.UniversalSerializer.Serialization.Xml;
+using ktsu.UniversalSerializer.Json;
+using ktsu.UniversalSerializer.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -93,8 +92,7 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_UnregisteredType_ThrowsInvalidOperationException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<InvalidOperationException>(() =>
-			_factory.Create<JsonSerializer>());
+		Assert.ThrowsException<InvalidOperationException>(_factory.Create<JsonSerializer>);
 	}
 
 	/// <summary>
@@ -159,7 +157,7 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_VerifiesRegistrationStatus()
 	{
 		// Act & Assert - Before registration
-		Assert.ThrowsException<InvalidOperationException>(() => _factory.Create<JsonSerializer>());
+		Assert.ThrowsException<InvalidOperationException>(_factory.Create<JsonSerializer>);
 
 		// Register and test again
 		_factory.RegisterSerializer(options => new JsonSerializer(options));
@@ -167,7 +165,7 @@ public class SerializerFactoryTests
 		Assert.IsNotNull(serializer);
 
 		// Unregistered type should still throw
-		Assert.ThrowsException<InvalidOperationException>(() => _factory.Create<XmlSerializer>());
+		Assert.ThrowsException<InvalidOperationException>(_factory.Create<XmlSerializer>);
 	}
 
 	/// <summary>
@@ -236,8 +234,7 @@ public class SerializerFactoryTests
 		_factory.RegisterSerializer<JsonSerializer>(options => null!);
 
 		// Act & Assert
-		Assert.ThrowsException<InvalidOperationException>(() =>
-			_factory.Create<JsonSerializer>());
+		Assert.ThrowsException<InvalidOperationException>(_factory.Create<JsonSerializer>);
 	}
 
 	/// <summary>
@@ -251,8 +248,7 @@ public class SerializerFactoryTests
 		_factory.RegisterSerializer<JsonSerializer>(options => throw expectedException);
 
 		// Act & Assert
-		ArgumentException actualException = Assert.ThrowsException<ArgumentException>(() =>
-			_factory.Create<JsonSerializer>());
+		ArgumentException actualException = Assert.ThrowsException<ArgumentException>(_factory.Create<JsonSerializer>);
 		Assert.AreSame(expectedException, actualException);
 	}
 
@@ -263,11 +259,10 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_InterfaceType_ThrowsInvalidOperationException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<InvalidOperationException>(() =>
-			_factory.Create<ISerializer>());
+		Assert.ThrowsException<InvalidOperationException>(_factory.Create<ISerializer>);
 	}
 
-		/// <summary>
+	/// <summary>
 	/// Tests ConfigureDefaults method.
 	/// </summary>
 	[TestMethod]
@@ -328,6 +323,7 @@ public class SerializerFactoryTests
 	/// Tests Create method with Type parameter.
 	/// </summary>
 	[TestMethod]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2263:Prefer generic overload when type is known", Justification = "Test")]
 	public void SerializerFactory_Create_WithType_Success()
 	{
 		// Arrange
@@ -345,6 +341,7 @@ public class SerializerFactoryTests
 	/// Tests Create method with Type parameter and options.
 	/// </summary>
 	[TestMethod]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2263:Prefer generic overload when type is known", Justification = "Test")]
 	public void SerializerFactory_Create_WithTypeAndOptions_Success()
 	{
 		// Arrange

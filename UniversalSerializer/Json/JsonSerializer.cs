@@ -9,8 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using ktsu.UniversalSerializer.TypeConverter;
-using ktsu.UniversalSerializer.TypeRegistry;
+using ktsu.UniversalSerializer;
 
 /// <summary>
 /// Serializer for JSON format using System.Text.Json.
@@ -133,5 +132,49 @@ public class JsonSerializer : SerializerBase
 	{
 		using MemoryStream stream = new(System.Text.Encoding.UTF8.GetBytes(serialized));
 		return await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Deserialization returned null");
+	}
+
+	/// <inheritdoc/>
+	public override T DeserializeFromStream<T>(Stream stream)
+	{
+		ArgumentNullException.ThrowIfNull(stream);
+		long startPosition = stream.CanSeek ? stream.Position : 0;
+
+		// Read remaining bytes into buffer
+		using MemoryStream buffer = new();
+		stream.CopyTo(buffer);
+		ReadOnlySpan<byte> span = new(buffer.GetBuffer(), 0, (int)buffer.Length);
+
+		Utf8JsonReader reader = new(span, isFinalBlock: true, state: default);
+		T? result = System.Text.Json.JsonSerializer.Deserialize<T>(ref reader, _jsonOptions) ?? throw new InvalidOperationException("Deserialization returned null");
+
+		// Restore stream position to just after consumed JSON
+		if (stream.CanSeek)
+		{
+			stream.Position = startPosition + reader.BytesConsumed;
+		}
+
+		return result;
+	}
+
+	/// <inheritdoc/>
+	public override async Task<T> DeserializeFromStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(stream);
+		long startPosition = stream.CanSeek ? stream.Position : 0;
+
+		using MemoryStream buffer = new();
+		await stream.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false);
+		ReadOnlyMemory<byte> memory = new(buffer.GetBuffer(), 0, (int)buffer.Length);
+
+		Utf8JsonReader reader = new(memory.Span, isFinalBlock: true, state: default);
+		T? result = System.Text.Json.JsonSerializer.Deserialize<T>(ref reader, _jsonOptions) ?? throw new InvalidOperationException("Deserialization returned null");
+
+		if (stream.CanSeek)
+		{
+			stream.Position = startPosition + reader.BytesConsumed;
+		}
+
+		return result;
 	}
 }
