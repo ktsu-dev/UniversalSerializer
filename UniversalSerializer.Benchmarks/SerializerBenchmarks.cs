@@ -6,12 +6,13 @@ namespace UniversalSerializer.Benchmarks;
 
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.Json;
-using ktsu.UniversalSerializer.MessagePack;
-using ktsu.UniversalSerializer.Toml;
-using ktsu.UniversalSerializer.Xml;
-using ktsu.UniversalSerializer.Yaml;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.DependencyInjection;
+using ktsu.UniversalSerializer.Services.Json;
+using ktsu.UniversalSerializer.Services.MessagePack;
+using ktsu.UniversalSerializer.Services.Toml;
+using ktsu.UniversalSerializer.Services.Xml;
+using ktsu.UniversalSerializer.Services.Yaml;
 using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>

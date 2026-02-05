@@ -4,6 +4,7 @@
 
 namespace ktsu.UniversalSerializer.Test;
 
+using ktsu.UniversalSerializer.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -76,7 +77,7 @@ public class SerializerOptionsTests
 		bool success = options.TryGetOption("TestKey", out int value);
 
 		// Assert
-		Assert.IsTrue(success);
+		Assert.IsTrue(success, "TryGetOption should return true for an existing key");
 		Assert.AreEqual(42, value);
 	}
 
@@ -93,7 +94,7 @@ public class SerializerOptionsTests
 		bool success = options.TryGetOption("NonExistentKey", out int value);
 
 		// Assert
-		Assert.IsFalse(success);
+		Assert.IsFalse(success, "TryGetOption should return false for a non-existent key");
 		Assert.AreEqual(0, value);
 	}
 
@@ -108,8 +109,8 @@ public class SerializerOptionsTests
 		options.SetOption("TestKey", "TestValue");
 
 		// Act & Assert
-		Assert.IsTrue(options.HasOption("TestKey"));
-		Assert.IsFalse(options.HasOption("NonExistentKey"));
+		Assert.IsTrue(options.HasOption("TestKey"), "HasOption should return true for an existing key");
+		Assert.IsFalse(options.HasOption("NonExistentKey"), "HasOption should return false for a non-existent key");
 	}
 
 	/// <summary>
@@ -126,8 +127,8 @@ public class SerializerOptionsTests
 		bool removed = options.RemoveOption("TestKey");
 
 		// Assert
-		Assert.IsTrue(removed);
-		Assert.IsFalse(options.HasOption("TestKey"));
+		Assert.IsTrue(removed, "RemoveOption should return true when removing an existing key");
+		Assert.IsFalse(options.HasOption("TestKey"), "HasOption should return false after key is removed");
 	}
 
 	/// <summary>
@@ -143,7 +144,7 @@ public class SerializerOptionsTests
 		bool removed = options.RemoveOption("NonExistentKey");
 
 		// Assert
-		Assert.IsFalse(removed);
+		Assert.IsFalse(removed, "RemoveOption should return false for a non-existent key");
 	}
 
 	/// <summary>
@@ -162,8 +163,8 @@ public class SerializerOptionsTests
 
 		// Assert
 		Assert.AreEqual(0, options.Count);
-		Assert.IsFalse(options.HasOption("Key1"));
-		Assert.IsFalse(options.HasOption("Key2"));
+		Assert.IsFalse(options.HasOption("Key1"), "HasOption should return false for Key1 after Clear");
+		Assert.IsFalse(options.HasOption("Key2"), "HasOption should return false for Key2 after Clear");
 	}
 
 	/// <summary>
@@ -213,7 +214,7 @@ public class SerializerOptionsTests
 
 		// Verify independence
 		clone.SetOption("Key3", "Value3");
-		Assert.IsFalse(original.HasOption("Key3"));
+		Assert.IsFalse(original.HasOption("Key3"), "Original should not have Key3 after adding it to clone");
 	}
 
 	/// <summary>
@@ -242,12 +243,12 @@ public class SerializerOptionsTests
 		SerializerOptions options = new();
 
 		// Assert
-		Assert.IsTrue(options.UseStringConversionForUnsupportedTypes);
-		Assert.IsFalse(options.EnableTypeDiscriminator);
+		Assert.IsTrue(options.UseStringConversionForUnsupportedTypes, "UseStringConversionForUnsupportedTypes should default to true");
+		Assert.IsFalse(options.EnableTypeDiscriminator, "EnableTypeDiscriminator should default to false");
 		Assert.AreEqual(TypeDiscriminatorFormat.Property, options.TypeDiscriminatorFormat);
 		Assert.AreEqual("$type", options.TypeDiscriminatorPropertyName);
-		Assert.IsFalse(options.UseFullyQualifiedTypeNames);
-		Assert.IsFalse(options.EnableCompression);
+		Assert.IsFalse(options.UseFullyQualifiedTypeNames, "UseFullyQualifiedTypeNames should default to false");
+		Assert.IsFalse(options.EnableCompression, "EnableCompression should default to false");
 		Assert.AreEqual(CompressionType.GZip, options.CompressionType);
 		Assert.AreEqual(6, options.CompressionLevel);
 	}

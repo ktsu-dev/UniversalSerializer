@@ -2,9 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
 using System.Reflection;
+using ktsu.UniversalSerializer.Contracts;
 
 /// <summary>
 /// Type converter that handles types with standard string conversion patterns like ToString/Parse, ToString/FromString, or ToString/Constructor.
@@ -18,7 +20,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 	/// <returns>true if this converter can convert the type; otherwise, false.</returns>
 	public bool CanConvert(Type type)
 	{
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 		// Check if type has a ToString method override and any of the supported deserialization methods
 		return HasToStringOverride(type) &&
 			   (HasParseMethod(type) || HasFromStringMethod(type) || HasStringConstructor(type));
@@ -31,7 +33,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 	/// <returns>The string representation of the object.</returns>
 	public string ConvertToString(object value)
 	{
-		ArgumentNullException.ThrowIfNull(value);
+		Ensure.NotNull(value);
 		return value.ToString() ?? string.Empty;
 	}
 
@@ -43,7 +45,7 @@ public class StringConvertibleTypeConverter : ITypeConverter
 	/// <returns>The converted object.</returns>
 	public object ConvertFromString(string value, Type targetType)
 	{
-		ArgumentNullException.ThrowIfNull(targetType);
+		Ensure.NotNull(targetType);
 		// Try Parse method first (instance.ToString / static.Parse pattern)
 		if (HasParseMethod(targetType))
 		{

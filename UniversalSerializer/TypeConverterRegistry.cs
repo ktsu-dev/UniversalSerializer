@@ -2,11 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ktsu.UniversalSerializer.Contracts;
 
 /// <summary>
 /// Registry for type converters that manages type conversion operations.
@@ -29,7 +31,7 @@ public class TypeConverterRegistry
 	/// <param name="converter">The converter to register.</param>
 	public void RegisterConverter(ITypeConverter converter)
 	{
-		ArgumentNullException.ThrowIfNull(converter);
+		Ensure.NotNull(converter);
 
 		_converters.Add(converter);
 	}
@@ -41,7 +43,7 @@ public class TypeConverterRegistry
 	/// <param name="converter">The custom converter to register.</param>
 	public void RegisterConverter<T>(ICustomTypeConverter<T> converter)
 	{
-		ArgumentNullException.ThrowIfNull(converter);
+		Ensure.NotNull(converter);
 
 		CustomTypeConverterAdapter<T> adapter = new(converter);
 		_customConvertersByType[typeof(T)] = adapter;
@@ -54,7 +56,7 @@ public class TypeConverterRegistry
 	/// <returns>The first converter that can handle the type, or null if none is found.</returns>
 	public ITypeConverter? GetConverter(Type type)
 	{
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 
 		// First check for a custom converter specifically registered for this type
 		if (_customConvertersByType.TryGetValue(type, out ITypeConverter? customConverter))
@@ -83,7 +85,7 @@ public class TypeConverterRegistry
 	/// <returns>true if a converter exists; otherwise, false.</returns>
 	public bool HasConverter(Type type)
 	{
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 
 		// Check for a custom converter specifically registered for this type
 		if (_customConvertersByType.ContainsKey(type))
@@ -135,7 +137,7 @@ public class TypeConverterRegistry
 	/// <exception cref="InvalidOperationException">No converter is found for the specified type.</exception>
 	public object ConvertFromString(string value, Type targetType)
 	{
-		ArgumentNullException.ThrowIfNull(targetType);
+		Ensure.NotNull(targetType);
 
 		ITypeConverter? converter = GetConverter(targetType);
 
@@ -171,7 +173,7 @@ public class TypeConverterRegistry
 	/// </summary>
 	/// <param name="type">The type whose converter should be removed.</param>
 	/// <returns>true if the converter was removed; otherwise, false.</returns>
-	public bool RemoveConverter(Type type) => type == null ? throw new ArgumentNullException(nameof(type)) : _customConvertersByType.TryRemove(type, out _);
+	public bool RemoveConverter(Type type) => _customConvertersByType.TryRemove(Ensure.NotNull(type), out _);
 
 	/// <summary>
 	/// Clears all custom converters registered with this registry.

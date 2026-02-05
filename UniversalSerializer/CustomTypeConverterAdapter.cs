@@ -2,8 +2,10 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
+using ktsu.UniversalSerializer.Contracts;
 
 /// <summary>
 /// Adapter that converts a type-specific <see cref="ICustomTypeConverter{T}"/> into a generic <see cref="ITypeConverter"/>.
@@ -15,7 +17,7 @@ using System;
 /// <param name="customConverter">The custom type converter to adapt.</param>
 public class CustomTypeConverterAdapter<T>(ICustomTypeConverter<T> customConverter) : ITypeConverter
 {
-	private readonly ICustomTypeConverter<T> _customConverter = customConverter ?? throw new ArgumentNullException(nameof(customConverter));
+	private readonly ICustomTypeConverter<T> _customConverter = Ensure.NotNull(customConverter);
 	private readonly Type _handledType = typeof(T);
 
 	/// <inheritdoc/>
@@ -38,7 +40,7 @@ public class CustomTypeConverterAdapter<T>(ICustomTypeConverter<T> customConvert
 	/// <inheritdoc/>
 	public object ConvertFromString(string value, Type targetType)
 	{
-		ArgumentNullException.ThrowIfNull(targetType);
+		Ensure.NotNull(targetType);
 		if (!CanConvert(targetType))
 		{
 			throw new InvalidOperationException($"This converter cannot convert to type {targetType.Name}");

@@ -2,9 +2,12 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
 using System.Collections.Concurrent;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Factory for creating serializer instances.
@@ -29,7 +32,7 @@ public class SerializerFactory : ISerializerFactory
 	/// <returns>The current factory instance for method chaining.</returns>
 	public SerializerFactory RegisterSerializer<TSerializer>(Func<SerializerOptions, TSerializer> creator) where TSerializer : ISerializer
 	{
-		ArgumentNullException.ThrowIfNull(creator);
+		Ensure.NotNull(creator);
 		_serializerCreators[typeof(TSerializer)] = options => creator(options);
 		return this;
 	}
@@ -81,7 +84,7 @@ public class SerializerFactory : ISerializerFactory
 	/// <exception cref="InvalidOperationException">Thrown when the serializer type has not been registered.</exception>
 	public ISerializer Create(Type serializerType, SerializerOptions options)
 	{
-		ArgumentNullException.ThrowIfNull(serializerType);
+		Ensure.NotNull(serializerType);
 		return !typeof(ISerializer).IsAssignableFrom(serializerType)
 			? throw new ArgumentException($"Type {serializerType.Name} does not implement ISerializer.", nameof(serializerType))
 				: !_serializerCreators.TryGetValue(serializerType, out Func<SerializerOptions, ISerializer>? creator)

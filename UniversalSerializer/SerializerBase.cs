@@ -2,11 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Provides a base implementation for serializers.
@@ -139,9 +142,9 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	/// <inheritdoc/>
 	public virtual void SerializeToStream<T>(T obj, Stream stream)
 	{
-		ArgumentNullException.ThrowIfNull(stream);
+		Ensure.NotNull(stream);
 		string serialized = Serialize(obj);
-		using StreamWriter writer = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		using StreamWriter writer = new(stream, System.Text.Encoding.UTF8, bufferSize: 1024, leaveOpen: true);
 		writer.Write(serialized);
 		writer.Flush();
 	}
@@ -149,8 +152,8 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	/// <inheritdoc/>
 	public virtual T DeserializeFromStream<T>(Stream stream)
 	{
-		ArgumentNullException.ThrowIfNull(stream);
-		using StreamReader reader = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		Ensure.NotNull(stream);
+		using StreamReader reader = new(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
 		string serialized = reader.ReadToEnd();
 		return Deserialize<T>(serialized);
 	}
@@ -158,10 +161,10 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	/// <inheritdoc/>
 	public virtual async Task SerializeToStreamAsync<T>(T obj, Stream stream, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(stream);
+		Ensure.NotNull(stream);
 		cancellationToken.ThrowIfCancellationRequested();
 		string serialized = await SerializeAsync(obj, cancellationToken).ConfigureAwait(false);
-		using StreamWriter writer = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		using StreamWriter writer = new(stream, System.Text.Encoding.UTF8, bufferSize: 1024, leaveOpen: true);
 		await writer.WriteAsync(serialized).ConfigureAwait(false);
 		await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
 	}
@@ -169,9 +172,9 @@ public abstract class SerializerBase(SerializerOptions options) : ISerializer
 	/// <inheritdoc/>
 	public virtual async Task<T> DeserializeFromStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(stream);
+		Ensure.NotNull(stream);
 		cancellationToken.ThrowIfCancellationRequested();
-		using StreamReader reader = new(stream, System.Text.Encoding.UTF8, leaveOpen: true);
+		using StreamReader reader = new(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
 		string serialized = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 		return await DeserializeAsync<T>(serialized, cancellationToken).ConfigureAwait(false);
 	}

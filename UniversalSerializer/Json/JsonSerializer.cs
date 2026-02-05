@@ -2,14 +2,16 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Json;
+namespace ktsu.UniversalSerializer.Services.Json;
+
 using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using ktsu.UniversalSerializer;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
 
 /// <summary>
 /// Serializer for JSON format using System.Text.Json.
@@ -137,7 +139,7 @@ public class JsonSerializer : SerializerBase
 	/// <inheritdoc/>
 	public override T DeserializeFromStream<T>(Stream stream)
 	{
-		ArgumentNullException.ThrowIfNull(stream);
+		Ensure.NotNull(stream);
 		long startPosition = stream.CanSeek ? stream.Position : 0;
 
 		// Read remaining bytes into buffer
@@ -160,7 +162,7 @@ public class JsonSerializer : SerializerBase
 	/// <inheritdoc/>
 	public override async Task<T> DeserializeFromStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(stream);
+		Ensure.NotNull(stream);
 		long startPosition = stream.CanSeek ? stream.Position : 0;
 
 		using MemoryStream buffer = new();

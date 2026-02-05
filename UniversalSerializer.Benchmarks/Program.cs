@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 namespace UniversalSerializer.Benchmarks;
+
 using BenchmarkDotNet.Running;
 
 /// <summary>

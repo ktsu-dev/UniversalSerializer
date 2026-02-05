@@ -2,13 +2,15 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.MessagePack;
+namespace ktsu.UniversalSerializer.Services.MessagePack;
+
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using global::MessagePack;
 using global::MessagePack.Resolvers;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Serializer for MessagePack format.

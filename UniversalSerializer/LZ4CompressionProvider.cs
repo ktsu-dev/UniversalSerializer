@@ -2,12 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using K4os.Compression.LZ4;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Compression provider for LZ4 compression using K4os.Compression.LZ4.
@@ -20,7 +22,7 @@ public class LZ4CompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public byte[] Compress(byte[] data, int level = 6)
 	{
-		ArgumentNullException.ThrowIfNull(data);
+		Ensure.NotNull(data);
 
 		// LZ4 doesn't use traditional compression levels like other algorithms
 		// We'll use LZ4Level.L00_FAST for levels 1-3, L04_HC for levels 4-6, and L09_HC for 7-9
@@ -50,7 +52,7 @@ public class LZ4CompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public byte[] Decompress(byte[] compressedData)
 	{
-		ArgumentNullException.ThrowIfNull(compressedData);
+		Ensure.NotNull(compressedData);
 
 		// For LZ4 decompression, we need to know the original size
 		// Since we don't store it, we'll use a heuristic approach
@@ -94,7 +96,7 @@ public class LZ4CompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public async Task<byte[]> CompressAsync(byte[] data, int level = 6, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(data);
+		Ensure.NotNull(data);
 		cancellationToken.ThrowIfCancellationRequested();
 
 		// LZ4 compression is very fast, so we can run it in a Task
@@ -104,7 +106,7 @@ public class LZ4CompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public async Task<byte[]> DecompressAsync(byte[] compressedData, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(compressedData);
+		Ensure.NotNull(compressedData);
 		cancellationToken.ThrowIfCancellationRequested();
 
 		// LZ4 decompression is very fast, so we can run it in a Task

@@ -2,14 +2,19 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.DependencyInjection;
 
 using System;
 using System.Linq;
 using ktsu.SerializationProvider;
-using ktsu.UniversalSerializer.Json;
-using ktsu.UniversalSerializer.Toml;
-using ktsu.UniversalSerializer.Yaml;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
+using ktsu.UniversalSerializer.Services.Json;
+using ktsu.UniversalSerializer.Services.Toml;
+using ktsu.UniversalSerializer.Services.Xml;
+using ktsu.UniversalSerializer.Services.Yaml;
+using MsgPackSerializer = global::ktsu.UniversalSerializer.Services.MessagePack.MessagePackSerializer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -81,7 +86,7 @@ public static class SerializerServiceCollectionExtensions
 	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddXmlSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<Xml.XmlSerializer>();
+		services.TryAddTransient<XmlSerializer>();
 		return services;
 	}
 
@@ -116,7 +121,7 @@ public static class SerializerServiceCollectionExtensions
 	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddMessagePackSerializer(this IServiceCollection services)
 	{
-		services.TryAddTransient<MessagePack.MessagePackSerializer>();
+		services.TryAddTransient<MsgPackSerializer>();
 		return services;
 	}
 
@@ -315,7 +320,7 @@ public static class SerializerServiceCollectionExtensions
 	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddXmlSerializationProvider(
 		this IServiceCollection services,
-		string? providerName = null) => services.AddUniversalSerializationProvider<Xml.XmlSerializer>(providerName ?? "UniversalSerializer.Xml");
+		string? providerName = null) => services.AddUniversalSerializationProvider<XmlSerializer>(providerName ?? "UniversalSerializer.Xml");
 
 	/// <summary>
 	/// Adds a MessagePack-based UniversalSerializationProvider to the service collection.
@@ -325,5 +330,5 @@ public static class SerializerServiceCollectionExtensions
 	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddMessagePackSerializationProvider(
 		this IServiceCollection services,
-		string? providerName = null) => services.AddUniversalSerializationProvider<MessagePack.MessagePackSerializer>(providerName ?? "UniversalSerializer.MessagePack");
+		string? providerName = null) => services.AddUniversalSerializationProvider<MsgPackSerializer>(providerName ?? "UniversalSerializer.MessagePack");
 }

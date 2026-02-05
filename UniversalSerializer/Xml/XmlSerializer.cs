@@ -2,7 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Xml;
+namespace ktsu.UniversalSerializer.Services.Xml;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Serializer for XML format using the .NET XmlSerializer.

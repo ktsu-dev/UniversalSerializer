@@ -2,13 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
 
-using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Compression provider for GZip compression using System.IO.Compression.
@@ -21,13 +22,13 @@ public class GZipCompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public byte[] Compress(byte[] data, int level = 6)
 	{
-		ArgumentNullException.ThrowIfNull(data);
+		Ensure.NotNull(data);
 
 		CompressionLevel compressionLevel = level switch
 		{
 			<= 3 => CompressionLevel.Fastest,
 			<= 6 => CompressionLevel.Optimal,
-			_ => CompressionLevel.SmallestSize
+			_ => CompressionLevel.Optimal
 		};
 
 		using MemoryStream output = new();
@@ -41,7 +42,7 @@ public class GZipCompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public byte[] Decompress(byte[] compressedData)
 	{
-		ArgumentNullException.ThrowIfNull(compressedData);
+		Ensure.NotNull(compressedData);
 
 		using MemoryStream input = new(compressedData);
 		using GZipStream gzip = new(input, CompressionMode.Decompress);
@@ -54,14 +55,14 @@ public class GZipCompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public async Task<byte[]> CompressAsync(byte[] data, int level = 6, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(data);
+		Ensure.NotNull(data);
 		cancellationToken.ThrowIfCancellationRequested();
 
 		CompressionLevel compressionLevel = level switch
 		{
 			<= 3 => CompressionLevel.Fastest,
 			<= 6 => CompressionLevel.Optimal,
-			_ => CompressionLevel.SmallestSize
+			_ => CompressionLevel.Optimal
 		};
 
 		using MemoryStream output = new();
@@ -75,7 +76,7 @@ public class GZipCompressionProvider : ICompressionProvider
 	/// <inheritdoc/>
 	public async Task<byte[]> DecompressAsync(byte[] compressedData, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(compressedData);
+		Ensure.NotNull(compressedData);
 		cancellationToken.ThrowIfCancellationRequested();
 
 		using MemoryStream input = new(compressedData);

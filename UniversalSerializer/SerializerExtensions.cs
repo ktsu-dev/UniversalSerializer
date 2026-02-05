@@ -2,12 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
-using System;
+namespace ktsu.UniversalSerializer.Services;
+
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ktsu.UniversalSerializer.Contracts;
 
 /// <summary>
 /// Provides extension methods for <see cref="ISerializer"/>.
@@ -23,7 +24,7 @@ public static class SerializerExtensions
 	/// <param name="filePath">The file path to save to.</param>
 	public static void SerializeToFile<T>(this ISerializer serializer, T obj, string filePath)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		string serialized = serializer.Serialize(obj);
 		File.WriteAllText(filePath, serialized);
 	}
@@ -39,7 +40,7 @@ public static class SerializerExtensions
 	/// <returns>A task representing the asynchronous operation.</returns>
 	public static async Task SerializeToFileAsync<T>(this ISerializer serializer, T obj, string filePath, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		string serialized = await serializer.SerializeAsync(obj, cancellationToken).ConfigureAwait(false);
 		await File.WriteAllTextAsync(filePath, serialized, cancellationToken).ConfigureAwait(false);
 	}
@@ -53,7 +54,7 @@ public static class SerializerExtensions
 	/// <param name="filePath">The file path to save to.</param>
 	public static void SerializeToBinaryFile<T>(this ISerializer serializer, T obj, string filePath)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		byte[] bytes = serializer.SerializeToBytes(obj);
 		File.WriteAllBytes(filePath, bytes);
 	}
@@ -69,7 +70,7 @@ public static class SerializerExtensions
 	/// <returns>A task representing the asynchronous operation.</returns>
 	public static async Task SerializeToBinaryFileAsync<T>(this ISerializer serializer, T obj, string filePath, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		byte[] bytes = await serializer.SerializeToBytesAsync(obj, cancellationToken).ConfigureAwait(false);
 		await File.WriteAllBytesAsync(filePath, bytes, cancellationToken).ConfigureAwait(false);
 	}
@@ -83,7 +84,7 @@ public static class SerializerExtensions
 	/// <returns>The deserialized object.</returns>
 	public static T DeserializeFromFile<T>(this ISerializer serializer, string filePath)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		string serialized = File.ReadAllText(filePath);
 		return serializer.Deserialize<T>(serialized);
 	}
@@ -98,7 +99,7 @@ public static class SerializerExtensions
 	/// <returns>A task representing the asynchronous operation.</returns>
 	public static async Task<T> DeserializeFromFileAsync<T>(this ISerializer serializer, string filePath, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		string serialized = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
 		return await serializer.DeserializeAsync<T>(serialized, cancellationToken).ConfigureAwait(false);
 	}
@@ -112,7 +113,7 @@ public static class SerializerExtensions
 	/// <returns>The deserialized object.</returns>
 	public static T DeserializeFromBinaryFile<T>(this ISerializer serializer, string filePath)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		byte[] bytes = File.ReadAllBytes(filePath);
 		return serializer.DeserializeFromBytes<T>(bytes);
 	}
@@ -127,7 +128,7 @@ public static class SerializerExtensions
 	/// <returns>A task representing the asynchronous operation.</returns>
 	public static async Task<T> DeserializeFromBinaryFileAsync<T>(this ISerializer serializer, string filePath, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		byte[] bytes = await File.ReadAllBytesAsync(filePath, cancellationToken).ConfigureAwait(false);
 		return await serializer.DeserializeFromBytesAsync<T>(bytes, cancellationToken).ConfigureAwait(false);
 	}
@@ -141,7 +142,7 @@ public static class SerializerExtensions
 	/// <returns>A memory stream containing the serialized object.</returns>
 	public static MemoryStream SerializeToStream<T>(this ISerializer serializer, T obj)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		string serialized = serializer.Serialize(obj);
 		byte[] bytes = Encoding.UTF8.GetBytes(serialized);
 		return new MemoryStream(bytes);
@@ -156,7 +157,7 @@ public static class SerializerExtensions
 	/// <returns>The deserialized object.</returns>
 	public static T DeserializeFromStream<T>(this ISerializer serializer, Stream stream)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		using StreamReader reader = new(stream, Encoding.UTF8, true, -1, true);
 		string serialized = reader.ReadToEnd();
 		return serializer.Deserialize<T>(serialized);
@@ -171,7 +172,7 @@ public static class SerializerExtensions
 	/// <returns>A deep clone of the object.</returns>
 	public static T Clone<T>(this ISerializer serializer, T obj)
 	{
-		ArgumentNullException.ThrowIfNull(serializer);
+		Ensure.NotNull(serializer);
 		string serialized = serializer.Serialize(obj);
 		return serializer.Deserialize<T>(serialized);
 	}

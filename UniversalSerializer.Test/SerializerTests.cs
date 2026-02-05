@@ -6,12 +6,14 @@ namespace ktsu.UniversalSerializer.Test;
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.Json;
-using ktsu.UniversalSerializer.MessagePack;
-using ktsu.UniversalSerializer.Toml;
-using ktsu.UniversalSerializer.Xml;
-using ktsu.UniversalSerializer.Yaml;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
+using ktsu.UniversalSerializer.Services.Json;
+using ktsu.UniversalSerializer.Services.MessagePack;
+using ktsu.UniversalSerializer.Services.Toml;
+using ktsu.UniversalSerializer.Services.Xml;
+using ktsu.UniversalSerializer.Services.Yaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -65,17 +67,17 @@ public class SerializerTests
 		_registry.Register("messagepack", messagepack);
 
 		// Assert
-		Assert.IsTrue(_registry.IsFormatSupported("json"));
-		Assert.IsTrue(_registry.IsFormatSupported("xml"));
-		Assert.IsTrue(_registry.IsFormatSupported("yaml"));
-		Assert.IsTrue(_registry.IsFormatSupported("toml"));
-		Assert.IsTrue(_registry.IsFormatSupported("messagepack"));
+		Assert.IsTrue(_registry.IsFormatSupported("json"), "JSON format should be supported");
+		Assert.IsTrue(_registry.IsFormatSupported("xml"), "XML format should be supported");
+		Assert.IsTrue(_registry.IsFormatSupported("yaml"), "YAML format should be supported");
+		Assert.IsTrue(_registry.IsFormatSupported("toml"), "TOML format should be supported");
+		Assert.IsTrue(_registry.IsFormatSupported("messagepack"), "MessagePack format should be supported");
 
-		Assert.IsTrue(_registry.IsExtensionSupported(".json"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".xml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".yaml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".toml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".msgpack"));
+		Assert.IsTrue(_registry.IsExtensionSupported(".json"), ".json extension should be supported");
+		Assert.IsTrue(_registry.IsExtensionSupported(".xml"), ".xml extension should be supported");
+		Assert.IsTrue(_registry.IsExtensionSupported(".yaml"), ".yaml extension should be supported");
+		Assert.IsTrue(_registry.IsExtensionSupported(".toml"), ".toml extension should be supported");
+		Assert.IsTrue(_registry.IsExtensionSupported(".msgpack"), ".msgpack extension should be supported");
 	}
 
 	/// <summary>
@@ -275,7 +277,7 @@ public class SerializerTests
 		JsonSerializer serializer = _factory.Create<JsonSerializer>();
 
 		// Act & Assert
-		Assert.ThrowsException<System.Text.Json.JsonException>(() =>
+		Assert.ThrowsExactly<System.Text.Json.JsonException>(() =>
 			serializer.Deserialize<TestData>(""));
 	}
 
@@ -289,7 +291,7 @@ public class SerializerTests
 		JsonSerializer serializer = _factory.Create<JsonSerializer>();
 
 		// Act & Assert
-		Assert.ThrowsException<System.Text.Json.JsonException>(() =>
+		Assert.ThrowsExactly<System.Text.Json.JsonException>(() =>
 			serializer.Deserialize<TestData>("invalid json"));
 	}
 

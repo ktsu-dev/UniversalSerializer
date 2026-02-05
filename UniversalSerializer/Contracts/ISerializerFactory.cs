@@ -2,8 +2,9 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
-using System;
+namespace ktsu.UniversalSerializer.Contracts;
+
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Interface for factory creating serializer instances.
@@ -30,7 +31,7 @@ public interface ISerializerFactory
 	/// </summary>
 	/// <param name="serializerType">The type of serializer to create.</param>
 	/// <returns>A new instance of the specified serializer type.</returns>
-	public ISerializer Create(Type serializerType);
+	public ISerializer Create(System.Type serializerType);
 
 	/// <summary>
 	/// Creates a new instance of a serializer by type with the specified options.
@@ -38,7 +39,7 @@ public interface ISerializerFactory
 	/// <param name="serializerType">The type of serializer to create.</param>
 	/// <param name="options">The options to use when creating the serializer.</param>
 	/// <returns>A new instance of the specified serializer type.</returns>
-	public ISerializer Create(Type serializerType, SerializerOptions options);
+	public ISerializer Create(System.Type serializerType, SerializerOptions options);
 
 	/// <summary>
 	/// Gets a copy of the default options used by this factory.

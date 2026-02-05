@@ -2,15 +2,17 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
+using ktsu.UniversalSerializer.Contracts;
 
 /// <summary>
 /// Resolver for finding serializers by format, extension, or content type.
 /// </summary>
 public class SerializerResolver(SerializerRegistry registry) : ISerializerResolver
 {
-	private readonly SerializerRegistry _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+	private readonly SerializerRegistry _registry = Ensure.NotNull(registry);
 
 	/// <inheritdoc/>
 	public ISerializer? ResolveByFormat(string format)

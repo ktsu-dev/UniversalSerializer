@@ -3,13 +3,15 @@
 // Licensed under the MIT license.
 
 namespace ktsu.UniversalSerializer.Test;
+
 using System;
 using System.Threading.Tasks;
-using ktsu.UniversalSerializer;
-using ktsu.UniversalSerializer.Json;
+using ktsu.SerializationProvider;
+using ktsu.UniversalSerializer.DependencyInjection;
+using ktsu.UniversalSerializer.Services;
+using ktsu.UniversalSerializer.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ktsu.SerializationProvider;
 
 /// <summary>
 /// Tests for the SerializationProvider integration.
@@ -174,7 +176,6 @@ public class SerializationProviderTests
 	}
 
 	[TestMethod]
-	[ExpectedException(typeof(ArgumentException))]
 	public void UniversalSerializationProvider_EmptyData_ShouldThrow()
 	{
 		// Arrange
@@ -182,11 +183,10 @@ public class SerializationProviderTests
 		UniversalSerializationProvider provider = new(jsonSerializer);
 
 		// Act & Assert
-		provider.Deserialize<TestData>("");
+		Assert.ThrowsExactly<ArgumentException>(() => provider.Deserialize<TestData>(""));
 	}
 
 	[TestMethod]
-	[ExpectedException(typeof(ArgumentNullException))]
 	public void UniversalSerializationProvider_NullObject_ShouldThrow()
 	{
 		// Arrange
@@ -194,6 +194,6 @@ public class SerializationProviderTests
 		UniversalSerializationProvider provider = new(jsonSerializer);
 
 		// Act & Assert
-		provider.Serialize<TestData>(null!);
+		Assert.ThrowsExactly<ArgumentNullException>(() => provider.Serialize<TestData>(null!));
 	}
 }

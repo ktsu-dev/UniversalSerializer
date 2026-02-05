@@ -7,7 +7,9 @@ namespace ktsu.UniversalSerializer.Test;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
-using ktsu.UniversalSerializer.Json;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
+using ktsu.UniversalSerializer.Services.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -56,9 +58,9 @@ public class SerializerExtensionsTests
 		_serializer.SerializeToFile(_testData, _tempFilePath);
 
 		// Assert
-		Assert.IsTrue(File.Exists(_tempFilePath));
+		Assert.IsTrue(File.Exists(_tempFilePath), "Serialized file should exist");
 		string content = File.ReadAllText(_tempFilePath);
-		Assert.IsFalse(string.IsNullOrEmpty(content));
+		Assert.IsFalse(string.IsNullOrEmpty(content), "Serialized content should not be empty");
 
 		// Verify content by deserializing
 		TestData deserialized = _serializer.Deserialize<TestData>(content);
@@ -76,9 +78,9 @@ public class SerializerExtensionsTests
 		await _serializer.SerializeToFileAsync(_testData, _tempFilePath).ConfigureAwait(false);
 
 		// Assert
-		Assert.IsTrue(File.Exists(_tempFilePath));
+		Assert.IsTrue(File.Exists(_tempFilePath), "Serialized file should exist after async operation");
 		string content = await File.ReadAllTextAsync(_tempFilePath).ConfigureAwait(false);
-		Assert.IsFalse(string.IsNullOrEmpty(content));
+		Assert.IsFalse(string.IsNullOrEmpty(content), "Serialized content should not be empty after async operation");
 
 		// Verify content by deserializing
 		TestData deserialized = await _serializer.DeserializeAsync<TestData>(content).ConfigureAwait(false);
@@ -96,9 +98,9 @@ public class SerializerExtensionsTests
 		_serializer.SerializeToBinaryFile(_testData, _tempFilePath);
 
 		// Assert
-		Assert.IsTrue(File.Exists(_tempFilePath));
+		Assert.IsTrue(File.Exists(_tempFilePath), "Binary file should exist");
 		byte[] content = File.ReadAllBytes(_tempFilePath);
-		Assert.IsTrue(content.Length > 0);
+		Assert.IsTrue(content.Length > 0, "Binary content should not be empty");
 
 		// Verify content by deserializing
 		TestData deserialized = _serializer.DeserializeFromBytes<TestData>(content);
@@ -116,9 +118,9 @@ public class SerializerExtensionsTests
 		await _serializer.SerializeToBinaryFileAsync(_testData, _tempFilePath).ConfigureAwait(false);
 
 		// Assert
-		Assert.IsTrue(File.Exists(_tempFilePath));
+		Assert.IsTrue(File.Exists(_tempFilePath), "Binary file should exist after async operation");
 		byte[] content = await File.ReadAllBytesAsync(_tempFilePath).ConfigureAwait(false);
-		Assert.IsTrue(content.Length > 0);
+		Assert.IsTrue(content.Length > 0, "Binary content should not be empty after async operation");
 
 		// Verify content by deserializing
 		TestData deserialized = await _serializer.DeserializeFromBytesAsync<TestData>(content).ConfigureAwait(false);
@@ -213,7 +215,7 @@ public class SerializerExtensionsTests
 
 		// Assert
 		Assert.IsNotNull(stream);
-		Assert.IsTrue(stream.Length > 0);
+		Assert.IsTrue(stream.Length > 0, "Serialized stream should have content");
 
 		// Verify content by deserializing
 		stream.Position = 0;
@@ -271,12 +273,12 @@ public class SerializerExtensionsTests
 		JsonSerializer? nullSerializer = null;
 
 		// Act & Assert
-		Assert.ThrowsException<ArgumentNullException>(() => nullSerializer!.SerializeToFile(_testData, _tempFilePath));
-		Assert.ThrowsException<ArgumentNullException>(() => nullSerializer!.SerializeToBinaryFile(_testData, _tempFilePath));
-		Assert.ThrowsException<ArgumentNullException>(() => nullSerializer!.DeserializeFromFile<TestData>(_tempFilePath));
-		Assert.ThrowsException<ArgumentNullException>(() => nullSerializer!.DeserializeFromBinaryFile<TestData>(_tempFilePath));
-		Assert.ThrowsException<ArgumentNullException>(() => nullSerializer!.SerializeToStream(_testData));
-		Assert.ThrowsException<ArgumentNullException>(() => nullSerializer!.Clone(_testData));
+		Assert.ThrowsExactly<ArgumentNullException>(() => nullSerializer!.SerializeToFile(_testData, _tempFilePath));
+		Assert.ThrowsExactly<ArgumentNullException>(() => nullSerializer!.SerializeToBinaryFile(_testData, _tempFilePath));
+		Assert.ThrowsExactly<ArgumentNullException>(() => nullSerializer!.DeserializeFromFile<TestData>(_tempFilePath));
+		Assert.ThrowsExactly<ArgumentNullException>(() => nullSerializer!.DeserializeFromBinaryFile<TestData>(_tempFilePath));
+		Assert.ThrowsExactly<ArgumentNullException>(() => nullSerializer!.SerializeToStream(_testData));
+		Assert.ThrowsExactly<ArgumentNullException>(() => nullSerializer!.Clone(_testData));
 	}
 
 	/// <summary>
@@ -303,7 +305,7 @@ public class SerializerExtensionsTests
 
 		// Assert
 		Assert.IsNotNull(stream);
-		Assert.IsTrue(stream.Length > 0);
+		Assert.IsTrue(stream.Length > 0, "Serialized stream should have content for complex object");
 
 		// Verify content by deserializing
 		stream.Position = 0;

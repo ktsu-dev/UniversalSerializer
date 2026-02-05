@@ -2,10 +2,12 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Yaml;
+namespace ktsu.UniversalSerializer.Services.Yaml;
+
 using System;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
+using ktsu.UniversalSerializer.Services;
 
 /// <summary>
 /// YAML node deserializer that handles polymorphic types with discriminators.
@@ -23,8 +25,8 @@ public class YamlPolymorphicNodeDeserializer(
 	string discriminatorFormat,
 	INodeDeserializer innerDeserializer) : INodeDeserializer
 {
-	private readonly INodeDeserializer _innerDeserializer = innerDeserializer ?? throw new ArgumentNullException(nameof(innerDeserializer));
-	private readonly TypeRegistry _typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
+	private readonly INodeDeserializer _innerDeserializer = Ensure.NotNull(innerDeserializer);
+	private readonly TypeRegistry _typeRegistry = Ensure.NotNull(typeRegistry);
 
 	/// <inheritdoc/>
 	public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value, ObjectDeserializer rootDeserializer)

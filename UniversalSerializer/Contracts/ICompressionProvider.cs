@@ -2,7 +2,11 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Contracts;
+
+using System.Threading;
+using System.Threading.Tasks;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Interface for compression providers that can compress and decompress data.

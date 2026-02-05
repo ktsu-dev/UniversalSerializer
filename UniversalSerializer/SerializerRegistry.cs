@@ -2,11 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
 using System.Collections.Concurrent;
-using ktsu.UniversalSerializer.Toml;
-using ktsu.UniversalSerializer.Yaml;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services.Toml;
+using ktsu.UniversalSerializer.Services.Yaml;
 
 /// <summary>
 /// Registry for managing serializers by format.
@@ -20,7 +23,7 @@ public class SerializerRegistry(SerializerFactory factory)
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByFormat = new(StringComparer.OrdinalIgnoreCase);
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByExtension = new(StringComparer.OrdinalIgnoreCase);
 	private readonly ConcurrentDictionary<string, ISerializer> _serializersByContentType = new(StringComparer.OrdinalIgnoreCase);
-	private readonly SerializerFactory _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+	private readonly SerializerFactory _factory = Ensure.NotNull(factory);
 
 	/// <summary>
 	/// Registers built-in serializers.
@@ -81,7 +84,7 @@ public class SerializerRegistry(SerializerFactory factory)
 			throw new ArgumentException("Format cannot be null or whitespace.", nameof(format));
 		}
 
-		_serializersByFormat[format] = serializer ?? throw new ArgumentNullException(nameof(serializer));
+		_serializersByFormat[format] = Ensure.NotNull(serializer);
 	}
 
 	/// <summary>

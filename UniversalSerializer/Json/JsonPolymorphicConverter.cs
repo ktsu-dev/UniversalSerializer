@@ -2,10 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Json;
+namespace ktsu.UniversalSerializer.Services.Json;
+
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
 
 /// <summary>
 /// A JSON converter factory for polymorphic serialization that uses type discriminators.
@@ -17,7 +20,7 @@ using System.Text.Json.Serialization;
 /// <param name="options">The serializer options.</param>
 public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptions options) : JsonConverterFactory
 {
-	private readonly TypeRegistry _typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
+	private readonly TypeRegistry _typeRegistry = Ensure.NotNull(typeRegistry);
 	private readonly string _typeDiscriminatorPropertyName = options.GetOption(SerializerOptionKeys.TypeRegistry.DiscriminatorPropertyName, SerializerDefaults.TypeDiscriminatorPropertyName);
 	private readonly TypeDiscriminatorFormat _discriminatorFormat = Enum.TryParse(options.GetOption(SerializerOptionKeys.TypeRegistry.DiscriminatorFormat, SerializerDefaults.TypeDiscriminatorFormat), out TypeDiscriminatorFormat format) ? format : TypeDiscriminatorFormat.Property;
 
@@ -34,7 +37,7 @@ public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptio
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated via reflection")]
 	private sealed class JsonPolymorphicConverterInner<T>(TypeRegistry typeRegistry, string typeDiscriminatorPropertyName, TypeDiscriminatorFormat discriminatorFormat) : JsonConverter<T>
 	{
-		private readonly TypeRegistry _typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
+		private readonly TypeRegistry _typeRegistry = Ensure.NotNull(typeRegistry);
 		private readonly string _typeDiscriminatorPropertyName = typeDiscriminatorPropertyName;
 		private readonly TypeDiscriminatorFormat _discriminatorFormat = discriminatorFormat;
 
@@ -85,7 +88,7 @@ public class JsonPolymorphicConverter(TypeRegistry typeRegistry, SerializerOptio
 			}
 
 			// Resolve the type
-			Type type = _typeRegistry.ResolveType(typeName) ?? throw new JsonException($"Could not resolve type '{typeName}'");
+			Type type = _typeRegistry.ResolveType(typeName!) ?? throw new JsonException($"Could not resolve type '{typeName}'");
 
 			// Verify the type is assignable to the expected type
 			if (!typeof(T).IsAssignableFrom(type))

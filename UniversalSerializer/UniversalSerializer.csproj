@@ -1,6 +1,5 @@
-﻿
-
-<Project Sdk="ktsu.Sdk.Lib">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="ktsu.Sdk" />
 
   <ItemGroup>
     <PackageReference Include="K4os.Compression.LZ4" />
@@ -10,6 +9,8 @@
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Polyfill" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

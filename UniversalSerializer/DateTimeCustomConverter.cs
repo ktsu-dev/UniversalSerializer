@@ -2,8 +2,10 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
+using ktsu.UniversalSerializer.Contracts;
 
 /// <summary>
 /// A custom converter for DateTime types with configurable format.
@@ -14,7 +16,7 @@ using System;
 /// <param name="format">The custom date format string.</param>
 public class DateTimeCustomConverter(string format) : ICustomTypeConverter<DateTime>
 {
-	private readonly string _format = format ?? throw new ArgumentNullException(nameof(format));
+	private readonly string _format = Ensure.NotNull(format);
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DateTimeCustomConverter"/> class with the default format.

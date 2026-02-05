@@ -2,7 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Contracts;
+
 /// <summary>
 /// Interface for resolving serializers by format.
 /// </summary>

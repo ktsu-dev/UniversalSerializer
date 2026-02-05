@@ -1,7 +1,12 @@
-﻿<Project Sdk="ktsu.Sdk.ConsoleApp">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="ktsu.Sdk" />
+  <Sdk Name="ktsu.Sdk.ConsoleApp" />
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" />
+    <PackageReference Include="Polyfill" />
   </ItemGroup>
 
   <ItemGroup>

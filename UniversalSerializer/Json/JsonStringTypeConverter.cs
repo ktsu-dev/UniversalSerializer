@@ -2,11 +2,12 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Json;
+namespace ktsu.UniversalSerializer.Services.Json;
+
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ktsu.UniversalSerializer;
+using ktsu.UniversalSerializer.Services;
 
 /// <summary>
 /// JSON converter that uses the TypeConverterRegistry to convert types to and from strings.
@@ -17,7 +18,7 @@ using ktsu.UniversalSerializer;
 /// <param name="typeConverterRegistry">The type converter registry.</param>
 public class JsonStringTypeConverter(TypeConverterRegistry typeConverterRegistry) : JsonConverterFactory
 {
-	private readonly TypeConverterRegistry _typeConverterRegistry = typeConverterRegistry ?? throw new ArgumentNullException(nameof(typeConverterRegistry));
+	private readonly TypeConverterRegistry _typeConverterRegistry = Ensure.NotNull(typeConverterRegistry);
 
 	/// <inheritdoc/>
 	public override bool CanConvert(Type typeToConvert) => _typeConverterRegistry.HasConverter(typeToConvert);

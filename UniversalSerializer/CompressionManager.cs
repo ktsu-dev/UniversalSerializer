@@ -2,12 +2,14 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
 
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Manages compression providers and provides unified compression/decompression functionality.
@@ -35,7 +37,7 @@ public class CompressionManager
 	/// <param name="provider">The compression provider to register.</param>
 	public void RegisterProvider(ICompressionProvider provider)
 	{
-		ArgumentNullException.ThrowIfNull(provider);
+		Ensure.NotNull(provider);
 		_providers[provider.CompressionType] = provider;
 	}
 
@@ -70,7 +72,7 @@ public class CompressionManager
 	/// <returns>The compressed data.</returns>
 	public byte[] Compress(byte[] data, CompressionType compressionType, int level = 6)
 	{
-		ArgumentNullException.ThrowIfNull(data);
+		Ensure.NotNull(data);
 
 		if (compressionType == CompressionType.None)
 		{
@@ -89,7 +91,7 @@ public class CompressionManager
 	/// <returns>The decompressed data.</returns>
 	public byte[] Decompress(byte[] compressedData, CompressionType compressionType)
 	{
-		ArgumentNullException.ThrowIfNull(compressedData);
+		Ensure.NotNull(compressedData);
 
 		if (compressionType == CompressionType.None)
 		{
@@ -110,7 +112,7 @@ public class CompressionManager
 	/// <returns>A task that represents the asynchronous compression operation.</returns>
 	public async Task<byte[]> CompressAsync(byte[] data, CompressionType compressionType, int level = 6, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(data);
+		Ensure.NotNull(data);
 		cancellationToken.ThrowIfCancellationRequested();
 
 		if (compressionType == CompressionType.None)
@@ -131,7 +133,7 @@ public class CompressionManager
 	/// <returns>A task that represents the asynchronous decompression operation.</returns>
 	public async Task<byte[]> DecompressAsync(byte[] compressedData, CompressionType compressionType, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(compressedData);
+		Ensure.NotNull(compressedData);
 		cancellationToken.ThrowIfCancellationRequested();
 
 		if (compressionType == CompressionType.None)

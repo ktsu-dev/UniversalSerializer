@@ -2,11 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ktsu.SerializationProvider;
+using ktsu.UniversalSerializer.Contracts;
 
 /// <summary>
 /// Universal Serialization Provider that implements ISerializationProvider interface
@@ -24,7 +26,7 @@ public class UniversalSerializationProvider : ISerializationProvider
 	/// <param name="providerName">Optional custom provider name. If null, uses the serializer type name.</param>
 	public UniversalSerializationProvider(ISerializer serializer, string? providerName = null)
 	{
-		_serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+		_serializer = Ensure.NotNull(serializer);
 		ProviderName = providerName ?? $"UniversalSerializer.{_serializer.GetType().Name}";
 	}
 
@@ -37,15 +39,17 @@ public class UniversalSerializationProvider : ISerializationProvider
 	/// <inheritdoc/>
 	public string Serialize<T>(T obj)
 	{
+#pragma warning disable KTSU0003 // Ensure.NotNull requires class constraint, but T is unconstrained
 		ArgumentNullException.ThrowIfNull(obj);
+#pragma warning restore KTSU0003
 		return _serializer.Serialize(obj);
 	}
 
 	/// <inheritdoc/>
 	public string Serialize(object obj, Type type)
 	{
-		ArgumentNullException.ThrowIfNull(obj);
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(obj);
+		Ensure.NotNull(type);
 		return _serializer.Serialize(obj, type);
 	}
 
@@ -68,7 +72,7 @@ public class UniversalSerializationProvider : ISerializationProvider
 			throw new ArgumentException("Data cannot be null or empty", nameof(data));
 		}
 
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 
 		return _serializer.Deserialize(data, type);
 	}
@@ -76,15 +80,17 @@ public class UniversalSerializationProvider : ISerializationProvider
 	/// <inheritdoc/>
 	public async Task<string> SerializeAsync<T>(T obj, CancellationToken cancellationToken = default)
 	{
+#pragma warning disable KTSU0003 // Ensure.NotNull requires class constraint, but T is unconstrained
 		ArgumentNullException.ThrowIfNull(obj);
+#pragma warning restore KTSU0003
 		return await _serializer.SerializeAsync(obj, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
 	public async Task<string> SerializeAsync(object obj, Type type, CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(obj);
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(obj);
+		Ensure.NotNull(type);
 
 		// UniversalSerializer doesn't have async overload for non-generic serialize
 		// We'll use Task.Run to avoid blocking the thread
@@ -110,7 +116,7 @@ public class UniversalSerializationProvider : ISerializationProvider
 			throw new ArgumentException("Data cannot be null or empty", nameof(data));
 		}
 
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 
 		// UniversalSerializer doesn't have async overload for non-generic deserialize
 		// We'll use Task.Run to avoid blocking the thread

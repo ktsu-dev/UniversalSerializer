@@ -2,7 +2,8 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Models;
+
 /// <summary>
 /// Defines formats for type discriminators in polymorphic serialization.
 /// </summary>

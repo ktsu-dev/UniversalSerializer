@@ -3,8 +3,10 @@
 // Licensed under the MIT license.
 
 namespace ktsu.UniversalSerializer.Test;
+
 using System;
-using ktsu.UniversalSerializer;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>

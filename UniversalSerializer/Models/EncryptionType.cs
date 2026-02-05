@@ -2,7 +2,7 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// Specifies the encryption algorithm to use for securing serialized data.

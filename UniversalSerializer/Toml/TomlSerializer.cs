@@ -2,13 +2,16 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Toml;
+namespace ktsu.UniversalSerializer.Services.Toml;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -98,7 +101,7 @@ public class TomlSerializer : SerializerBase
 	/// <inheritdoc/>
 	public override object Deserialize(string serialized, Type type)
 	{
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 		if (string.IsNullOrWhiteSpace(serialized))
 		{
 			return null!;
@@ -224,7 +227,7 @@ public class TomlSerializer : SerializerBase
 
 	private static object ConvertFromTomlModel(TomlTable model, Type type)
 	{
-		ArgumentNullException.ThrowIfNull(model);
+		Ensure.NotNull(model);
 
 		// Create instance of the target type
 		object? instance = Activator.CreateInstance(type) ?? throw new InvalidOperationException($"Cannot create instance of type {type.Name}");

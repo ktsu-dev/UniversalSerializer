@@ -5,8 +5,11 @@
 namespace ktsu.UniversalSerializer.Test;
 
 using System;
-using ktsu.UniversalSerializer.Json;
-using ktsu.UniversalSerializer.Xml;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
+using ktsu.UniversalSerializer.Services.Json;
+using ktsu.UniversalSerializer.Services.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -43,7 +46,7 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_Constructor_NullFactory_ThrowsArgumentNullException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentNullException>(() => new SerializerRegistry(null!));
+		Assert.ThrowsExactly<ArgumentNullException>(() => new SerializerRegistry(null!));
 	}
 
 	/// <summary>
@@ -56,7 +59,7 @@ public class SerializerRegistryTests
 		_registry.Register("json", _jsonSerializer);
 
 		// Assert
-		Assert.IsTrue(_registry.IsFormatSupported("json"));
+		Assert.IsTrue(_registry.IsFormatSupported("json"), "JSON format should be supported after registration");
 		ISerializer? retrieved = _registry.GetSerializer("json");
 		Assert.AreSame(_jsonSerializer, retrieved);
 	}
@@ -68,9 +71,9 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_Register_NullOrEmptyFormat_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.Register(null!, _jsonSerializer));
-		Assert.ThrowsException<ArgumentException>(() => _registry.Register("", _jsonSerializer));
-		Assert.ThrowsException<ArgumentException>(() => _registry.Register("   ", _jsonSerializer));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.Register(null!, _jsonSerializer));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.Register("", _jsonSerializer));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.Register("   ", _jsonSerializer));
 	}
 
 	/// <summary>
@@ -80,7 +83,7 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_Register_NullSerializer_ThrowsArgumentNullException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentNullException>(() => _registry.Register("json", null!));
+		Assert.ThrowsExactly<ArgumentNullException>(() => _registry.Register("json", null!));
 	}
 
 	/// <summary>
@@ -96,8 +99,8 @@ public class SerializerRegistryTests
 		_registry.RegisterFileExtensions("json", ".json", ".jsonl");
 
 		// Assert
-		Assert.IsTrue(_registry.IsExtensionSupported(".json"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".jsonl"));
+		Assert.IsTrue(_registry.IsExtensionSupported(".json"), ".json extension should be supported");
+		Assert.IsTrue(_registry.IsExtensionSupported(".jsonl"), ".jsonl extension should be supported");
 
 		ISerializer? retrieved1 = _registry.GetSerializerByExtension(".json");
 		ISerializer? retrieved2 = _registry.GetSerializerByExtension(".jsonl");
@@ -118,8 +121,8 @@ public class SerializerRegistryTests
 		_registry.RegisterFileExtensions("json", "json", "jsonl");
 
 		// Assert
-		Assert.IsTrue(_registry.IsExtensionSupported(".json"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".jsonl"));
+		Assert.IsTrue(_registry.IsExtensionSupported(".json"), ".json extension should be supported without dot in registration");
+		Assert.IsTrue(_registry.IsExtensionSupported(".jsonl"), ".jsonl extension should be supported without dot in registration");
 	}
 
 	/// <summary>
@@ -129,7 +132,7 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_RegisterFileExtensions_UnregisteredFormat_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("unknown", ".json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterFileExtensions("unknown", ".json"));
 	}
 
 	/// <summary>
@@ -139,9 +142,9 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_RegisterFileExtensions_NullOrEmptyFormat_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions(null!, ".json"));
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("", ".json"));
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("   ", ".json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterFileExtensions(null!, ".json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterFileExtensions("", ".json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterFileExtensions("   ", ".json"));
 	}
 
 	/// <summary>
@@ -154,8 +157,8 @@ public class SerializerRegistryTests
 		_registry.Register("json", _jsonSerializer);
 
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("json", null!));
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterFileExtensions("json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterFileExtensions("json", null!));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterFileExtensions("json"));
 	}
 
 	/// <summary>
@@ -184,7 +187,7 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_RegisterContentTypes_UnregisteredFormat_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("unknown", "application/json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterContentTypes("unknown", "application/json"));
 	}
 
 	/// <summary>
@@ -194,9 +197,9 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_RegisterContentTypes_NullOrEmptyFormat_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes(null!, "application/json"));
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("", "application/json"));
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("   ", "application/json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterContentTypes(null!, "application/json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterContentTypes("", "application/json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterContentTypes("   ", "application/json"));
 	}
 
 	/// <summary>
@@ -209,8 +212,8 @@ public class SerializerRegistryTests
 		_registry.Register("json", _jsonSerializer);
 
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("json", null!));
-		Assert.ThrowsException<ArgumentException>(() => _registry.RegisterContentTypes("json"));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterContentTypes("json", null!));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.RegisterContentTypes("json"));
 	}
 
 	/// <summary>
@@ -249,9 +252,9 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_GetSerializer_NullOrEmptyFormat_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializer(null!));
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializer(""));
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializer("   "));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializer(null!));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializer(""));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializer("   "));
 	}
 
 	/// <summary>
@@ -308,9 +311,9 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_GetSerializerByExtension_NullOrEmptyExtension_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializerByExtension(null!));
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializerByExtension(""));
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializerByExtension("   "));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializerByExtension(null!));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializerByExtension(""));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializerByExtension("   "));
 	}
 
 	/// <summary>
@@ -350,9 +353,9 @@ public class SerializerRegistryTests
 	public void SerializerRegistry_GetSerializerByContentType_NullOrEmptyContentType_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializerByContentType(null!));
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializerByContentType(""));
-		Assert.ThrowsException<ArgumentException>(() => _registry.GetSerializerByContentType("   "));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializerByContentType(null!));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializerByContentType(""));
+		Assert.ThrowsExactly<ArgumentException>(() => _registry.GetSerializerByContentType("   "));
 	}
 
 	/// <summary>
@@ -365,11 +368,11 @@ public class SerializerRegistryTests
 		_registry.Register("json", _jsonSerializer);
 
 		// Act & Assert
-		Assert.IsTrue(_registry.IsFormatSupported("json"));
-		Assert.IsFalse(_registry.IsFormatSupported("xml"));
-		Assert.IsFalse(_registry.IsFormatSupported(null!));
-		Assert.IsFalse(_registry.IsFormatSupported(""));
-		Assert.IsFalse(_registry.IsFormatSupported("   "));
+		Assert.IsTrue(_registry.IsFormatSupported("json"), "Registered JSON format should be supported");
+		Assert.IsFalse(_registry.IsFormatSupported("xml"), "Unregistered XML format should not be supported");
+		Assert.IsFalse(_registry.IsFormatSupported(null!), "Null format should not be supported");
+		Assert.IsFalse(_registry.IsFormatSupported(""), "Empty format should not be supported");
+		Assert.IsFalse(_registry.IsFormatSupported("   "), "Whitespace format should not be supported");
 	}
 
 	/// <summary>
@@ -383,11 +386,11 @@ public class SerializerRegistryTests
 		_registry.RegisterFileExtensions("json", ".json");
 
 		// Act & Assert
-		Assert.IsTrue(_registry.IsExtensionSupported(".json"));
-		Assert.IsFalse(_registry.IsExtensionSupported(".xml"));
-		Assert.IsFalse(_registry.IsExtensionSupported(null!));
-		Assert.IsFalse(_registry.IsExtensionSupported(""));
-		Assert.IsFalse(_registry.IsExtensionSupported("   "));
+		Assert.IsTrue(_registry.IsExtensionSupported(".json"), "Registered .json extension should be supported");
+		Assert.IsFalse(_registry.IsExtensionSupported(".xml"), "Unregistered .xml extension should not be supported");
+		Assert.IsFalse(_registry.IsExtensionSupported(null!), "Null extension should not be supported");
+		Assert.IsFalse(_registry.IsExtensionSupported(""), "Empty extension should not be supported");
+		Assert.IsFalse(_registry.IsExtensionSupported("   "), "Whitespace extension should not be supported");
 	}
 
 	/// <summary>
@@ -402,10 +405,10 @@ public class SerializerRegistryTests
 		_registry.RegisterContentTypes("JSON", "APPLICATION/JSON");
 
 		// Act & Assert
-		Assert.IsTrue(_registry.IsFormatSupported("json"));
-		Assert.IsTrue(_registry.IsFormatSupported("Json"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".json"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".Json"));
+		Assert.IsTrue(_registry.IsFormatSupported("json"), "Format lookup should be case insensitive (lowercase)");
+		Assert.IsTrue(_registry.IsFormatSupported("Json"), "Format lookup should be case insensitive (mixed case)");
+		Assert.IsTrue(_registry.IsExtensionSupported(".json"), "Extension lookup should be case insensitive (lowercase)");
+		Assert.IsTrue(_registry.IsExtensionSupported(".Json"), "Extension lookup should be case insensitive (mixed case)");
 
 		Assert.AreSame(_jsonSerializer, _registry.GetSerializer("json"));
 		Assert.AreSame(_jsonSerializer, _registry.GetSerializerByExtension(".json"));
@@ -422,21 +425,21 @@ public class SerializerRegistryTests
 		_registry.RegisterBuiltIn();
 
 		// Assert - Check that all built-in formats are registered
-		Assert.IsTrue(_registry.IsFormatSupported("json"));
-		Assert.IsTrue(_registry.IsFormatSupported("xml"));
-		Assert.IsTrue(_registry.IsFormatSupported("yaml"));
-		Assert.IsTrue(_registry.IsFormatSupported("toml"));
-		Assert.IsTrue(_registry.IsFormatSupported("messagepack"));
+		Assert.IsTrue(_registry.IsFormatSupported("json"), "Built-in JSON format should be registered");
+		Assert.IsTrue(_registry.IsFormatSupported("xml"), "Built-in XML format should be registered");
+		Assert.IsTrue(_registry.IsFormatSupported("yaml"), "Built-in YAML format should be registered");
+		Assert.IsTrue(_registry.IsFormatSupported("toml"), "Built-in TOML format should be registered");
+		Assert.IsTrue(_registry.IsFormatSupported("messagepack"), "Built-in MessagePack format should be registered");
 
 		// Check extensions
-		Assert.IsTrue(_registry.IsExtensionSupported(".json"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".xml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".yaml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".yml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".toml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".tml"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".msgpack"));
-		Assert.IsTrue(_registry.IsExtensionSupported(".mp"));
+		Assert.IsTrue(_registry.IsExtensionSupported(".json"), "Built-in .json extension should be registered");
+		Assert.IsTrue(_registry.IsExtensionSupported(".xml"), "Built-in .xml extension should be registered");
+		Assert.IsTrue(_registry.IsExtensionSupported(".yaml"), "Built-in .yaml extension should be registered");
+		Assert.IsTrue(_registry.IsExtensionSupported(".yml"), "Built-in .yml extension should be registered");
+		Assert.IsTrue(_registry.IsExtensionSupported(".toml"), "Built-in .toml extension should be registered");
+		Assert.IsTrue(_registry.IsExtensionSupported(".tml"), "Built-in .tml extension should be registered");
+		Assert.IsTrue(_registry.IsExtensionSupported(".msgpack"), "Built-in .msgpack extension should be registered");
+		Assert.IsTrue(_registry.IsExtensionSupported(".mp"), "Built-in .mp extension should be registered");
 
 		// Check content types
 		Assert.IsNotNull(_registry.GetSerializerByContentType("application/json"));
@@ -463,7 +466,7 @@ public class SerializerRegistryTests
 		_registry.RegisterBuiltIn(customOptions);
 
 		// Assert
-		Assert.IsTrue(_registry.IsFormatSupported("json"));
+		Assert.IsTrue(_registry.IsFormatSupported("json"), "JSON format should be registered with custom options");
 		ISerializer? jsonSerializer = _registry.GetSerializer("json");
 		Assert.IsNotNull(jsonSerializer);
 	}

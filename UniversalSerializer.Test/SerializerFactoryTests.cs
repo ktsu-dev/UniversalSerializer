@@ -5,8 +5,11 @@
 namespace ktsu.UniversalSerializer.Test;
 
 using System;
-using ktsu.UniversalSerializer.Json;
-using ktsu.UniversalSerializer.Xml;
+using ktsu.UniversalSerializer.Contracts;
+using ktsu.UniversalSerializer.Models;
+using ktsu.UniversalSerializer.Services;
+using ktsu.UniversalSerializer.Services.Json;
+using ktsu.UniversalSerializer.Services.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 /// <summary>
@@ -47,7 +50,7 @@ public class SerializerFactoryTests
 	public void SerializerFactory_RegisterSerializer_NullFactory_ThrowsArgumentNullException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentNullException>(() =>
+		Assert.ThrowsExactly<ArgumentNullException>(() =>
 			_factory.RegisterSerializer<JsonSerializer>(null!));
 	}
 
@@ -92,7 +95,7 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_UnregisteredType_ThrowsInvalidOperationException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<InvalidOperationException>(_factory.Create<JsonSerializer>);
+		Assert.ThrowsExactly<InvalidOperationException>(_factory.Create<JsonSerializer>);
 	}
 
 	/// <summary>
@@ -157,7 +160,7 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_VerifiesRegistrationStatus()
 	{
 		// Act & Assert - Before registration
-		Assert.ThrowsException<InvalidOperationException>(_factory.Create<JsonSerializer>);
+		Assert.ThrowsExactly<InvalidOperationException>(_factory.Create<JsonSerializer>);
 
 		// Register and test again
 		_factory.RegisterSerializer(options => new JsonSerializer(options));
@@ -165,7 +168,7 @@ public class SerializerFactoryTests
 		Assert.IsNotNull(serializer);
 
 		// Unregistered type should still throw
-		Assert.ThrowsException<InvalidOperationException>(_factory.Create<XmlSerializer>);
+		Assert.ThrowsExactly<InvalidOperationException>(_factory.Create<XmlSerializer>);
 	}
 
 	/// <summary>
@@ -195,8 +198,8 @@ public class SerializerFactoryTests
 
 		// Assert
 		Assert.IsNotNull(serializer);
-		Assert.IsFalse(firstFactoryCalled);
-		Assert.IsTrue(secondFactoryCalled);
+		Assert.IsFalse(firstFactoryCalled, "First factory should not be called after being overwritten");
+		Assert.IsTrue(secondFactoryCalled, "Second factory should be called after overwriting the first");
 	}
 
 	/// <summary>
@@ -234,7 +237,7 @@ public class SerializerFactoryTests
 		_factory.RegisterSerializer<JsonSerializer>(options => null!);
 
 		// Act & Assert
-		Assert.ThrowsException<InvalidOperationException>(_factory.Create<JsonSerializer>);
+		Assert.ThrowsExactly<InvalidOperationException>(_factory.Create<JsonSerializer>);
 	}
 
 	/// <summary>
@@ -248,7 +251,7 @@ public class SerializerFactoryTests
 		_factory.RegisterSerializer<JsonSerializer>(options => throw expectedException);
 
 		// Act & Assert
-		ArgumentException actualException = Assert.ThrowsException<ArgumentException>(_factory.Create<JsonSerializer>);
+		ArgumentException actualException = Assert.ThrowsExactly<ArgumentException>(_factory.Create<JsonSerializer>);
 		Assert.AreSame(expectedException, actualException);
 	}
 
@@ -259,7 +262,7 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_InterfaceType_ThrowsInvalidOperationException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<InvalidOperationException>(_factory.Create<ISerializer>);
+		Assert.ThrowsExactly<InvalidOperationException>(_factory.Create<ISerializer>);
 	}
 
 	/// <summary>
@@ -283,7 +286,7 @@ public class SerializerFactoryTests
 
 		// Verify defaults are applied to new serializers
 		SerializerOptions defaultOptions = _factory.GetDefaultOptions();
-		Assert.IsTrue(defaultOptions.EnableCompression);
+		Assert.IsTrue(defaultOptions.EnableCompression, "EnableCompression should be true after configuration");
 		Assert.AreEqual(9, defaultOptions.CompressionLevel);
 	}
 
@@ -364,7 +367,7 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_NullType_ThrowsArgumentNullException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentNullException>(() => _factory.Create(null!));
+		Assert.ThrowsExactly<ArgumentNullException>(() => _factory.Create(null!));
 	}
 
 	/// <summary>
@@ -374,6 +377,6 @@ public class SerializerFactoryTests
 	public void SerializerFactory_Create_NonSerializerType_ThrowsArgumentException()
 	{
 		// Act & Assert
-		Assert.ThrowsException<ArgumentException>(() => _factory.Create(typeof(string)));
+		Assert.ThrowsExactly<ArgumentException>(() => _factory.Create(typeof(string)));
 	}
 }

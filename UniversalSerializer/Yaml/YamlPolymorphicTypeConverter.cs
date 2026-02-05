@@ -2,12 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer.Yaml;
+namespace ktsu.UniversalSerializer.Services.Yaml;
 
 using System;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
+using ktsu.UniversalSerializer.Services;
 
 /// <summary>
 /// YAML type converter that handles polymorphic types with discriminators.
@@ -27,16 +28,16 @@ public class YamlPolymorphicTypeConverter : IYamlTypeConverter
 		string discriminatorPropertyName,
 		string discriminatorFormat)
 	{
-		_typeRegistry = typeRegistry ?? throw new ArgumentNullException(nameof(typeRegistry));
+		_typeRegistry = Ensure.NotNull(typeRegistry);
 		// Parameters are stored for future use but not currently implemented
-		_ = discriminatorPropertyName ?? throw new ArgumentNullException(nameof(discriminatorPropertyName));
-		_ = discriminatorFormat ?? throw new ArgumentNullException(nameof(discriminatorFormat));
+		_ = Ensure.NotNull(discriminatorPropertyName);
+		_ = Ensure.NotNull(discriminatorFormat);
 	}
 
 	/// <inheritdoc/>
 	public bool Accepts(Type type)
 	{
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 		return _typeRegistry.HasPolymorphicTypes() && type.IsClass && !type.IsSealed;
 	}
 
@@ -52,7 +53,7 @@ public class YamlPolymorphicTypeConverter : IYamlTypeConverter
 	/// <inheritdoc/>
 	public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
 	{
-		ArgumentNullException.ThrowIfNull(emitter);
+		Ensure.NotNull(emitter);
 		if (value == null)
 		{
 			emitter.Emit(new Scalar(null, null, "null", ScalarStyle.Plain, true, false));

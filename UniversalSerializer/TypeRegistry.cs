@@ -2,11 +2,13 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Services;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ktsu.UniversalSerializer.Models;
 
 /// <summary>
 /// A registry for managing type mappings in polymorphic serialization.
@@ -19,7 +21,7 @@ public class TypeRegistry(SerializerOptions options)
 {
 	private readonly Dictionary<string, Type> _typeMap = new(StringComparer.Ordinal);
 	private readonly Dictionary<Type, string> _nameMap = [];
-	private readonly SerializerOptions _options = options ?? throw new ArgumentNullException(nameof(options));
+	private readonly SerializerOptions _options = Ensure.NotNull(options);
 
 	/// <summary>
 	/// Registers a type with the registry.
@@ -35,7 +37,7 @@ public class TypeRegistry(SerializerOptions options)
 	/// <param name="name">The optional name to use for the type. If null, the type name will be used.</param>
 	public void RegisterType(Type type, string? name = null)
 	{
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 
 		name ??= GetTypeName(type);
 		_typeMap[name] = type;
@@ -70,7 +72,7 @@ public class TypeRegistry(SerializerOptions options)
 	/// <returns>The type name.</returns>
 	public string GetTypeName(Type type)
 	{
-		ArgumentNullException.ThrowIfNull(type);
+		Ensure.NotNull(type);
 
 		if (_nameMap.TryGetValue(type, out string? name))
 		{

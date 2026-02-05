@@ -2,7 +2,12 @@
 // All rights reserved.
 // Licensed under the MIT license.
 
-namespace ktsu.UniversalSerializer;
+namespace ktsu.UniversalSerializer.Contracts;
+
+using System.Threading;
+using System.Threading.Tasks;
+using ktsu.UniversalSerializer.Models;
+
 /// <summary>
 /// Interface for encryption providers that can encrypt and decrypt data.
 /// </summary>
