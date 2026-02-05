@@ -1,3 +1,5 @@
-## v1.0.5
+## v1.0.6 (patch)
 
-No significant changes detected since v1.0.5.
+Changes since v1.0.5:
+
+- Add target frameworks to UniversalSerializer project file ([@matt-edmondson](https://github.com/matt-edmondson))
