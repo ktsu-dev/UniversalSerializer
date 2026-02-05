@@ -2,6 +2,7 @@
 
 Changes since v1.0.4:
 
+- refactor ([@matt-edmondson](https://github.com/matt-edmondson))
 - Remove .github\workflows\project.yml ([@matt-edmondson](https://github.com/matt-edmondson))
 ## v1.0.5-pre.4 (prerelease)
 
