@@ -57,7 +57,7 @@
     <PackageVersion Include="TestableIO.System.IO.Abstractions" Version="22.0.14" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="22.0.14" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.0.14" />
-    <PackageVersion Include="Tomlyn" Version="0.19.0" />
+    <PackageVersion Include="Tomlyn" Version="2.3.2" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="Polyfill" Version="9.8.1" />
     <PackageVersion Include="System.Text.Json" Version="10.0.2" />
