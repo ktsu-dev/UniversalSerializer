@@ -2,6 +2,7 @@
 
 Changes since v1.0.9:
 
+- Bump Tomlyn from 2.5.0 to 2.6.0 ([@dependabot[bot]](https://github.com/dependabot[bot]))
 - Sync .github\workflows\update-sdks.yml ([@ktsu[bot]](https://github.com/ktsu[bot]))
 - Sync .github\workflows\dotnet.yml ([@ktsu[bot]](https://github.com/ktsu[bot]))
 - Sync .github\dependabot.yml ([@ktsu[bot]](https://github.com/ktsu[bot]))
