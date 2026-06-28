@@ -2,6 +2,7 @@
 
 Changes since v1.0.9:
 
+- chore: trim unused package references ([@matt-edmondson](https://github.com/matt-edmondson))
 - Remove stale files ([@matt-edmondson](https://github.com/matt-edmondson))
 
 ## v1.0.10-pre.1 (prerelease)
