@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="ktsu.Sdk" />
   <PropertyGroup>
     <TargetFrameworks>net10.0;net9.0;net8.0;netstandard2.0;netstandard2.1</TargetFrameworks>
@@ -13,7 +13,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Polyfill" />
     <PackageReference Include="System.Text.Json" />
-  </ItemGroup>
+  
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
+    <PackageReference Include="System.Memory" /></ItemGroup>
 
   <ItemGroup>
     <Folder Include="Compression\" />

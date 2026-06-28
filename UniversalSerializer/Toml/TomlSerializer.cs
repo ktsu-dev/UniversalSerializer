@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ktsu.UniversalSerializer.Models;
 using ktsu.UniversalSerializer.Services;
-using Tomlyn;
 using Tomlyn.Model;
 
 /// <summary>
@@ -68,7 +67,7 @@ public class TomlSerializer : SerializerBase
 		}
 
 		TomlTable tomlTable = ConvertObjectToToml(obj);
-		return Toml.FromModel(tomlTable);
+		return Tomlyn.Toml.FromModel(tomlTable);
 	}
 
 	/// <inheritdoc/>
@@ -80,7 +79,7 @@ public class TomlSerializer : SerializerBase
 		}
 
 		TomlTable tomlTable = ConvertObjectToToml(obj);
-		return Toml.FromModel(tomlTable);
+		return Tomlyn.Toml.FromModel(tomlTable);
 	}
 
 	/// <inheritdoc/>
@@ -92,7 +91,7 @@ public class TomlSerializer : SerializerBase
 		}
 
 		// Parse TOML
-		TomlTable model = Toml.ToModel(serialized);
+		TomlTable model = Tomlyn.Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
 		return (T)ConvertFromTomlModel(model, typeof(T))!;
@@ -108,7 +107,7 @@ public class TomlSerializer : SerializerBase
 		}
 
 		// Parse TOML
-		TomlTable model = Toml.ToModel(serialized);
+		TomlTable model = Tomlyn.Toml.ToModel(serialized);
 
 		// Convert the model to the requested type
 		return ConvertFromTomlModel(model, type)!;

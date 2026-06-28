@@ -4,8 +4,6 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
-    <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" />
     <PackageReference Include="Polyfill" />
   </ItemGroup>
 
