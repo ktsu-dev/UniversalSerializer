@@ -1,9 +1,4 @@
-## v1.0.10 (patch)
+## v1.0.10
 
-Changes since v1.0.9:
-
-- fix: update benchmark package references ([@matt-edmondson](https://github.com/matt-edmondson))
-- chore: remove unused SourceLink package versions ([@matt-edmondson](https://github.com/matt-edmondson))
-- chore: trim unused package references ([@matt-edmondson](https://github.com/matt-edmondson))
-- Remove stale files ([@matt-edmondson](https://github.com/matt-edmondson))
+No significant changes detected since v1.0.10.
 
