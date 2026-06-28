@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.15.8" />
     <PackageVersion Include="ktsu.SerializationProvider" Version="1.0.7" />
     <PackageVersion Include="K4os.Compression.LZ4" Version="1.3.8" />
     <PackageVersion Include="MessagePack" Version="3.1.7" />
@@ -16,7 +17,7 @@
     <PackageVersion Include="Microsoft.Testing.Extensions.HotReload" Version="1.7.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.Retry" Version="1.7.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="1.7.2" />
-    <PackageVersion Include="Tomlyn" Version="2.9.0" />
+    <PackageVersion Include="Tomlyn" Version="0.19.0" />
     <PackageVersion Include="YamlDotNet" Version="18.0.0" />
     <PackageVersion Include="Polyfill" Version="10.11.0" />
     <PackageVersion Include="System.Text.Json" Version="10.0.9" />
