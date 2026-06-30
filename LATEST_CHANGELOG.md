@@ -1,7 +1,7 @@
-## v1.0.11 (patch)
+## v1.0.12 (patch)
 
-Changes since v1.0.10:
+Changes since v1.0.11:
 
-- Bump YamlDotNet from 18.0.0 to 18.1.0 ([@dependabot[bot]](https://github.com/dependabot[bot]))
-- Bump the ktsu group with 1 update ([@dependabot[bot]](https://github.com/dependabot[bot]))
+- Bump Polyfill from 10.11.0 to 10.11.1 ([@dependabot[bot]](https://github.com/dependabot[bot]))
+- Bump the ktsu group with 8 updates ([@dependabot[bot]](https://github.com/dependabot[bot]))
 
